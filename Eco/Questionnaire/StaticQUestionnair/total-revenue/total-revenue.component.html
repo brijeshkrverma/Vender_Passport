@@ -1,0 +1,89 @@
+<div class="questionnaire-container">
+    <h3 class="title">
+        Please provide details of the applicability of the code of conduct/ethics and whistle-blower policy.
+    </h3>
+
+    <div class="no-info-options">
+        <mat-radio-group aria-label="Other options" [(ngModel)]="infoAvailability" class="radio-group">
+            <mat-radio-button value="available" class="radio-button">Information available:</mat-radio-button>
+                <!-- Conditionally show the table based on the selected radio button -->
+    <table class="custom-table" *ngIf="infoAvailability === 'available'">
+        <thead>
+         <tr>
+             <th></th>
+             <th>Unit </th>
+             <th>FY 2021</th>
+             <th>FY 2022</th>
+             <th>FY 2023</th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+             <th>Total revenue</th>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+         </tr>
+         <tr>
+             <th>Total Production</th>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+         </tr>
+         <tr>
+             <th>Total products supplied to sourcing company (tonnes)</th>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+         </tr>
+         <tr>
+             <th>Percentage of products supplied to sourcing company</th>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+             <td>
+                 <input appNumbersOnly type="number" class="form-control" />
+             </td>
+         </tr>
+        </tbody>
+     </table>
+            <mat-radio-button value="noInfo" class="radio-button">No information available</mat-radio-button>
+            <mat-radio-button value="notApplicable" class="radio-button">Not Applicable</mat-radio-button>
+        </mat-radio-group>
+    </div>
+
+
+</div>

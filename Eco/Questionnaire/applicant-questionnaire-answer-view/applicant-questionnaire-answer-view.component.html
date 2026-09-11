@@ -1,0 +1,613 @@
+<div class="mainbody">
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="page-header row">
+                        <div class="col-lg-4">
+                        <div class="page-title">
+                            <!-- <a routerLink="/dashboard"><i class='bx bx-left-arrow-alt'></i> Dashboard</a> -->
+                            <h3 class="m-0">Questionnaire Summary</h3>
+                        </div>
+                        </div>
+                        <div class="col-lg-8">
+                        <div class="appli-status">
+                            <div class="form-group">
+                                <select (change)="filterByBrsrType($event)" style="appearance:auto; height: 38px;"
+                                    class="form-control" name="" id="">
+                                    <option value="" selected>ECO Edge Questionnaire</option>
+                                    <option value="BRSR">BRSR Questionnaire</option>
+                                    <option value="BRSR Core">BRSR Core Questionnaire</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary rounded-0" style="background-color: #f6871f; color: #fff; height: 38px; display: flex; align-items: center; gap: 6px;"
+                                    (click)="downloadPdf()">
+                                    <i class='bx bxs-download'></i> Download PDF
+                                </button>
+                            </div>
+                            <!-- <button style="background-color:#e90f0fb3;color: white;" class="btn"
+                                (click)="changeQuestionnaireStatus('reject','draft')">Request Info</button> -->
+                            <!-- <button style="background-color:#64ae3e;color: white;"
+                                *ngIf="questionnaireList[0]?.admin_approval!=='apprive'" class="btn"
+                                (click)="changeQuestionnaireStatus('approve','submitted')">Approve</button> -->
+                                <div class="" *ngIf="userMeta?.role !== 'applicant' && userMeta?.role !== 'vcp'">
+                                    <div class="maxbox text-center btn btn-secondary rounded-0"
+                                        style="cursor: default;height: max-content; height: 38px; padding: 3px 14px; display: flex; align-items: center;">
+                                        <span>Marks: {{totalObtendMark}} / {{questionnaireList[0]?.totalMarks}}</span>
+                                    </div>
+                                </div>
+                                <!-- <div class="">
+                                    <div class="stat" (click)="openDialog()">
+                                        <button class="btn btn-primary">Summary</button>
+                                    </div>
+                                </div> -->
+                                <!-- {{questionnaireList[0]?.admin_approval}} -->
+                                <div class="dropdown" *ngIf="userMeta?.role !== 'applicant' && userMeta?.role !== 'vcp'">
+                                  <button class="btn btn-secondary rounded-0 dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Action
+                                  </button>
+
+                                  <ul class="dropdown-menu actionmanu" aria-labelledby="dropdownMenuButton1">
+                                    <li *ngIf="assessment!=='assigned'"><button class="btn"
+                                      (click)="changeQuestionnaireStatus('reject','draft')">Request Info</button></li>
+                                      <!-- *ngIf="questionnaireList[0]?.admin_approval!=='apprived'" -->
+                                    <li *ngIf="statusList?.adminQuestionnairApprovelStatus!=='approved'"><button
+                                      class="btn" (click)="changeQuestionnaireStatus('approve','submitted')">Approve</button></li>
+                                    <li><div (click)="openDialog()">
+                                      <button class="btn ">Summary</button>
+                                    </div></li>
+                                      <li>
+                                        <button class="btn " *ngIf="!publeshedStatus" (click)="changePublishedStatusOfScoreCard()">Published</button>
+                                        <button class="btn " *ngIf="publeshedStatus"
+                                          (click)="changePublishedStatusOfScoreCard()">Unpublished</button>
+                                      </li>
+                                  </ul>
+                                </div>
+                                <app-inner-dropdown *ngIf="userMeta?.role=='admin'" [applicant_id]="applicant_id"></app-inner-dropdown>
+                        </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="pe-0 mb-3 d-flex justify-content-end">
+
+                </div>
+                <div class="col-md-12 ">
+                    <!-- <p>Categories:</p> -->
+                    <ul class="nav nav-pills pb-2 colortab border-bottom" id="pills-tab" role="tablist">
+                        <div style="display: flex; gap: 10px; width: 100%; overflow: auto;">
+                            <li class="nav-item">
+                                <button class="nav-link" [ngClass]="selectedCatecory == 'Workforce' ? 'active' : ''"
+                                    (click)="filterData('Workforce')">Workforce</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" [ngClass]="selectedCatecory == 'General' ? 'active' : ''"
+                                    (click)="filterData('General')">General</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link"
+                                    [ngClass]="selectedCatecory == 'Decarbonization' ? 'active' : ''"
+                                    (click)="filterData('Decarbonization')">Decarbonization</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" [ngClass]="selectedCatecory == 'Circularity' ? 'active' : ''"
+                                    (click)="filterData('Circularity')">Circularity</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link"
+                                    [ngClass]="selectedCatecory == 'Health & Safety' ? 'active' : ''"
+                                    (click)="filterData('Health & Safety')">Health & Saftey</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" [ngClass]="selectedCatecory == 'Human Rights' ? 'active' : ''"
+                                    (click)="filterData('Human Rights')">Human Rights</button>
+                            </li>
+                            <li *ngIf="statusList?.sector=='Automobile' || statusList?.sector=='Auto-components'" class="nav-item">
+                                <button class="nav-link"
+                                    [ngClass]="selectedCatecory == 'Automobile Sector' ? 'active' : ''"
+                                    (click)="filterData('Automobile Sector')">Automobile Sector</button>
+                            </li>
+                            <li class="nav-item">
+                              <button class="nav-link"
+                                  [ngClass]="selectedCatecory == 'Document' ? 'active' : ''"
+                                  (click)="filterData('Document')">Documents</button>
+                          </li>
+
+                            <!-- <li style="margin-left: 10.9%;">
+                              <button class="btn btn-primary" *ngIf="!publeshedStatus" (click)="changePublishedStatusOfScoreCard()">Published</button>
+                              <button class="btn btn-primary" *ngIf="publeshedStatus"  (click)="changePublishedStatusOfScoreCard()">Unpublished</button>
+                          </li> -->
+                        </div>
+                    </ul>
+                
+                    <div class="tab-content" id="pills-tabContent">
+                      <ng-container *ngIf="isDocuments;else workforce">
+                        <div class="documentslist">
+                        <table class="table">
+                          <thead>
+                           <tr>
+                            <th scope="col">File name</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">File</th>
+                           </tr>
+                          </thead>
+                          <tbody>
+                             <tr *ngFor="let document of documentsData">
+                              <td>{{document?.docName}}</td>
+                              <td>{{document?.description}}</td>
+                            
+                              <td>
+                                <a href="{{document?.docFile}}" target="blank">
+                                  <!-- <span class="fiv-cla fiv-icon-{{document?.extension}}"></span> -->
+                                  <img
+                                  src="assets/image/file.png"
+                                  height="40px"
+                                  width="34px"
+                                />
+                                  </a>
+                              </td>
+                             </tr>
+                          </tbody>
+                        </table>
+                       
+                    
+                        
+                        </div>
+                      </ng-container>
+                      <ng-template #workforce>
+                        <ng-container *ngIf="isWorkforce;else categories">
+                          <app-workforceoard></app-workforceoard>
+                      </ng-container>
+                      <ng-template #categories>
+                        <div class="tab-pane fade show active">
+                            <form [formGroup]="applicantQuestionForm">
+
+                                <div formArrayName="answers">
+                                    <div *ngFor="let control of answers.controls; let i = index">
+                                        <ng-template matStepLabel>Question {{ i + 1
+                                            }}</ng-template>
+
+                                        <div [formGroupName]="i">
+                                            <ng-container>
+                                                <div class="quatiform">
+                                                    <div class="colflex" style="margin-top: 26px;">
+                                                        <div class="quationstep"
+                                                            style="display: flex;    justify-content: space-between;">
+                                                            <p class="fs-5 mb-4"><strong>Question {{ i + 1
+                                                                    }}:</strong><span class="mx-3"
+                                                                    [innerHTML]="control.get('question').value"></span>
+                                                                <ng-container
+                                                                    *ngIf="getBrsrBySA(control.get('standardAlignment').value)?.length>0">
+                                                                    <ng-container
+                                                                        *ngFor="let brsrType of getBrsrBySA(control.get('standardAlignment').value)">
+                                                                        <mat-chip color="accent" *ngIf="brsrType">
+                                                                            {{brsrType}}
+                                                                        </mat-chip>
+                                                                    </ng-container>
+                                                                </ng-container>
+
+
+                                                            </p>
+                                                            <div class="maxbox text-center card" *ngIf="userMeta?.role !== 'applicant' && userMeta?.role !== 'vcp'"
+                                                                style=" height: max-content; padding: 3px 14px; width: 126px; display: block;">
+                                                                <h5 class="m-0">Marks</h5>
+
+                                                                <span>{{(control.get('obtendMark')?.value)?control.get('obtendMark')?.value:0}} </span>/&nbsp; <span>{{(control.get('maxMark')?.value)?control.get('maxMark')?.value:0}}</span>
+                                                            </div>
+
+
+
+
+
+                                                        </div>
+                                                        <div formArrayName="answer">
+
+                                                            <div *ngFor="let ans of answer(i).controls; let j=index"
+                                                                [formGroupName]="j">
+
+                                                                <ng-container
+                                                                    *ngIf="control.get('answerType').value === 'RadioButton'">
+                                                                    <mat-radio-group formControlName="ansValue"
+                                                                        class="quationtoptex"
+                                                                        (change)="utilityService.changeEvent($event,i,j,applicantQuestionForm)">
+                                                                        <mat-radio-button
+                                                                            [value]="ans.value.answerLabel">
+                                                                            <span class="form-check-label fs-6">
+                                                                                {{
+                                                                                ans.value.answerLabel
+                                                                                }}
+                                                                            </span>
+
+                                                                        </mat-radio-button>
+
+                                                                    </mat-radio-group>
+                                                                </ng-container>
+
+                                                                <ng-container
+                                                                    *ngIf="control.get('answerType').value === 'CheckBox'">
+                                                                    <div
+                                                                        class="answare d-flex align-items-center gap-3 mb-3">
+                                                                        <input formControlName='ansValue' readonly
+                                                                            class="form-check-input m-0"
+                                                                            type="checkbox" value=""
+                                                                            id="flexCheckChecked">
+                                                                        <label class="form-check-label fs-6"
+                                                                            for="flexCheckChecked">
+                                                                            {{ans.value.answerLabel}}
+                                                                        </label>
+                                                                    </div>
+
+
+                                                                </ng-container>
+
+
+                                                                <ng-container
+                                                                    *ngIf="control.get('answerType').value === 'Text'">
+                                                                    {{j+1}}.&nbsp;{{ans.value.answerLabel}}
+                                                                    <input formControlName="ansValue"
+                                                                        class="form-control">
+                                                                </ng-container>
+
+
+
+                                                                <div
+                                                                    *ngIf="ans.value.subanswar?.length>0 && ans.value.ansValue!==null && ans.value.ansValue!=='' && ans.value.ansValue!==false">
+                                                                    <div style="margin-left: 37px;"
+                                                                        formArrayName="subanswar">
+                                                                        <div *ngFor="let subans of subanswar(i,j).controls; let k=index"
+                                                                            [formGroupName]="k">
+
+                                                                            <div
+                                                                                *ngIf="subans.value.subAnswerTypes=='RadioButton'">
+
+                                                                                <div class="alignSubControl">
+
+                                                                                    <mat-radio-group
+                                                                                        formControlName='ansValue'
+                                                                                        class="quationtoptex">
+                                                                                        <mat-radio-button
+                                                                                            [checked]="false"
+                                                                                            [value]="subans.value.subAnswerLabel">
+                                                                                            <span
+                                                                                                class="form-check-label fs-6">
+                                                                                                {{
+                                                                                                subans.value.subAnswerLabel
+                                                                                                }}
+                                                                                            </span>
+
+                                                                                        </mat-radio-button>
+
+                                                                                    </mat-radio-group>
+                                                                                </div>
+                                                                                <div class="isInnerField">
+                                                                                    <div *ngIf="
+                                                                                subans.value
+                                                                                  ?.isTypeText
+                                                                              ">
+                                                                                        <textarea  rows="2" cols="100%"
+                                                                                            formControlName="textTypeVal"
+                                                                                             appMaxWordLength [maxWords]="200"
+                                                                                            placeholder="Enter the details..."
+                                                                                            class="form-control" ></textarea>
+
+                                                                                    </div>
+                                                                                    <div
+                                                                                    *ngIf="
+                                                                                      subans.value
+                                                                                        ?.isTypeNumericText
+                                                                                    "
+                                                                                  >
+                                                                                    <textarea  rows="2" cols="100%" appMaxWordLength [maxWords]="200"
+                                                                                      formControlName="numericTypeVal"
+                                                                                     #FFF2E5
+                                                                                     appNumbersOnly
+                                                                                      type="text"  appMaxWordLength [maxWords]="200" appMaxWordLength [maxWords]="200"
+                                                                                      placeholder="Enter the details..."
+                                                                                      class="form-control"
+                                                                                    ></textarea>
+                                                                                  </div>
+
+                                                                                    <div class="innerUpload" *ngIf="
+                                                                            subans.value
+                                                                              ?.isUploadText && subans.value
+                                                                              ?.uploadTypeVal
+                                                                          ">
+
+                                                                                        <a href="{{subans.value
+                                                                            ?.uploadTypeVal}}" target="blank"><img
+                                                                                                src="../../../../assets/image/file.png"
+                                                                                                height="40px"
+                                                                                                width="34px" /><b>
+                                                                                                View Attached
+                                                                                                File</b> </a>
+
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div
+                                                                                *ngIf="subans.value.subAnswerTypes=='CheckBox'">
+                                                                                <div class="alignSubControl">
+
+                                                                                    <div
+                                                                                        class="answare d-flex align-items-center gap-3 mb-3">
+                                                                                        <input
+                                                                                            formControlName='ansValue'
+                                                                                            [attr.disabled]="isDisabled"
+                                                                                            class="form-check-input m-0"
+                                                                                            type="checkbox" value=""
+                                                                                            id="flexCheckChecked">
+                                                                                        <label
+                                                                                            class="form-check-label fs-6"
+                                                                                            for="flexCheckChecked">
+                                                                                            {{subans.value.subAnswerLabel}}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="isInnerField">
+                                                                                    <div *ngIf="
+                                                                                subans.value
+                                                                                  ?.isTypeText
+                                                                              ">
+                                                                                        <textarea  rows="2" cols="100%"
+                                                                                            formControlName="textTypeVal"
+                                                                                             appMaxWordLength [maxWords]="200"
+                                                                                            placeholder="Enter the details..."
+                                                                                            class="form-control" ></textarea>
+
+                                                                                    </div>
+
+                                                                                    <div
+                                                                                    *ngIf="
+                                                                                      subans.value
+                                                                                        ?.isTypeNumericText
+                                                                                    "
+                                                                                  >
+                                                                                    <textarea  rows="2" cols="100%" appMaxWordLength [maxWords]="200"
+                                                                                      formControlName="numericTypeVal"
+                                                                                     #FFF2E5
+                                                                                     appNumbersOnly
+                                                                                      type="text"  appMaxWordLength [maxWords]="200" appMaxWordLength [maxWords]="200"
+                                                                                      placeholder="Enter the details..."
+                                                                                      class="form-control"
+                                                                                    ></textarea>
+                                                                                  </div>
+
+                                                                                    <div class="innerUpload" *ngIf="
+                                                                            subans.value
+                                                                              ?.isUploadText && subans.value
+                                                                              ?.uploadTypeVal
+                                                                          ">
+
+                                                                                        <a href="{{subans.value
+                                                                            ?.uploadTypeVal}}" target="blank"> <img
+                                                                                                src="../../../../assets/image/file.png"
+                                                                                                height="40px"
+                                                                                                width="34px" /><b>
+                                                                                                View Attached
+                                                                                                File</b> </a>
+
+                                                                                    </div>
+                                                                                </div>
+
+                                                                            </div>
+
+                                                                            <div
+                                                                                *ngIf="subans.value.subAnswerTypes=='Text'">
+                                                                                <div class="alignSubControl">
+
+                                                                                    <textarea  rows="2" cols="100%"
+                                                                                        formControlName='ansValue'
+                                                                                         appMaxWordLength [maxWords]="200"
+                                                                                        placeholder="Enter the details..."
+                                                                                        class="form-control"></textarea>
+                                                                                </div>
+                                                                                <div class="isInnerField">
+                                                                                    <div *ngIf="
+                                                                                    subans.value
+                                                                                      ?.isTypeText
+                                                                                  ">
+                                                                                        <textarea  rows="2" cols="100%"
+                                                                                            formControlName="textTypeVal"
+                                                                                            appMaxWordLength [maxWords]="200"
+                                                                                            placeholder="Enter the details..."
+                                                                                            class="form-control" ></textarea>
+
+                                                                                    </div>
+
+                                                                                    <div
+                                                                                    *ngIf="
+                                                                                      subans.value
+                                                                                        ?.isTypeNumericText
+                                                                                    "
+                                                                                  >
+                                                                                    <textarea  rows="2" cols="100%" appMaxWordLength [maxWords]="200"
+                                                                                      formControlName="numericTypeVal"
+                                                                                     #FFF2E5
+                                                                                     appNumbersOnly
+                                                                                      type="text"  appMaxWordLength [maxWords]="200" appMaxWordLength [maxWords]="200"
+                                                                                      placeholder="Enter the details..."
+                                                                                      class="form-control"
+                                                                                    ></textarea>
+                                                                                  </div>
+
+                                                                                    <div class="innerUpload" *ngIf="
+                                                                                subans.value
+                                                                                  ?.isUploadText && subans.value
+                                                                                  ?.uploadTypeVal
+                                                                              ">
+
+                                                                                        <a [href]="subans.value
+                                                                            ?.uploadTypeVal" target="blank"> <i
+                                                                                                class='bx bxs-download'></i>
+                                                                                            View Attached File</a>
+
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div
+                                                                                *ngIf="subans.value.subAnswerTypes=='Grid'">
+                                                                                <div class="alignSubControl">
+
+                                                                                    <div formArrayName="grid" style="overflow: auto;">
+                                                                                        <app-form-grid
+                                                                                            [gridInput]="{gridIndex:j,formIndex:i,k:k,appliData:gridArray(i,j,k)?.controls,view:true}"
+                                                                                            (chengeGridValue)="changeGridValue($event)"></app-form-grid>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="isInnerField">
+                                                                                    <div *ngIf="
+                                                                                subans.value
+                                                                                  ?.isTypeText
+                                                                              ">
+                                                                                        <textarea  rows="2" cols="100%"
+                                                                                            formControlName="textTypeVal"
+                                                                                            appMaxWordLength [maxWords]="200"
+                                                                                            placeholder="Enter the details..."
+                                                                                            class="form-control" ></textarea>
+
+                                                                                    </div>
+
+                                                                                    <div
+                                                                                    *ngIf="
+                                                                                      subans.value
+                                                                                        ?.isTypeNumericText
+                                                                                    "
+                                                                                  >
+                                                                                    <textarea  rows="2" cols="100%" appMaxWordLength [maxWords]="200"
+                                                                                      formControlName="numericTypeVal"
+                                                                                     #FFF2E5
+                                                                                     appNumbersOnly
+                                                                                      type="text"  appMaxWordLength [maxWords]="200" appMaxWordLength [maxWords]="200"
+                                                                                      placeholder="Enter the details..."
+                                                                                      class="form-control"
+                                                                                    ></textarea>
+                                                                                  </div>
+
+                                                                                    <div class="innerUpload" *ngIf="
+                                                                            subans.value
+                                                                              ?.isUploadText && subans.value
+                                                                              ?.uploadTypeVal
+                                                                          ">
+
+
+                                                                                        <a href="{{subans.value
+                                                                            ?.uploadTypeVal}}" target="blank"><img
+                                                                                                src="../../../../assets/image/file.png"
+                                                                                                height="40px"
+                                                                                                width="34px" /><b>
+                                                                                                View Attached
+                                                                                                File</b> </a>
+
+                                                                                    </div>
+                                                                                </div>
+
+                                                                            </div>
+
+
+                                                                            <div
+                                                                                *ngIf="subans.value.subAnswerTypes=='Upload'">
+                                                                                <div class="alignSubControl">
+
+                                                                                    <!-- <input
+                                                                                        formControlName='ansValue'
+                                                                                        type="file"
+                                                                                        placeholder="Select file"
+                                                                                        class="form-control"> -->
+                                                                                        <a href="{{subans.value
+                                                                                            ?.uploadTypeVal}}" target="blank">
+                                                                                                        <img src="../../../../assets/image/file.png"
+                                                                                                            height="40px"
+                                                                                                            width="34px" /><b>
+                                                                                                            View Attached
+                                                                                                            File</b> </a>
+                                                                                </div>
+                                                                                <div class="isInnerField">
+                                                                                    <div *ngIf="
+                                                                                    subans.value
+                                                                                      ?.isTypeText
+                                                                                  ">
+                                                                                        <textarea  rows="2" cols="100%"
+                                                                                            formControlName="textTypeVal"
+                                                                                            appMaxWordLength [maxWords]="200"
+                                                                                            placeholder="Enter the details..."
+                                                                                            class="form-control" ></textarea>
+
+                                                                                    </div>
+
+                                                                                    <div
+                                                                                    *ngIf="
+                                                                                      subans.value
+                                                                                        ?.isTypeNumericText
+                                                                                    "
+                                                                                  >
+                                                                                    <textarea  rows="2" cols="100%" appMaxWordLength [maxWords]="200"
+                                                                                      formControlName="numericTypeVal"
+                                                                                     #FFF2E5
+                                                                                     appNumbersOnly
+                                                                                      type="text"  appMaxWordLength [maxWords]="200" appMaxWordLength [maxWords]="200"
+                                                                                      placeholder="Enter the details..."
+                                                                                      class="form-control"
+                                                                                    ></textarea>
+                                                                                  </div>
+
+                                                                                    <div class="innerUpload" *ngIf="
+                                                                                subans.value
+                                                                                  ?.isUploadText && subans.value
+                                                                                  ?.uploadTypeVal
+                                                                              ">
+
+
+                                                                                        <a href="{{subans.value
+                                                                                ?.uploadTypeVal}}" target="blank">
+                                                                                            <img src="../../../../assets/image/file.png"
+                                                                                                height="40px"
+                                                                                                width="34px" /><b>
+                                                                                                View Attached
+                                                                                                File</b> </a>
+
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+
+                                                    </div>
+                                                    <mat-divider style="margin: 26px 0px 16px 0px;"></mat-divider>
+
+
+
+
+                                                </div>
+                                            </ng-container>
+
+
+
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </ng-template>
+                      </ng-template>
+                      
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

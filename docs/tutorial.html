@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="hi-en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Passport — Complete Project Tutorial (Hinglish)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--surface3:#2e3345;
+  --border:#363b4e;--text:#e4e7f1;--text2:#9ba1b7;--text3:#6b7194;
+  --accent:#6c5ce7;--accent2:#a29bfe;--accent-bg:rgba(108,92,231,.12);
+  --green:#00b894;--green-bg:rgba(0,184,148,.12);
+  --yellow:#fdcb6e;--yellow-bg:rgba(253,203,110,.12);
+  --red:#e17055;--red-bg:rgba(225,112,85,.12);
+  --blue:#74b9ff;--blue-bg:rgba(116,185,255,.12);
+  --orange:#e67e22;--orange-bg:rgba(230,126,34,.12);
+  --pink:#fd79a8;--pink-bg:rgba(253,121,168,.12);
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 4px 24px rgba(0,0,0,.3);
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'Cascadia Code','Fira Code','Consolas',monospace;
+  --sidebar-w:280px;
+}
+html{scroll-behavior:smooth;font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none}a:hover{text-decoration:underline}
+code,pre{font-family:var(--mono);font-size:.88em}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;overflow-x:auto;line-height:1.5}
+code{background:var(--surface2);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+th,td{padding:10px 14px;text-align:left;border:1px solid var(--border);font-size:.92em}
+th{background:var(--surface2);color:var(--accent2);font-weight:600}
+td{background:var(--surface)}
+tr:hover td{background:var(--surface2)}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:4px 0}
+.layout{display:flex;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;z-index:100;transition:transform .3s ease;padding:16px 0}
+.sidebar-header{padding:16px 20px;border-bottom:1px solid var(--border)}
+.sidebar-header h2{font-size:1.1rem;color:var(--accent2);margin:0}
+.sidebar-header p{font-size:.75rem;color:var(--text3);margin-top:4px}
+.sidebar nav{padding:8px 0}
+.sidebar nav a{display:block;padding:8px 20px;color:var(--text2);font-size:.85rem;transition:all .2s;border-left:3px solid transparent}
+.sidebar nav a:hover,.sidebar nav a.active{background:var(--accent-bg);color:var(--accent2);border-left-color:var(--accent);text-decoration:none}
+.sidebar nav .nav-section{padding:12px 20px 4px;font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);font-weight:700}
+.main{margin-left:var(--sidebar-w);flex:1;padding:32px 48px;max-width:960px}
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:1rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .overlay.open{display:block}
+  .main{margin-left:0;padding:24px 16px;padding-top:60px}
+  .menu-toggle{display:block}
+}
+.section{margin-bottom:56px;scroll-margin-top:24px}
+.section h1{font-size:2rem;margin-bottom:8px;color:var(--accent2)}
+.section h2{font-size:1.5rem;margin:32px 0 12px;color:var(--accent2);border-bottom:2px solid var(--border);padding-bottom:8px}
+.section h3{font-size:1.2rem;margin:24px 0 8px;color:var(--blue)}
+.section h4{font-size:1.05rem;margin:16px 0 8px;color:var(--green)}
+p{margin:8px 0}
+.subtitle{color:var(--text2);font-size:1.05rem;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:12px 0}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin:16px 0}
+.card h3{margin-top:0}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-accent{background:var(--accent-bg);color:var(--accent2)}
+.badge-orange{background:var(--orange-bg);color:var(--orange)}
+.badge-pink{background:var(--pink-bg);color:var(--pink)}
+.box{padding:16px 20px;border-radius:var(--radius-sm);margin:16px 0;border-left:4px solid}
+.box-info{background:var(--blue-bg);border-color:var(--blue)}
+.box-warn{background:var(--yellow-bg);border-color:var(--yellow)}
+.box-danger{background:var(--red-bg);border-color:var(--red)}
+.box-success{background:var(--green-bg);border-color:var(--green)}
+.box-accent{background:var(--accent-bg);border-color:var(--accent)}
+.box-title{font-weight:700;margin-bottom:6px;font-size:.95rem}
+details{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin:12px 0;overflow:hidden}
+details>summary{padding:14px 18px;cursor:pointer;font-weight:600;color:var(--accent2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+details>summary::before{content:'\25B8';transition:transform .2s;font-size:.8rem}
+details[open]>summary::before{transform:rotate(90deg)}
+details>.content{padding:0 18px 16px}
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:20px 0}
+.flow-step{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 24px;min-width:220px;text-align:center;font-size:.9rem;position:relative}
+.flow-arrow{color:var(--accent2);font-size:1.4rem;line-height:1;padding:2px 0}
+.flow-step.highlight{border-color:var(--accent);background:var(--accent-bg)}
+.flow-step.green{border-color:var(--green);background:var(--green-bg)}
+.flow-step.red{border-color:var(--red);background:var(--red-bg)}
+.flow-step.yellow{border-color:var(--yellow);background:var(--yellow-bg)}
+.tree{margin:20px 0}
+.tree-node{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;margin:6px 0;cursor:pointer;transition:all .2s;position:relative}
+.tree-node:hover{border-color:var(--accent);transform:translateX(4px)}
+.tree-children{margin-left:32px;border-left:2px dashed var(--border);padding-left:16px}
+.tree-role{font-weight:700;color:var(--accent2)}
+.tree-desc{font-size:.82rem;color:var(--text2);margin-top:4px}
+.matrix{overflow-x:auto;margin:16px 0}
+.matrix table{min-width:800px}
+.matrix .yes{color:var(--green);text-align:center}
+.matrix .no{color:var(--red);text-align:center}
+.matrix .cond{color:var(--yellow);text-align:center}
+.progress-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s}
+.back-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:1.2rem;cursor:pointer;display:none;z-index:50;box-shadow:var(--shadow)}
+.back-top.show{display:flex;align-items:center;justify-content:center}
+.search-box{position:sticky;top:0;z-index:50;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
+.search-box input{width:100%;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;outline:none}
+.search-box input:focus{border-color:var(--accent)}
+.search-box input::placeholder{color:var(--text3)}
+.er{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:20px 0}
+.er-entity{background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius);min-width:200px;overflow:hidden}
+.er-entity-name{background:var(--accent);color:#fff;padding:8px 16px;font-weight:700;font-size:.9rem;text-align:center}
+.er-entity-fields{padding:10px 16px;font-size:.82rem}
+.er-entity-fields div{padding:3px 0;border-bottom:1px solid var(--border)}
+.er-entity-fields div:last-child{border:none}
+.er-entity-fields .pk{color:var(--yellow);font-weight:600}
+.er-entity-fields .fk{color:var(--blue);font-style:italic}
+.role-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:12px 0;cursor:pointer;transition:all .3s}
+.role-card:hover{border-color:var(--accent);box-shadow:0 0 20px rgba(108,92,231,.15)}
+.role-card h3{margin:0 0 8px;color:var(--accent2)}
+.role-card .role-meta{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.role-card .role-details{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.role-card.open .role-details{display:block}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin:16px 0 0;flex-wrap:wrap}
+.tab-btn{padding:10px 18px;background:none;border:none;color:var(--text2);font-size:.88rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;font-family:var(--font)}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent);font-weight:600}
+.tab-content{display:none;padding:16px 0}
+.tab-content.active{display:block}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>Vendor Passport</h2>
+    <p>Complete Project Tutorial (Hinglish)</p>
+  </div>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search sections..." oninput="filterNav()">
+  </div>
+  <nav id="nav">
+    <div class="nav-section">Getting Started</div>
+    <a href="#s1">Ye Project Kya Hai?</a>
+    <a href="#s2">2-Minute Overview</a>
+    <a href="#s3">Company System</a>
+    <div class="nav-section">Roles &amp; Permissions</div>
+    <a href="#s4">Saare Roles</a>
+    <a href="#s5">Role Hierarchy</a>
+    <a href="#s6">Kaun Kisko Control?</a>
+    <a href="#s7">Permission System</a>
+    <div class="nav-section">Onboarding &amp; Auth</div>
+    <a href="#s8">First-Time Onboarding</a>
+    <a href="#s9">Login Kaise Kaam?</a>
+    <a href="#s10">Har Role Ka Journey</a>
+    <a href="#s11">User Lifecycle</a>
+    <div class="nav-section">Architecture</div>
+    <a href="#s12">Database Map</a>
+    <a href="#s13">Frontend to Backend to DB</a>
+    <a href="#s14">Workflows</a>
+    <a href="#s15">Audit Log</a>
+    <div class="nav-section">Security &amp; Errors</div>
+    <a href="#s16">Security</a>
+    <a href="#s17">Error Scenarios</a>
+    <a href="#s18">Multi-Company</a>
+    <div class="nav-section">Reference</div>
+    <a href="#s19">Permission Matrix</a>
+    <a href="#s20">ABC Company Story</a>
+    <a href="#s21">User Manual</a>
+    <a href="#s22">Troubleshooting</a>
+    <a href="#s23">Limitations</a>
+    <a href="#s24">Glossary</a>
+    <a href="#s25">Quick Start</a>
+  </nav>
+</aside>
+<main class="main">
+
+<!-- ═══════ SECTION 1 ═══════ -->
+<div class="section" id="s1">
+<h1>Ye Project Kya Hai?</h1>
+<p class="subtitle">Vendor Passport &mdash; Enterprise Audit, Compliance &amp; Certification Platform</p>
+<div class="card">
+<h3>Ek Line Mein:</h3>
+<p style="font-size:1.15rem;color:var(--accent2)"><strong>"Ye system companiyon ko apne audits, compliance, risks, certifications, aur vendors ko ek jagah manage karne mein help karta hai."</strong></p>
+</div>
+<h2>Simple Explanation</h2>
+<p>Sochiye ek badi company hai &mdash; <strong>GlobalTech Solutions</strong>. Usko apne data security ke liye <strong>ISO 27001</strong> certificate chahiye. Usko apne vendors ka pata lagana hai ki kaun safe hai aur kaun nahi. Usko apne andar ki problems (findings) track karni hain. Ye sab kaam <strong>Vendor Passport</strong> karta hai &mdash; ek single dashboard se.</p>
+<h2>Tech Stack</h2>
+<div class="box box-info">
+<table>
+<tr><td><strong>Frontend</strong></td><td>React 18 + Vite + Tailwind CSS</td></tr>
+<tr><td><strong>Backend</strong></td><td>Node.js + Express 4</td></tr>
+<tr><td><strong>Database</strong></td><td>MongoDB (Mongoose 8 ODM)</td></tr>
+<tr><td><strong>Cache</strong></td><td>Redis (token blacklisting, caching)</td></tr>
+<tr><td><strong>AI</strong></td><td>Anthropic Claude (Ask Passport assistant)</td></tr>
+<tr><td><strong>Auth</strong></td><td>JWT (HMAC-SHA256) + bcrypt password hashing</td></tr>
+<tr><td><strong>Security</strong></td><td>Helmet, CORS, Rate Limiting, Zod validation</td></tr>
+<tr><td><strong>Testing</strong></td><td>Vitest (unit) + Playwright (E2E, 3 browsers)</td></tr>
+<tr><td><strong>Deployment</strong></td><td>Docker + docker-compose (app + mongo + redis)</td></tr>
+</table>
+</div>
+<h2>Ye Kya Kya Kar Sakta Hai?</h2>
+<div class="card-grid">
+<div class="card"><h4>Audits</h4><p>12-stage lifecycle &mdash; Planning se lekar Closed tak. Har audit ka status track hota hai.</p></div>
+<div class="card"><h4>Findings</h4><p>Audit ke dauran mili problems ko track karo. Severity, status, owner &mdash; sab manage karo.</p></div>
+<div class="card"><h4>Risks</h4><p>Company ke risks ko identify karo aur heatmap se dekho ki kaunsa risk kitna dangerous hai.</p></div>
+<div class="card"><h4>Certificates</h4><p>Sari certifications track karo &mdash; kaun expire ho raha hai, kaun active hai.</p></div>
+<div class="card"><h4>Documents</h4><p>Sari files upload karo &mdash; policies, reports, evidence. Version control ke saath.</p></div>
+<div class="card"><h4>Controls</h4><p>Security controls define karo aur unki effectiveness track karo.</p></div>
+<div class="card"><h4>Vendors</h4><p>Apne vendors ka compliance score dekho, unka risk level track karo.</p></div>
+<div class="card"><h4>Frameworks</h4><p>ISO, SOC2, GDPR &mdash; jo bhi framework follow karte ho, uske requirements manage karo.</p></div>
+<div class="card"><h4>AI Assistant</h4><p>"Ask Passport" se natural language mein sawaal pucho &mdash; "Kitne open findings hain?"</p></div>
+<div class="card"><h4>Reports</h4><p>Dashboard par sab kuch ek jagah &mdash; active audits, overdue findings, expiring certs.</p></div>
+</div>
+</div>
+
+<!-- ═══════ SECTION 2 ═══════ -->
+<div class="section" id="s2">
+<h1>2-Minute Project Overview</h1>
+<div class="flow">
+<div class="flow-step highlight">Company sign up karti hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Admin account banta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Users invite hote hain</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Frameworks &amp; Requirements set hote hain</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Audits start hote hain</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Findings milti hain</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">CAPA action plan banta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step green">Company compliant rehti hai</div>
+</div>
+<h2>System Ka Architecture</h2>
+<div class="box box-accent">
+<pre>
++-----------------+     +-----------------+     +-----------------+
+|   React SPA     |----&gt;|  Express API    |----&gt;|    MongoDB      |
+|   (Frontend)    |     |   (Backend)     |     |   (Database)    |
+|   Port: 5173    |     |   Port: 3000    |     |   Port: 27017   |
++-----------------+     +-----------------+     +-----------------+
+                              |
+                         +----+----+
+                         |  Redis   |
+                         | (Cache)  |
+                         | Port:6379|
+                         +----------+
+</pre>
+</div>
+<h2>Key Numbers</h2>
+<div class="card-grid">
+<div class="card" style="text-align:center"><div style="font-size:2rem;color:var(--accent2)">12</div><div>Roles</div></div>
+<div class="card" style="text-align:center"><div style="font-size:2rem;color:var(--green)">22</div><div>Backend Modules</div></div>
+<div class="card" style="text-align:center"><div style="font-size:2rem;color:var(--yellow)">47</div><div>Frontend Pages</div></div>
+<div class="card" style="text-align:center"><div style="font-size:2rem;color:var(--blue)">23+</div><div>API Route Groups</div></div>
+</div>
+</div>
+
+<!-- ═══════ SECTION 3 ═══════ -->
+<div class="section" id="s3">
+<h1>Company System Mein Kaise Aati Hai?</h1>
+<h2>Multi-Tenant System Kya Hai?</h2>
+<div class="box box-info">
+<div class="box-title">Simple Explanation</div>
+<p>"Multi-tenant" ka matlab hai ki <strong>ek hi software kai companiyon ke liye kaam karta hai</strong>. Jaise ek building mein kai flats hote hain &mdash; sab ek building mein rehte hain lekin har flat alag family ka hai. Isi tarah, ek hi database mein kai companies ka data hota hai, lekin <strong>har company apna data alag dekhti hai</strong>.</p>
+</div>
+<h2>Organization Model</h2>
+<p>Codebase: <code>backend/modules/organizations/org.model.js</code></p>
+<table>
+<tr><th>Field</th><th>Kya Hai</th><th>Example</th></tr>
+<tr><td><code>orgId</code></td><td>Unique ID</td><td>ORG-101</td></tr>
+<tr><td><code>name</code></td><td>Company name</td><td>GlobalTech Solutions</td></tr>
+<tr><td><code>industry</code></td><td>Kaun sa business</td><td>Information Technology</td></tr>
+<tr><td><code>country</code></td><td>Kahan hai</td><td>India</td></tr>
+<tr><td><code>type</code></td><td>Vendor hai ya partner</td><td>Own Organization</td></tr>
+<tr><td><code>compliance</code></td><td>Compliance score %</td><td>92</td></tr>
+<tr><td><code>risk</code></td><td>Risk score %</td><td>18</td></tr>
+<tr><td><code>status</code></td><td>Active/Inactive</td><td>Active</td></tr>
+</table>
+<div class="box box-warn">
+<div class="box-title">Important</div>
+<p>Signup karte waqt naya org hamesha <strong>server-side banta hai</strong>. User <code>orgId</code> nahi bhej sakta &mdash; ye security feature hai taaki koi existing company mein ghus nahi sake.</p>
+<p><strong>Code evidence:</strong> <code>backend/modules/auth/auth.routes.js</code> &mdash; registerSchema mein <code>orgId</code> deliberately absent hai.</p>
+</div>
+<h2>Seed Data (Demo Mode)</h2>
+<table>
+<tr><th>Org ID</th><th>Company</th><th>Industry</th><th>Country</th></tr>
+<tr><td>ORG-101</td><td>GlobalTech Solutions</td><td>IT</td><td>India</td></tr>
+<tr><td>ORG-102</td><td>EcoEdge Industries</td><td>Manufacturing</td><td>Germany</td></tr>
+<tr><td>ORG-103</td><td>SecureCore Systems</td><td>Cybersecurity</td><td>USA</td></tr>
+<tr><td>ORG-104</td><td>Alpha Manufacturing</td><td>Industrial</td><td>India</td></tr>
+<tr><td>ORG-105</td><td>Zenith Healthcare</td><td>Healthcare</td><td>UK</td></tr>
+<tr><td>ORG-106</td><td>Nova Retail</td><td>Retail</td><td>Singapore</td></tr>
+<tr><td>ORG-107</td><td>BrightPath Logistics</td><td>Logistics</td><td>India</td></tr>
+</table>
+</div>
+
+<!-- ═══════ SECTION 4 ═══════ -->
+<div class="section" id="s4">
+<h1>Saare Roles &mdash; System Mein Kaun Kaun Hai</h1>
+<p class="subtitle">Codebase mein <strong>12 roles</strong> hain. Ye <code>backend/shared/roles.js</code> mein define hain.</p>
+<div class="box box-info">
+<div class="box-title">Roles Ka Source of Truth</div>
+<p><code>backend/shared/roles.js</code> &mdash; ye file single source of truth hai. Ye roles backend aur frontend dono mein use hoti hai.</p>
+</div>
+<div id="rolesContainer"></div>
+<script>
+var rolesData = [
+  {name:"Super Admin",emoji:"&#128081;",simple:"Sabse powerful role. Poori platform ka control.",who:"Sirf existing Super Admin create kar sakta hai",canCreate:"Koi bhi role (including Super Admin)",canManage:"Sab kuch &mdash; poori platform",canDelete:"Koi bhi user, koi bhi company",sees:"Poori platform ka data &mdash; saari companies",cantSee:"Kuch nahi &mdash; sab kuch dekh sakta hai",apis:"Sab APIs access kar sakta hai",above:"Koi nahi &mdash; sabse upar",below:"Organization Admin, sab roles",responsibility:"Platform ka overall administration, naye Super Admin banana, system configuration",selfSignup:false,privileged:true},
+  {name:"Organization Admin",emoji:"&#127970;",simple:"Apni company ka boss. Company ke sab users uske under hain.",who:"Self-signup (nayi company banata hai) ya Super Admin create karta hai",canCreate:"Sab roles except Super Admin",canManage:"Apni company ke sab users, settings, data",canDelete:"Apni company ke users (soft delete)",sees:"Sirf apni company ka data",cantSee:"Doosri companies ka data",apis:"User management, org settings, sab CRUD modules",above:"Super Admin",below:"Compliance Manager, Audit Manager, sab apni company ke roles",responsibility:"Apni company ka administration, users banana, roles assign karna, settings manage karna",selfSignup:true,privileged:false},
+  {name:"Compliance Manager",emoji:"&#128203;",simple:"Compliance ke rules follow hone ka dekhne wala.",who:"Organization Admin ya Super Admin create karta hai",canCreate:"Audits, Frameworks, Controls, Risks, Documents, Evidence",canManage:"Compliance data, vendor scores, audit lifecycle",canDelete:"Apne data ko",sees:"Compliance dashboard, audits, findings, risks, frameworks, certificates, vendors",cantSee:"User management (admin wala area)",apis:"Audits, Frameworks, Controls, Risks, Certificates, Evidence, Documents, Reports",above:"Organization Admin",below:"Auditor, Reviewer",responsibility:"Compliance standards follow karna, audits banana, frameworks manage karna, vendor compliance track karna",selfSignup:true,privileged:false},
+  {name:"Audit Manager",emoji:"&#128269;",simple:"Audit process ko manage karta hai &mdash; audit banana, auditors assign karna.",who:"Organization Admin ya Super Admin",canCreate:"Audits, Findings, Controls",canManage:"Audit lifecycle, auditor assignment",canDelete:"Apne audits ko",sees:"Audit dashboard, findings, controls, audit trails",cantSee:"User management, settings",apis:"Audits, Findings, Controls, Evidence, Documents",above:"Organization Admin",below:"Auditor, CA/Consultant",responsibility:"Audits plan karna, auditors assign karna, audit progress track karna, findings review karna",selfSignup:true,privileged:false},
+  {name:"Auditor",emoji:"&#128270;",simple:"Ground-level ka kaam &mdash; audit karta hai, evidence collect karta hai, findings likhta hai.",who:"Organization Admin, Compliance Manager, ya Audit Manager",canCreate:"Findings, Evidence, Documents, Comments",canManage:"Assigned audits ki findings, evidence",canDelete:"Apne comments",sees:"Assigned audits, findings, evidence upload, documents",cantSee:"User management, other auditors ka data, settings",apis:"Findings, Evidence, Documents, Comments, (read-only audits)",above:"Audit Manager",below:"N/A",responsibility:"Audit karna, evidence collect karna, findings document karna, recommendations dena",selfSignup:true,privileged:false},
+  {name:"Reviewer",emoji:"&#128221;",simple:"Findings aur CAPA ko review karta hai. Approve ya reject karta hai.",who:"Organization Admin ya Super Admin",canCreate:"CAPA items",canManage:"Findings review, CAPA review, evidence verification",canDelete:"N/A",sees:"Findings, CAPA, Evidence (review view)",cantSee:"User management, audit creation",apis:"Findings, CAPA, Evidence (verify action)",above:"Organization Admin",below:"N/A",responsibility:"Findings ko review karna, CAPA approve karna, evidence verify karna",selfSignup:false,privileged:false},
+  {name:"Risk Manager",emoji:"&#9888;&#65039;",simple:"Risks identify karta hai, heatmap banata hai, controls map karta hai.",who:"Organization Admin ya Super Admin",canCreate:"Risks, Controls",canManage:"Risk register, risk heatmap, linked controls",canDelete:"Apne risks ko",sees:"Risk heatmap, risk register, controls, linked audits",cantSee:"User management, audit execution",apis:"Risks, Controls, (read-only Audits for linking)",above:"Organization Admin",below:"N/A",responsibility:"Risks identify karna, risk assessment karna, controls suggest karna, heatmap maintain karna",selfSignup:false,privileged:false},
+  {name:"Document Manager",emoji:"&#128193;",simple:"Documents aur files ka rakhwala &mdash; upload, version, organize karna.",who:"Organization Admin ya Super Admin",canCreate:"Documents, Evidence files",canManage:"Document library, file versions, expiry tracking",canDelete:"Documents (soft delete)",sees:"Document library, expiry alerts, audit-related docs",cantSee:"Audit findings, risk management, user management",apis:"Documents, Evidence (upload/download)",above:"Organization Admin",below:"N/A",responsibility:"Documents organize karna, upload karna, versions track karna, expiry monitor karna",selfSignup:false,privileged:false},
+  {name:"Vendor Manager",emoji:"&#129309;",simple:"Vendors ka point of contact &mdash; onboarding, scorecard, compliance track karna.",who:"Organization Admin, Compliance Manager, ya Super Admin",canCreate:"Vendors, vendor-related documents",canManage:"Vendor onboarding, scorecards, assessments",canDelete:"Vendors (soft delete)",sees:"Vendor list, vendor scorecards, related certificates and findings",cantSee:"Internal audit details, user management",apis:"Vendors, Certificates, (read-only Findings for vendor assessment)",above:"Compliance Manager",below:"N/A",responsibility:"Vendors ko manage karna, unka compliance score track karna, onboarding process handle karna",selfSignup:true,privileged:false},
+  {name:"Employee",emoji:"&#128100;",simple:"Basic user &mdash; limited access. Sirf apna data dekh sakta hai.",who:"Organization Admin ya Super Admin",canCreate:"Documents (limited)",canManage:"Apna profile",canDelete:"N/A",sees:"My Workspace, own documents, assigned tasks",cantSee:"Audits, findings, risks, user management &mdash; almost sab kuch restricted",apis:"Very limited &mdash; mostly read-only on assigned items",above:"Organization Admin",below:"N/A",responsibility:"Apna kaam karna, assigned tasks complete karna, documents upload karna (limited scope)",selfSignup:false,privileged:false},
+  {name:"External Company User",emoji:"&#127760;",simple:"Bahar ki company ka user &mdash; limited access sirf assigned audits mein.",who:"Self-signup ya Organization Admin invite kare",canCreate:"Evidence, responses in assigned audits",canManage:"Apna profile, assigned audit responses",canDelete:"N/A",sees:"Assigned audits, questionnaire responses, own evidence",cantSee:"Internal company data, other audits, user management",apis:"Evidence (own), Questionnaire responses (assigned)",above:"Organization Admin",below:"N/A",responsibility:"Assigned audits mein cooperation, evidence provide karna, questionnaires fill karna",selfSignup:true,privileged:false},
+  {name:"CA / Consultant",emoji:"&#128188;",simple:"External consultant &mdash; audits kar sakta hai, advisory de sakta hai.",who:"Self-signup ya Organization Admin invite kare",canCreate:"Audits, Findings, Evidence, Controls",canManage:"Assigned audits, findings, evidence",canDelete:"Apne data ko",sees:"Assigned audits, findings, evidence, controls, documents",cantSee:"User management, other consultants ka data",apis:"Audits, Findings, Evidence, Controls, Documents",above:"Organization Admin",below:"N/A",responsibility:"External audit karna, compliance advisory dena, findings document karna",selfSignup:true,privileged:false}
+];
+var rc=document.getElementById('rolesContainer');
+rolesData.forEach(function(r){
+  var bc=r.privileged?'badge-pink':r.selfSignup?'badge-green':'badge-yellow';
+  var bt=r.privileged?'PRIVILEGED':r.selfSignup?'Self-Signup':'Admin Only';
+  rc.innerHTML+='<div class="role-card" onclick="this.classList.toggle(\'open\')"><h3>'+r.emoji+' '+r.name+'</h3><p>'+r.simple+'</p><div class="role-meta"><span class="badge '+bc+'">'+bt+'</span><span class="badge badge-blue">Above: '+r.above+'</span></div><div class="role-details"><p><strong>Kaise banta hai:</strong> '+r.who+'</p><p><strong>Kya create kar sakta hai:</strong> '+r.canCreate+'</p><p><strong>Kya manage kar sakta hai:</strong> '+r.canManage+'</p><p><strong>Kya delete kar sakta hai:</strong> '+r.canDelete+'</p><p><strong>Kya dekh sakta hai:</strong> '+r.sees+'</p><p><strong>Kya nahi dekh sakta:</strong> '+r.cantSee+'</p><p><strong>APIs:</strong> '+r.apis+'</p><p><strong>Responsibility:</strong> '+r.responsibility+'</p></div></div>';
+});
+</script>
+</div>
+
+<!-- ═══════ SECTION 5 ═══════ -->
+<div class="section" id="s5">
+<h1>Role Hierarchy &mdash; Kaun Upar Hai Kaun Neeche</h1>
+<p class="subtitle">Role hierarchy ka matlab hai kaun kisko control karta hai.</p>
+<div class="box box-accent">
+<div class="box-title">Codebase Evidence</div>
+<p><code>backend/shared/roles.js</code> &mdash; <code>canGrantRole()</code> function. Sirf <strong>Super Admin</strong> aur <strong>Organization Admin</strong> roles grant kar sakte hain. Super Admin sirf Super Admin create kar sakta hai.</p>
+</div>
+<div class="tree">
+  <div class="tree-node"><span class="tree-role">Super Admin</span><div class="tree-desc">Sabse powerful. Poori platform. Koi usse upar nahi.</div></div>
+  <div class="tree-children">
+    <div class="tree-node"><span class="tree-role">Organization Admin</span><div class="tree-desc">Apni company ka boss. Super Admin ke under.</div></div>
+    <div class="tree-children">
+      <div class="tree-node"><span class="tree-role">Compliance Manager</span><div class="tree-desc">Compliance expert. Audits, frameworks manage karta hai.</div></div>
+      <div class="tree-node"><span class="tree-role">Audit Manager</span><div class="tree-desc">Audit process ka incharge. Auditors ko manage karta hai.</div></div>
+      <div class="tree-node"><span class="tree-role">Risk Manager</span><div class="tree-desc">Risk identification aur assessment ka expert.</div></div>
+      <div class="tree-node"><span class="tree-role">Auditor</span><div class="tree-desc">Ground-level audit kaam. Findings likhta hai.</div></div>
+      <div class="tree-node"><span class="tree-role">Reviewer</span><div class="tree-desc">Findings aur CAPA review karta hai.</div></div>
+      <div class="tree-node"><span class="tree-role">Document Manager</span><div class="tree-desc">Documents ka rakhwala.</div></div>
+      <div class="tree-node"><span class="tree-role">Vendor Manager</span><div class="tree-desc">Vendors ka point of contact.</div></div>
+      <div class="tree-node"><span class="tree-role">CA / Consultant</span><div class="tree-desc">External consultant. Audits aur advisory.</div></div>
+      <div class="tree-node"><span class="tree-role">Employee</span><div class="tree-desc">Basic user. Limited access.</div></div>
+      <div class="tree-node"><span class="tree-role">External Company User</span><div class="tree-desc">Bahar ki company ka user. Sirf assigned data.</div></div>
+    </div>
+  </div>
+</div>
+<div class="box box-warn">
+<div class="box-title">Important Note</div>
+<p>Hierarchy sirf <strong>"kaun kisko create/manage kar sakta hai"</strong> ye define karti hai. Compliance Manager Audit Manager se neeche nahi hai &mdash; dono Organization Admin ke under hain lekin alag-alag kaam karte hain.</p>
+</div>
+</div>
+
+<!-- ═══════ SECTION 6 ═══════ -->
+<div class="section" id="s6">
+<h1>Kaun Kisko Control Karta Hai?</h1>
+<div class="matrix">
+<table>
+<thead><tr><th>Role</th><th>Controlled By</th><th>Can Create</th><th>Can Manage</th><th>Can Delete</th></tr></thead>
+<tbody>
+<tr><td><strong>Super Admin</strong></td><td>Khud / No one</td><td>Koi bhi role, koi bhi company</td><td>Sab kuch</td><td>Koi bhi user, koi bhi company</td></tr>
+<tr><td><strong>Org Admin</strong></td><td>Super Admin</td><td>Sab roles except Super Admin</td><td>Apni company ke users, settings</td><td>Apni company ke users</td></tr>
+<tr><td><strong>Compliance Mgr</strong></td><td>Org Admin / Super Admin</td><td>Audits, Frameworks, Controls, Risks</td><td>Compliance data</td><td>Apna data</td></tr>
+<tr><td><strong>Audit Manager</strong></td><td>Org Admin / Super Admin</td><td>Audits, Findings, Controls</td><td>Audit lifecycle</td><td>Apne audits</td></tr>
+<tr><td><strong>Auditor</strong></td><td>Audit Mgr / Org Admin</td><td>Findings, Evidence, Documents</td><td>Assigned audits ki findings</td><td>Apne comments</td></tr>
+<tr><td><strong>Reviewer</strong></td><td>Org Admin / Super Admin</td><td>CAPA items</td><td>Findings review, CAPA</td><td>N/A</td></tr>
+<tr><td><strong>Risk Manager</strong></td><td>Org Admin / Super Admin</td><td>Risks, Controls</td><td>Risk register</td><td>Apne risks</td></tr>
+<tr><td><strong>Doc Manager</strong></td><td>Org Admin / Super Admin</td><td>Documents, Evidence files</td><td>Document library</td><td>Documents</td></tr>
+<tr><td><strong>Vendor Mgr</strong></td><td>Org Admin / Compliance Mgr</td><td>Vendors</td><td>Vendor scorecards</td><td>Vendors</td></tr>
+<tr><td><strong>Employee</strong></td><td>Org Admin / Super Admin</td><td>Limited documents</td><td>Apna profile</td><td>N/A</td></tr>
+<tr><td><strong>External User</strong></td><td>Org Admin</td><td>Evidence, responses</td><td>Assigned audit responses</td><td>N/A</td></tr>
+<tr><td><strong>CA / Consultant</strong></td><td>Org Admin</td><td>Audits, Findings, Evidence</td><td>Assigned audits</td><td>Apna data</td></tr>
+</tbody>
+</table>
+</div>
+<h2>Code: canGrantRole()</h2>
+<pre><code>// backend/shared/roles.js
+function canGrantRole(actorRole, targetRole) {
+  // Super Admin hi Super Admin create kar sakta hai
+  if (PRIVILEGED_ROLES.includes(targetRole))
+    return actorRole === 'Super Admin';
+  // Organization Admin bhi baaki roles create kar sakta hai
+  return actorRole === 'Super Admin' || actorRole === 'Organization Admin';
+}</code></pre>
+</div>
+
+<!-- ═══════ SECTION 7 ═══════ -->
+<div class="section" id="s7">
+<h1>Permission System &mdash; Deep Dive</h1>
+<h2>Ye System Kaise Kaam Karta Hai?</h2>
+<div class="box box-accent">
+<div class="box-title">Role-Based Access Control (RBAC)</div>
+<p>Is project mein <strong>Role-Based Access Control</strong> hai. Har user ka ek role hota hai, aur us role ke basis par decide hota hai ki wo kya kar sakta hai aur kya nahi.</p>
+</div>
+<h2>3 Layers of Security</h2>
+<div class="card-grid">
+<div class="card"><h4>Layer 1: Authentication</h4><p>"Tu kaun hai?" &mdash; JWT token se check hota hai ki logged-in user kaun hai.</p><p><strong>File:</strong> <code>backend/middleware/auth.js</code></p></div>
+<div class="card"><h4>Layer 2: Authorization (RBAC)</h4><p>"Tujhe ye karne ki permission hai?" &mdash; Role check hota hai.</p><p><strong>File:</strong> <code>backend/middleware/rbac.js</code></p></div>
+<div class="card"><h4>Layer 3: Tenant Isolation</h4><p>"Tu sirf apna data dekh sakta hai" &mdash; Super Admin ke alawa koi bhi doosri company ka data nahi dekh sakta.</p><p><strong>File:</strong> <code>backend/middleware/tenant.js</code></p></div>
+</div>
+<h2>Authentication Flow</h2>
+<div class="flow">
+<div class="flow-step highlight">Browser &mdash; Login form bhara</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">POST /api/auth/login &mdash; Email + Password bheja</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Login Limiter &mdash; 5 attempts per 15 min check</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Database &mdash; Email se user dhundha</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">bcrypt &mdash; Password compare kiya</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step highlight">JWT Token bana &mdash; userId, role, orgId, name</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step green">Response &mdash; Token + User data wapas</div>
+</div>
+<h2>Route-Level Protection Examples</h2>
+<pre><code>// User management &mdash; Sirf Admin access
+router.get('/', authenticate, requireAdmin, ctrl.list);
+
+// Audits &mdash; Audit-related roles access
+router.get('/', authenticate, requireAuditor, ctrl.list);
+
+// Risks &mdash; Specific roles
+router.get('/', authenticate, restrictTo(
+  'Super Admin', 'Organization Admin',
+  'Compliance Manager', 'Risk Manager', 'CA / Consultant'
+), ctrl.list);</code></pre>
+<h2>Frontend vs Backend Security</h2>
+<div class="box box-danger">
+<div class="box-title">Important Security Note</div>
+<p><strong>Frontend mein button hide hona aur backend permission hona same cheez nahi hai!</strong></p>
+<p>Is project mein <strong>dono hota hai</strong>:</p>
+<ul>
+<li><strong>Frontend:</strong> Sidebar mein sirf wohi links dikhte hain jo role ke liye hain</li>
+<li><strong>Backend:</strong> Har route par <code>authenticate</code> + <code>requireRole</code> middleware hai</li>
+</ul>
+<p>Agar koi manually URL open kare to kya hoga? Backend 403 (Forbidden) dega &mdash; permission nahi hai to access nahi milega.</p>
+<p><strong>Code evidence:</strong> <code>tests/unit/auth-hardening.test.js</code> &mdash; ye test verify karta hai ki har mounted router ko authentication chahiye.</p>
+</div>
+</div>
+
+<!-- ═══════ SECTION 8 ═══════ -->
+<div class="section" id="s8">
+<h1>First-Time Company Onboarding &mdash; Step by Step</h1>
+<p class="subtitle">"ABC Company ne aaj pehli baar system use karna start kiya."</p>
+<h2>STEP 1: Company System Par Aati Hai</h2>
+<div class="card">
+<p><strong>Kya hota hai:</strong> ABC Company ka owner system ka URL open karta hai.</p>
+<p><strong>Kya dikhta hai:</strong> Login page (<code>/login</code>)</p>
+<p><strong>Login page par kya hai:</strong> Email field, Password field, "Login" button, "Register" link</p>
+<p><strong>Code reference:</strong> <code>frontend-react/src/pages/Login.jsx</code></p>
+</div>
+<h2>STEP 2: Naya Account Banta Hai (Registration)</h2>
+<div class="card">
+<p>Registration par click karo &rarr; <code>/register</code> page khulega</p>
+<p>Kya fill karna hai: Name, Email, Password (8+ chars), Role (dropdown), Organization Name</p>
+<div class="box box-warn">
+<div class="box-title">Role Selection &mdash; Ye Important Hai</div>
+<p>Registration par ye roles available hain:</p>
+<ul>
+<li>Organization Admin, Compliance Manager, Audit Manager, Auditor, Vendor Manager, External Company User, CA / Consultant</li>
+<li><strong>Super Admin</strong> &mdash; Available NAHI hai! Sirf existing Super Admin create kar sakta hai.</li>
+<li>Reviewer, Risk Manager, Document Manager, Employee &mdash; Available NAHI hain</li>
+</ul>
+</div>
+</div>
+<h2>STEP 3: Registration Process</h2>
+<div class="flow">
+<div class="flow-step">Form fill kiya &rarr; POST /api/auth/register</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Zod validation &mdash; sahi data hai?</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step highlight">NEW Organization banti hai &mdash; Server-side orgName se</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">User banta hai &mdash; orgId assigned hota hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Password hash hota hai (bcrypt, 12 rounds)</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step green">JWT token milta hai &mdash; login ho jata hai</div>
+</div>
+<h2>STEP 4: Admin Login Kaise Karta Hai?</h2>
+<div class="card">
+<p>Registration ke baad auto login ho jata hai (token mil jata hai). Ya manually: Login page &rarr; Email + Password &rarr; Dashboard redirect</p>
+</div>
+<h2>STEP 5: Admin Dashboard Par Kya Dikhta Hai?</h2>
+<div class="card">
+<p>Dashboard par: Stats Cards (Active Audits, Open Findings, Expiring Certs, High Risks), Charts, Recent Activity</p>
+<p><strong>Code reference:</strong> <code>frontend-react/src/pages/Dashboard.jsx</code></p>
+</div>
+<h2>STEP 6: Admin Dusre Users Kaise Create Karta Hai?</h2>
+<div class="flow">
+<div class="flow-step">Users page jao (/users)</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">"Create User" click karo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Form bharo &mdash; Name, Email, Role select karo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">POST /api/users &mdash; Backend par request jaati hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">authenticate + requireAdmin + tenantIsolation check</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">canGrantRole check &mdash; Admin ye role de sakta hai?</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Database mein user create hota hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Audit log create hota hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step green">User list mein naya user dikhta hai</div>
+</div>
+</div>
+
+<!-- ═══════ SECTION 9 ═══════ -->
+<div class="section" id="s9">
+<h1>Login Kaise Kaam Karta Hai?</h1>
+<p class="subtitle">Bilkul basic level par samjho.</p>
+<h2>Simple Explanation</h2>
+<div class="card">
+<p>"Jab tum login karte ho, tum email aur password daalte ho. Ab system ko check karna hota hai ki <strong>tum sach mein wahi user ho ya nahi</strong>."</p>
+<p>"Phir system check karta hai ki <strong>tumhe kya permission hai</strong>."</p>
+<p>"Phir tumhe ek <strong>special ticket (token)</strong> milta hai jo tum har baar saath le jaate ho."</p>
+</div>
+<h2>Technical Flow</h2>
+<div class="flow">
+<div class="flow-step highlight">1. Browser &mdash; Login form mein email aur password type karo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">2. POST /api/auth/login &mdash; Email aur password server ko bhejo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">3. Rate Limiter &mdash; "Kitni baar try kiya?" (5 baar per 15 min)</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">4. Validation &mdash; Email sahi format ka hai? Password hai?</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">5. Database &mdash; Email se user dhundho (MongoDB)</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">6. Password Check &mdash; bcrypt se compare karo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">7. Status Check &mdash; User "Active" hai ya "Inactive"?</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step highlight">8. JWT Token Banao &mdash; userId, name, role, orgId daalo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step green">9. Response &mdash; Token + user data browser ko wapas bhejo</div>
+</div>
+<h2>JWT Token Kya Hai?</h2>
+<div class="box box-info">
+<div class="box-title">Simple Explanation</div>
+<p>JWT token ek <strong>"special ID card"</strong> hai. Jab tum login karte ho, system tumhe ye ID card deta hai. Ab jab bhi tum kuch maangte ho system se, ye ID card saath mein hota hai.</p>
+</div>
+<pre><code>// JWT Token ke andar kya hota hai:
+{
+  "userId": "abc123",
+  "name": "Ramesh Kumar",
+  "role": "Compliance Manager",
+  "orgId": "ORG-101",
+  "orgName": "GlobalTech Solutions",
+  "jti": "unique-token-id",  // Blacklisting ke liye
+  "iat": 1723872000,
+  "exp": 1723958400  // 24h expiry
+}</code></pre>
+<h2>Logout Kaise Kaam Karta Hai?</h2>
+<div class="flow">
+<div class="flow-step">Logout click karo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">POST /api/auth/logout &mdash; Token bhejo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Redis &mdash; Token ka JTI blacklist mein daalo</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">Frontend &mdash; Token localStorage se hatao</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step green">Logged out &mdash; Agar purana token use kiya to "Token revoked" error</div>
+</div>
+<div class="box box-warn">
+<div class="box-title">Redis Down Hai To?</div>
+<p>Agar Redis unavailable hai to blacklist check skip ho jata hai. Token expiry tak (24h) valid rahega.</p>
+</div>
+</div>
+
+<!-- ═══════ SECTION 10 ═══════ -->
+<div class="section" id="s10">
+<h1>Har Role Ka Complete User Journey</h1>
+<div class="tabs">
+<button class="tab-btn active" onclick="switchTab(event,'tab-orgadmin')">Org Admin</button>
+<button class="tab-btn" onclick="switchTab(event,'tab-compliance')">Compliance Mgr</button>
+<button class="tab-btn" onclick="switchTab(event,'tab-auditor')">Auditor</button>
+<button class="tab-btn" onclick="switchTab(event,'tab-risk')">Risk Mgr</button>
+<button class="tab-btn" onclick="switchTab(event,'tab-employee')">Employee</button>
+<button class="tab-btn" onclick="switchTab(event,'tab-external')">External User</button>
+</div>
+<div class="tab-content active" id="tab-orgadmin">
+<h2>A. Account Creation</h2>
+<p>Registration page (/register) &rarr; "Organization Admin" role select &rarr; Company name dalo &rarr; Submit &rarr; New organization + user ek saath banta hai.</p>
+<h2>B. Login</h2>
+<p>Login page &rarr; Email + Password &rarr; JWT token &rarr; Dashboard redirect</p>
+<h2>C. Dashboard</h2>
+<p>Stats cards: Active Audits, Open Findings, Expiring Certs, High Risks.</p>
+<h2>D. User Management</h2>
+<p>Users page &rarr; Create User &rarr; Form &rarr; Role select &rarr; Save. Admin koi bhi role de sakta hai SUPER ADMIN ke alawa.</p>
+<h2>E. Logout</h2>
+<p>Logout click &rarr; Token blacklist &rarr; localStorage clear &rarr; Login page redirect</p>
+</div>
+<div class="tab-content" id="tab-compliance">
+<h2>A. Login &amp; Dashboard</h2>
+<p>Same login flow. Dashboard par compliance-specific data dikhta hai.</p>
+<h2>B. Compliance Work</h2>
+<p>Frameworks add karo &rarr; Requirements define karo &rarr; Audits create karo &rarr; Vendors ka compliance score dekho &rarr; Reports generate karo.</p>
+<h2>C. Audit Lifecycle</h2>
+<p>Audit create &rarr; Scoping &rarr; Auditor assign &rarr; Execution &rarr; Findings &rarr; CAPA &rarr; Closed</p>
+</div>
+<div class="tab-content" id="tab-auditor">
+<h2>A. Login &amp; Assigned Audits</h2>
+<p>Login &rarr; Dashboard par "Assigned Audits" dikhte hain</p>
+<h2>B. Audit Work</h2>
+<p>Assigned audit open karo &rarr; Evidence upload karo &rarr; Findings create karo &rarr; Evidence ko findings se link karo &rarr; Comments add karo.</p>
+<div class="box box-warn"><p><strong>Segregation of Duties:</strong> Agar tumne evidence upload ki hai, to tum khud se verify nahi kar sakte.</p></div>
+</div>
+<div class="tab-content" id="tab-risk">
+<h2>A. Risk Assessment</h2>
+<p>Risks page jao &rarr; Naya risk create karo (title, category, likelihood, impact) &rarr; Risk heatmap dekho &rarr; Controls se link karo.</p>
+<h2>B. Risk Heatmap</h2>
+<p>5x5 grid &mdash; Likelihood (1-5) x Impact (1-5). Jitna red zone mein, utna dangerous.</p>
+</div>
+<div class="tab-content" id="tab-employee">
+<h2>A. Limited Access</h2>
+<p>Employee ko sirf ye dikhta hai: My Workspace, Apne documents, Assigned tasks (limited).</p>
+<p>Nahi dikhta: Audits, Findings, Risks, User Management &mdash; almost sab kuch restricted.</p>
+</div>
+<div class="tab-content" id="tab-external">
+<h2>A. External Access</h2>
+<p>Bahar ki company ka user. Sirf assigned audits mein access hai.</p>
+<p>Assigned audits dekh sakta hai, Evidence upload kar sakta hai, Questionnaire responses de sakta hai.</p>
+</div>
+</div>
+
+<!-- ═══════ SECTION 11 ═══════ -->
+<div class="section" id="s11">
+<h1>User Lifecycle &mdash; Ek User Ka Poora Journey</h1>
+<div class="flow">
+<div class="flow-step highlight">1. CREATE &mdash; Admin user create karta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">2. STATUS: Active &mdash; User system use kar sakta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">3. LOGIN &mdash; User login karta hai, token milta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">4. AUTHENTICATE &mdash; Har request par token verify hota hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">5. AUTHORIZE &mdash; Role check hota hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">6. USE SYSTEM &mdash; Kya kya karta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step">7. AUDIT &mdash; Har action ka record banta hai</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step yellow">8. ROLE CHANGE &mdash; Admin role change karta hai (optional)</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step yellow">9. DEACTIVATE &mdash; Admin user ko deactivate karta hai (optional)</div>
+<div class="flow-arrow">&darr;</div>
+<div class="flow-step red">10. DELETE &mdash; Soft delete (record rehta hai, deletedAt set)</div>
+</div>
+</div>
+
+<!-- ═══════ SECTION 12 ═══════ -->
+<div class="section" id="s12">
+<h1>Database Ka Simple Map</h1>
+<h2>Important Models</h2>
+<div class="er">
+<div class="er-entity"><div class="er-entity-name">Organization</div><div class="er-entity-fields"><div class="pk">orgId (String, unique)</div><div>name, industry, country</div><div>type, compliance%, risk%</div><div>status</div></div></div>
+<div class="er-entity"><div class="er-entity-name">User</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>email (unique per orgId)</div><div>password (bcrypt, select:false)</div><div>name, role (12 enum values)</div><div class="fk">orgId &rarr; Organization</div><div>status (Active/Inactive/Suspended)</div></div></div>
+<div class="er-entity"><div class="er-entity-name">Audit</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>title, type (15 types)</div><div>status (12-stage lifecycle)</div><div class="fk">orgId &rarr; Organization</div><div class="fk">frameworkId &rarr; Framework</div><div>lead, auditors[], start, due</div></div></div>
+</div>
+<div class="er">
+<div class="er-entity"><div class="er-entity-name">Finding</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>title, description, severity</div><div class="fk">auditId &rarr; Audit</div><div class="fk">controlId &rarr; Control</div><div>owner, due, status</div><div class="fk">orgId &rarr; Organization</div></div></div>
+<div class="er-entity"><div class="er-entity-name">Risk</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>title, category (9)</div><div>inherent, residual</div><div>likelihood (1-5), impact (1-5)</div><div>linkedControls[], linkedAudits[]</div><div class="fk">orgId &rarr; Organization</div></div></div>
+<div class="er-entity"><div class="er-entity-name">Control</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>name, family, standard</div><div>effectiveness (4 levels)</div><div class="fk">frameworkId &rarr; Framework</div><div>mappedRisks[] &rarr; Risk</div><div class="fk">orgId &rarr; Organization</div></div></div>
+</div>
+<div class="er">
+<div class="er-entity"><div class="er-entity-name">Certificate</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>name, number, issuer</div><div>type, issue, expiry</div><div>status, verified</div><div class="fk">orgId &rarr; Organization</div></div></div>
+<div class="er-entity"><div class="er-entity-name">Vendor</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>name, contact, email</div><div>riskTier, complianceScore</div><div>certIds[] &rarr; Certificate</div><div class="fk">orgId, vendorOrgId</div></div></div>
+<div class="er-entity"><div class="er-entity-name">AuditLog</div><div class="er-entity-fields"><div class="pk">_id (ObjectId)</div><div>actorId, actorName, actorRole</div><div>action (create/update/delete)</div><div>entity, entityId, changes</div><div class="fk">orgId &rarr; Organization</div></div></div>
+</div>
+<h2>Relationships</h2>
+<pre>
+ORGANIZATION &mdash;&mdash;&mdash; (orgId) &mdash;&mdash; All entities
+    |
+    +-- User (many users per org)
+    |
+    +-- Audit ---- Finding ---- CAPA
+    |   |              |              +-- Evidence
+    |   |              +-- Comment
+    |   +-- Evidence (via relatedAuditId)
+    |   +-- Document (via relatedAuditId)
+    |
+    +-- Framework ---- Requirement ---- Control
+    |                                    +-- Risk (via mappedRisks)
+    |
+    +-- Certificate
+    +-- Vendor ---- Certificate (via certIds)
+    |
+    +-- QuestionnaireQuestion
+    |   +-- QuestionnaireSubmission
+    |       +-- QuestionnaireResponse
+    |
+    +-- Notification
+    +-- Settings
+    +-- AuditLog (append-only, never deleted)
+</pre>
+</div>
+
+<!-- ═══════ SECTION 13 ═══════ -->
+<div class="section" id="s13">
+<h1>Frontend &rarr; Backend &rarr; Database Flow</h1>
+<h2>Example: User Create Karna</h2>
+<table>
+<tr><th>Layer</th><th>File/Endpoint</th><th>Kya Karta Hai</th></tr>
+<tr><td>Frontend Page</td><td><code>frontend-react/src/pages/Users.jsx</code></td><td>User list dikhata hai</td></tr>
+<tr><td>API Call</td><td><code>GET /api/users</code></td><td>Backend se user list mangta hai</td></tr>
+<tr><td>Backend Route</td><td><code>backend/modules/users/user.routes.js</code></td><td>Route + middleware</td></tr>
+<tr><td>Middleware</td><td><code>authenticate &rarr; requireAdmin &rarr; tenantIsolation</code></td><td>Auth + Role + Org check</td></tr>
+<tr><td>Controller</td><td><code>user.controller.js</code></td><td>Request handle</td></tr>
+<tr><td>Service</td><td><code>user.service.js</code></td><td>Business logic</td></tr>
+<tr><td>Database</td><td><code>User.find({ orgId })</code></td><td>MongoDB se data fetch</td></tr>
+<tr><td>Response</td><td><code>{ users: [...], total: 13 }</code></td><td>JSON response</td></tr>
+</table>
+<h2>Example: Login Flow</h2>
+<table>
+<tr><th>Layer</th><th>File/Endpoint</th><th>Kya Karta Hai</th></tr>
+<tr><td>Frontend</td><td><code>pages/Login.jsx</code></td><td>Login form</td></tr>
+<tr><td>API</td><td><code>POST /api/auth/login</code></td><td>Email + Password</td></tr>
+<tr><td>Route</td><td><code>auth.routes.js</code></td><td>loginLimiter + validation</td></tr>
+<tr><td>Service</td><td><code>auth.service.js</code></td><td>User dhundho, password verify, JWT banao</td></tr>
+<tr><td>Database</td><td><code>User.findOne({ email })</code></td><td>Email se user</td></tr>
+<tr><td>Password</td><td><code>bcrypt.compare()</code></td><td>Password match?</td></tr>
+<tr><td>JWT</td><td><code>jwt.sign()</code></td><td>Token banao</td></tr>
+<tr><td>Frontend</td><td>localStorage</td><td>Token store, Dashboard redirect</td></tr>
+</table>
+</div>
+
+<!-- ═══════ SECTION 14 ═══════ -->
+<div class="section" id="s14">
+<h1>Important Workflows</h1>
+<details><summary>Company Creation</summary><div class="content"><p><strong>Who:</strong> New user at /register</p><p>Form fill &rarr; POST /api/auth/register &rarr; New Organization + User banta hai &rarr; JWT token milta hai</p><p><strong>Models:</strong> Organization + User</p><p><strong>If fails:</strong> Validation error, duplicate email within same org</p></div></details>
+<details><summary>User Creation</summary><div class="content"><p><strong>Who:</strong> Org Admin or Super Admin</p><p>POST /api/users &rarr; authenticate + requireAdmin + tenantIsolation + canGrantRole check &rarr; User create + Audit log</p><p><strong>If fails:</strong> 403 (no permission), 400 (validation), 409 (duplicate email)</p></div></details>
+<details><summary>Audit Creation</summary><div class="content"><p><strong>Who:</strong> Compliance Manager, Audit Manager, Super Admin, Org Admin, CA/Consultant</p><p>POST /api/audits &rarr; requireAuditor + tenantIsolation &rarr; Audit with status "Planning"</p><p><strong>Lifecycle:</strong> Planning &rarr; Scoping &rarr; Risk Assessment &rarr; Questionnaire &rarr; Auditor Assigned &rarr; Execution &rarr; Evidence Review &rarr; Findings &rarr; Corrective Actions &rarr; Verification &rarr; Report &rarr; Closed</p></div></details>
+<details><summary>Finding Creation</summary><div class="content"><p><strong>Who:</strong> Auditor, Audit Manager, Compliance Manager, CA/Consultant</p><p><strong>Status Flow:</strong> Open &rarr; Acknowledged &rarr; In Progress &rarr; Resolved &rarr; Closed (ya Reopened)</p><p>POST /api/findings</p></div></details>
+<details><summary>Evidence Upload &amp; Verification</summary><div class="content"><p><strong>Who:</strong> Auditor (upload), Compliance Manager/Reviewer (verify)</p><p>POST /api/evidence/upload &rarr; File saved (max 25MB) &rarr; verificationStatus = "Pending"</p><p><strong>Verification:</strong> Segregation of Duties &mdash; uploader cannot verify own evidence</p></div></details>
+<details><summary>Notifications</summary><div class="content"><p><strong>Triggers:</strong> Certificate expiry, Finding overdue, Audit assigned, Document shared</p><p><strong>Delivery:</strong> SSE (Server-Sent Events) &mdash; real-time push</p><p><strong>API:</strong> GET /api/notifications/stream (SSE)</p></div></details>
+</div>
+
+<!-- ═══════ SECTION 15 ═══════ -->
+<div class="section" id="s15">
+<h1>Audit Log &mdash; Deep Dive</h1>
+<h2>Audit Log Kya Hai?</h2>
+<div class="box box-info">
+<div class="box-title">Simple Explanation</div>
+<p>"Jab bhi koi system mein kuch karta hai &mdash; create, update, delete &mdash; uska record banta hai. Ye record <strong>audit log</strong> kehlata hai."</p>
+</div>
+<h2>Real-Life Example</h2>
+<div class="card">
+<p>"<strong>Ramesh</strong> ne 10:35 AM par Employee <strong>Suresh</strong> ka role <strong>Employee se Manager</strong> kiya."</p>
+<pre><code>{
+  "orgId": "ORG-101",
+  "actorId": "abc123",
+  "actorName": "Ramesh Kumar",
+  "actorRole": "Organization Admin",
+  "action": "update",
+  "entity": "User",
+  "entityId": "def456",
+  "changes": { "role": { "old": "Employee", "new": "Manager" } },
+  "createdAt": "2026-08-17T10:35:00Z"
+}</code></pre>
+</div>
+<h2>Technical Implementation</h2>
+<div class="box box-accent">
+<div class="box-title">Append-Only Design</div>
+<p>AuditLog model <strong>immutable</strong> hai &mdash; update ya delete nahi ho sakta. Pre-hooks throw karte hain.</p>
+<p><strong>Code:</strong> <code>backend/modules/auditlogs/auditlog.model.js</code></p>
+</div>
+<p><strong>Middleware:</strong> <code>backend/shared/auditTrail.js</code> &mdash; POST/PUT/PATCH/DELETE operations ke baad record create.</p>
+<p><strong>Redaction:</strong> Passwords aur tokens audit log mein nahi aate.</p>
+<p><strong>API:</strong> <code>GET /api/auditlogs</code> &mdash; Sirf Super Admin, Org Admin, Compliance Manager, Audit Manager.</p>
+</div>
+
+<!-- ═══════ SECTION 16 ═══════ -->
+<div class="section" id="s16">
+<h1>Security Deep Dive</h1>
+<div class="card-grid">
+<div class="card"><h4>Password Hashing</h4><p>bcrypt with 12 rounds. Password kabhi plain text mein store nahi hota.</p><p><code>auth.model.js</code> &mdash; pre('save') hook</p></div>
+<div class="card"><h4>JWT Authentication</h4><p>HMAC-SHA256 signed. 24h expiry. Redis blacklist on logout.</p><p><code>middleware/auth.js</code></p></div>
+<div class="card"><h4>Tenant Isolation</h4><p>Har user sirf apna org data. Super Admin bypass.</p><p><code>middleware/tenant.js</code></p></div>
+<div class="card"><h4>RBAC</h4><p>12 roles with fine-grained permissions. Har route par role check.</p><p><code>middleware/rbac.js</code></p></div>
+<div class="card"><h4>Rate Limiting</h4><p>Global: 100/min. Login: 5/15min. Assistant: 20/min.</p><p><code>config/rateLimit.js</code></p></div>
+<div class="card"><h4>Input Validation</h4><p>Zod schemas. Har endpoint par validation.</p><p><code>middleware/validation.js</code></p></div>
+<div class="card"><h4>Helmet Headers</h4><p>Security headers &mdash; CSP, X-Frame-Options, etc.</p><p><code>server.js</code></p></div>
+<div class="card"><h4>File Upload Security</h4><p>25MB limit. Extensions whitelist. Random filenames.</p><p>Multer config</p></div>
+<div class="card"><h4>Audit Trail</h4><p>Append-only. Immutable. Passwords redacted.</p><p><code>shared/auditTrail.js</code></p></div>
+<div class="card"><h4>Soft Delete</h4><p>Records tombstone. Never removed.</p><p><code>shared/softDelete.js</code></p></div>
+<div class="card"><h4>Role Escalation Prevention</h4><p>Org Admin Super Admin nahi ban sakta.</p><p><code>shared/roles.js</code></p></div>
+<div class="card"><h4>Segregation of Duties</h4><p>Evidence uploader khud verify nahi kar sakta.</p><p><code>evidence.controller.js</code></p></div>
+</div>
+<h2>Security Concerns</h2>
+<div class="box box-danger">
+<ol>
+<li><strong>Redis Dependency:</strong> Redis down hai to token blacklist kaam nahi karega. Logout ke baad bhi token 24h valid. <span class="badge badge-yellow">MEDIUM RISK</span></li>
+<li><strong>Demo Mode:</strong> ALLOW_DEMO_AUTH on ho to authentication bypass. <span class="badge badge-yellow">MEDIUM RISK</span></li>
+<li><strong>In-Memory Pagination:</strong> DB-level nahi. Large datasets par performance. <span class="badge badge-orange">LOW-MEDIUM</span></li>
+<li><strong>JWT in localStorage:</strong> XSS se token churaaya ja sakta hai. <span class="badge badge-yellow">MEDIUM RISK</span></li>
+</ol>
+</div>
+<h2>Security Scorecard</h2>
+<p>Overall security score: <strong>75/100</strong></p>
+<div class="progress-bar"><div class="progress-fill" style="width:75%;background:var(--yellow)"></div></div>
+<p><small>Source: docs/project_completeness_report.md</small></p>
+</div>
+
+<!-- ═══════ SECTION 17 ═══════ -->
+<div class="section" id="s17">
+<h1>Error Scenarios &mdash; Jab Kuch Gadbad Ho</h1>
+<details><summary>Wrong Password</summary><div class="content"><p><strong>User ko:</strong> "Invalid credentials" error</p><p><strong>Backend:</strong> bcrypt.compare() false &rarr; 401 Unauthorized</p><p><strong>Rate limiter:</strong> 5 galat attempts ke baad 15 min block</p></div></details>
+<details><summary>User Inactive</summary><div class="content"><p><strong>User ko:</strong> "Account is not active"</p><p><strong>Backend:</strong> Login mein status check &mdash; sirf "Active" users login kar sakte hain</p></div></details>
+<details><summary>Unauthorized Access</summary><div class="content"><p><strong>User ko:</strong> "Authentication required"</p><p><strong>Backend:</strong> authenticate() middleware &mdarr; 401</p></div></details>
+<details><summary>Missing Permission</summary><div class="content"><p><strong>User ko:</strong> "Role 'Employee' does not have access to this module"</p><p><strong>HTTP:</strong> 403 Forbidden</p></div></details>
+<details><summary>Expired Token</summary><div class="content"><p><strong>User ko:</strong> "Token expired" &rarr; Login page redirect</p><p><strong>Backend:</strong> jwt.verify() &rarr; TokenExpiredError &rarr; 401</p></div></details>
+<details><summary>Invalid Input</summary><div class="content"><p><strong>User ko:</strong> Validation errors (field-wise)</p><p><strong>Backend:</strong> Zod validation fail &rarr; 400 with error messages</p></div></details>
+<details><summary>Tenant Mismatch</summary><div class="content"><p><strong>User ko:</strong> "Access denied: organization mismatch"</p><p><strong>Backend:</strong> tenantIsolation &mdash; orgId mismatch &rarr; 403</p><p><strong>Super Admin bypass</strong></p></div></details>
+</div>
+
+<!-- ═══════ SECTION 18 ═══════ -->
+<div class="section" id="s18">
+<h1>Multi-Company / Tenant Architecture</h1>
+<div class="box box-success">
+<div class="box-title">Multi-Tenant System</div>
+<p>Multiple companies ek hi software use karti hain. Har company ka data alag hai.</p>
+</div>
+<table>
+<tr><th>Question</th><th>Answer</th><th>Code Evidence</th></tr>
+<tr><td>Multiple companies use kar sakti hain?</td><td>Yes</td><td>Organization model, seed mein 7 orgs</td></tr>
+<tr><td>Ek user multiple companies?</td><td>No &mdash; sirf ek org</td><td>User model: single orgId</td></tr>
+<tr><td>Company ID kaise track?</td><td>orgId field &mdash; har entity mein</td><td>orgFilter() in scope.js</td></tr>
+<tr><td>Data isolation?</td><td>Org filter har query mein</td><td>tenantIsolation middleware</td></tr>
+<tr><td>A ka user B ka data dekh sakta hai?</td><td>No (Super Admin ke alawa)</td><td>tenantIsolation middleware</td></tr>
+<tr><td>Admin kis company ka data?</td><td>Sirf apni (Org Admin). Sabki (Super Admin).</td><td>scopeOrgId in auth.js</td></tr>
+</table>
+<div class="box box-accent">
+<p>Super Admin ke liye <code>scopeOrgId</code> = <code>null</code> &mdash; wo sabhi companies ka data dekh sakta hai.</p>
+<p><strong>Code:</strong> <code>middleware/auth.js:43</code> &mdash; <code>scopeOrgId: role === 'Super Admin' ? null : orgId</code></p>
+</div>
+</div>
+
+<!-- ═══════ SECTION 19 ═══════ -->
+<div class="section" id="s19">
+<h1>Permission Matrix</h1>
+<div class="matrix">
+<table>
+<thead><tr><th>Feature</th><th>Super Admin</th><th>Org Admin</th><th>Compliance</th><th>Audit Mgr</th><th>Auditor</th><th>Reviewer</th><th>Risk Mgr</th><th>Doc Mgr</th><th>Vendor Mgr</th><th>Employee</th><th>External</th><th>CA</th></tr></thead>
+<tbody>
+<tr><td><strong>Login</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td></tr>
+<tr><td><strong>View Users</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td></tr>
+<tr><td><strong>Create Users</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td></tr>
+<tr><td><strong>Create Audits</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+<tr><td><strong>Create Findings</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+<tr><td><strong>Create Risks</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+<tr><td><strong>Manage Controls</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+<tr><td><strong>Upload Evidence</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="yes">Y</td><td class="no">N</td><td class="cond">C</td><td class="cond">C</td><td class="yes">Y</td></tr>
+<tr><td><strong>Verify Evidence</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td></tr>
+<tr><td><strong>Manage CAPA</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td></tr>
+<tr><td><strong>Manage Vendors</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+<tr><td><strong>View Audit Logs</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td></tr>
+<tr><td><strong>Reports</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="yes">Y</td></tr>
+<tr><td><strong>Settings</strong></td><td class="yes">Y</td><td class="yes">Y</td><td class="yes">Y</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td><td class="no">N</td></tr>
+</tbody>
+</table>
+</div>
+<p><small>Y = Allowed | N = Not Allowed | C = Conditional (limited scope) &mdash; Derived from actual route middleware</small></p>
+</div>
+
+<!-- ═══════ SECTION 20 ═══════ -->
+<div class="section" id="s20">
+<h1>Real-Life ABC Company Story</h1>
+<div class="card" style="border-color:var(--accent);background:var(--accent-bg)">
+<h3>ABC Pvt Ltd &mdash; A Complete Story</h3>
+<p>ABC Pvt Ltd ek IT company hai jo ISO 27001 certification ke liye apply karna chahti hai. Unhone Vendor Passport use karne ka decide kiya.</p>
+</div>
+<h2>Day 1: Company Aati Hai</h2>
+<div class="card">
+<p><strong>Ravi</strong> (ABC ka IT Head) system ka URL open karta hai. Login page dikhta hai. Uske paas account nahi hai, to wo "Register" par click karta hai.</p>
+<p>Role: <strong>Organization Admin</strong>. Organization: ABC Pvt Ltd.</p>
+<p>Submit karte hi: ABC Pvt Ltd naam ki nayi Organization banti hai (ORG-108). Ravi ka user banta hai as Organization Admin. Auto-login ho jata hai.</p>
+</div>
+<h2>Day 2: Team Build Karna</h2>
+<div class="card">
+<p>Ravi Users page jata hai aur team members add karta hai:</p>
+<ul><li><strong>Priya</strong> &mdash; Compliance Manager</li><li><strong>Amit</strong> &mdash; Auditor</li><li><strong>Neha</strong> &mdash; Document Manager</li></ul>
+</div>
+<h2>Day 3: Compliance Framework Set Karna</h2>
+<div class="card">
+<p><strong>Priya</strong> login karti hai. Frameworks page par ISO 27001:2022 add karti hai. Phir Audits page par nayi audit create karti hai.</p>
+</div>
+<h2>Day 4-15: Audit Start</h2>
+<div class="card">
+<p>Priya <strong>Amit</strong> ko audit mein assign karti hai. Amit login karta hai, evidence collect karta hai, findings document karta hai.</p>
+</div>
+<h2>Day 16-20: Review &amp; Closure</h2>
+<div class="card">
+<p>Priya findings review karti hai, CAPA create karti hai. Amit corrective actions verify karta hai. Audit "Closed" ho jata hai.</p>
+<p>ABC Pvt Ltd ISO 27001 ke liye ready hai!</p>
+</div>
+</div>
+
+<!-- ═══════ SECTION 21 ═══════ -->
+<div class="section" id="s21">
+<h1>Practical User Manual</h1>
+<h2>Agar main Organization Admin hoon</h2>
+<ol>
+<li>Login karo &rarr; /login</li>
+<li>Dashboard kholo &rarr; Stats dekho</li>
+<li>Users section &rarr; /users &rarr; Team members add karo</li>
+<li>Frameworks &rarr; /frameworks &rarr; ISO/SOC2/GDPR add karo</li>
+<li>Audits &rarr; /audits &rarr; "Create Audit"</li>
+<li>Auditor assign karo &rarr; Audit detail &rarr; "Assign Auditor"</li>
+<li>Settings &rarr; /settings</li>
+<li>Reports &rarr; /reports</li>
+<li>Audit Trail &rarr; /audit-trail</li>
+</ol>
+<h2>Agar main Auditor hoon</h2>
+<ol>
+<li>Login karo &rarr; Dashboard par assigned audits</li>
+<li>Audit open karo</li>
+<li>Evidence upload karo</li>
+<li>Findings create karo</li>
+<li>Evidence link karo</li>
+</ol>
+<h2>Agar main Compliance Manager hoon</h2>
+<ol>
+<li>Login karo</li>
+<li>Frameworks manage karo</li>
+<li>Requirements define karo</li>
+<li>Audits create/manage karo</li>
+<li>Vendors dekho</li>
+<li>Reports generate karo</li>
+</ol>
+</div>
+
+<!-- ═══════ SECTION 22 ═══════ -->
+<div class="section" id="s22">
+<h1>Troubleshooting</h1>
+<details><summary>Login Nahi Ho Raha</summary><div class="content"><p><strong>Check karo:</strong></p><ol><li>Galat email ya password</li><li>Account "Inactive" ya "Suspended"</li><li>Rate limit hit (5 galat attempts = 15 min block)</li><li>Token expire</li><li>Server down &mdash; GET /api/health check karo</li></ol></div></details>
+<details><summary>User Create Nahi Ho Raha</summary><div class="content"><p><strong>Check karo:</strong></p><ul><li>Permission &mdash; sirf Admin</li><li>Duplicate email in same org</li><li>Form validation fail</li><li>canGrantRole check fail</li></ul></div></details>
+<details><summary>Data Dikh Nahi Raha</summary><div class="content"><p><strong>Check karo:</strong></p><ul><li>Sahi org mein ho? Tenant isolation</li><li>Role sahi hai? RBAC check</li><li>Database connected hai? /api/health</li><li>Seed data load hua hai? (Demo mode)</li></ul></div></details>
+<details><summary>File Upload Nahi Ho Raha</summary><div class="content"><p><strong>Check karo:</strong></p><ul><li>File size 25MB se zyada hai?</li><li>Allowed extension hai? (PDF, images, Office, CSV, TXT)</li><li>Permission hai? (Employee ke paas limited access)</li></ul></div></details>
+</div>
+
+<!-- ═══════ SECTION 23 ═══════ -->
+<div class="section" id="s23">
+<h1>Current Limitations / Missing Features</h1>
+<table>
+<tr><th>Feature</th><th>Status</th><th>Details</th></tr>
+<tr><td>Core Audit Workflow</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>12-stage lifecycle, CRUD, assignments</td></tr>
+<tr><td>Finding Management</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>Status flow, severity tracking</td></tr>
+<tr><td>Risk Management</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>Heatmap, CRUD, control linking</td></tr>
+<tr><td>RBAC</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>12 roles, route-level protection</td></tr>
+<tr><td>Tenant Isolation</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>Org-scoped queries, Super Admin bypass</td></tr>
+<tr><td>Audit Trail</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>Append-only, immutable</td></tr>
+<tr><td>Evidence Management</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>Upload, verify, link to findings/controls</td></tr>
+<tr><td>AI Assistant</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>7 intents, keyword-based classification</td></tr>
+<tr><td>Questionnaire System</td><td><span class="badge badge-green">IMPLEMENTED</span></td><td>Complex scoring, versioning, submissions</td></tr>
+<tr><td>CCM Dashboard</td><td><span class="badge badge-red">STUB</span></td><td>Returns hardcoded mock data</td></tr>
+<tr><td>Reports Export (CSV)</td><td><span class="badge badge-yellow">PARTIAL</span></td><td>Headers only, no data rows</td></tr>
+<tr><td>Approval Workflow (LOI)</td><td><span class="badge badge-red">NOT IMPLEMENTED</span></td><td>Design doc exists, not built</td></tr>
+<tr><td>ESG/BRSR Module</td><td><span class="badge badge-red">STUB</span></td><td>StubPage placeholder</td></tr>
+<tr><td>Multi-Company Assessment</td><td><span class="badge badge-yellow">PARTIAL</span></td><td>targetOrgId field exists, unused in queries</td></tr>
+<tr><td>Pagination</td><td><span class="badge badge-yellow">PARTIAL</span></td><td>In-memory, not DB-level</td></tr>
+<tr><td>CI/CD Pipeline</td><td><span class="badge badge-red">NOT COMMITTED</span></td><td>Config exists but no workflow YAML</td></tr>
+<tr><td>Self-Signup Audit</td><td><span class="badge badge-yellow">PARTIAL</span></td><td>No explicit audit log on registration</td></tr>
+<tr><td>Overall Score</td><td><span class="badge badge-accent">~86% DEMO-READY</span></td><td>Source: docs/project_completeness_report.md</td></tr>
+</table>
+</div>
+
+<!-- ═══════ SECTION 24 ═══════ -->
+<div class="section" id="s24">
+<h1>Glossary</h1>
+<table>
+<tr><th>Term</th><th>Simple Meaning</th><th>Is Project Mein</th></tr>
+<tr><td><strong>Authentication</strong></td><td>"Tu kaun hai?" &mdash; Identity verify karna</td><td>JWT token se login verify</td></tr>
+<tr><td><strong>Authorization</strong></td><td>"Tujhe kya karne ki permission hai?"</td><td>RBAC &mdash; role ke basis par access</td></tr>
+<tr><td><strong>Role</strong></td><td>User ka title/position in system</td><td>12 roles: Super Admin, Org Admin, etc.</td></tr>
+<tr><td><strong>Permission</strong></td><td>Kya kar sakta hai, kya nahi</td><td>Route-level middleware checks</td></tr>
+<tr><td><strong>Admin</strong></td><td>System ka boss</td><td>Org Admin &mdash; company ka boss</td></tr>
+<tr><td><strong>Super Admin</strong></td><td>Poori platform ka boss</td><td>Sab companies ka access</td></tr>
+<tr><td><strong>Tenant</strong></td><td>Ek company/organization</td><td>ORG-101, ORG-102, etc.</td></tr>
+<tr><td><strong>Multi-Tenant</strong></td><td>Ek software kai companiyon ke liye</td><td>Har company ka data alag</td></tr>
+<tr><td><strong>API</strong></td><td>Frontend-backend ke beech message</td><td>REST APIs (Express routes)</td></tr>
+<tr><td><strong>Database</strong></td><td>Data ka ghar &mdash; sab kuch yahan store hota hai</td><td>MongoDB (NoSQL)</td></tr>
+<tr><td><strong>Session</strong></td><td>Login ka time period</td><td>JWT token &mdash; 24h validity</td></tr>
+<tr><td><strong>Token (JWT)</strong></td><td>Special ID card jo har request ke saath jaata hai</td><td>HMAC-SHA256 signed</td></tr>
+<tr><td><strong>Middleware</strong></td><td>Gatekeeper &mdash; request jaane se pehle check karta hai</td><td>auth.js, rbac.js, tenant.js</td></tr>
+<tr><td><strong>Controller</strong></td><td>Request handle karne wala</td><td>*.controller.js files</td></tr>
+<tr><td><strong>Service</strong></td><td>Business logic &mdash; kaam karne wala</td><td>*.service.js files</td></tr>
+<tr><td><strong>Audit Log</strong></td><td>Har action ka record &mdash; kisne kab kya kiya</td><td>Append-only, immutable</td></tr>
+<tr><td><strong>CRUD</strong></td><td>Create, Read, Update, Delete &mdash; 4 basic operations</td><td>Har module mein</td></tr>
+<tr><td><strong>Endpoint</strong></td><td>API ka address &mdash; jahan request bhejte hain</td><td>/api/audits, /api/users, etc.</td></tr>
+<tr><td><strong>Frontend</strong></td><td>Jo user dekhta hai &mdash; UI</td><td>React SPA</td></tr>
+<tr><td><strong>Backend</strong></td><td>Jo chupchap kaam karta hai &mdash; server</td><td>Express.js API</td></tr>
+<tr><td><strong>Soft Delete</strong></td><td>Record ko delete ki jagah hide karna</td><td>deletedAt timestamp set</td></tr>
+<tr><td><strong>RBAC</strong></td><td>Role-Based Access Control</td><td>requireRole(), restrictTo()</td></tr>
+<tr><td><strong>CORS</strong></td><td>Allowed origins ki list</td><td>env.CORS_ORIGIN</td></tr>
+<tr><td><strong>Rate Limiting</strong></td><td>Zyada requests par block karna</td><td>100/min global, 5/15min login</td></tr>
+<tr><td><strong>bcrypt</strong></td><td>Password ko code mein convert karna (hashing)</td><td>12 rounds</td></tr>
+<tr><td><strong>Redis</strong></td><td>Fast temporary storage</td><td>Token blacklist, caching</td></tr>
+<tr><td><strong>SSE</strong></td><td>Server-Sent Events &mdash; real-time push</td><td>Notifications streaming</td></tr>
+<tr><td><strong>Segregation of Duties</strong></td><td>Ek hi insaan sab kuch na kare</td><td>Evidence uploader verify nahi kar sakta</td></tr>
+<tr><td><strong>CAPA</strong></td><td>Corrective and Preventive Action</td><td>Finding ke baad action plan</td></tr>
+<tr><td><strong>Scoping</strong></td><td>Audit ki boundaries define karna</td><td>Audit lifecycle ka stage</td></tr>
+</table>
+</div>
+
+<!-- ═══════ SECTION 25 ═══════ -->
+<div class="section" id="s25">
+<h1>Quick Start &mdash; Ab Mujhe Kya Karna Hai?</h1>
+<h2>System Setup</h2>
+<ol>
+<li><strong>Install dependencies:</strong> <code>npm install</code> and <code>cd frontend-react && npm install</code></li>
+<li><strong>Copy environment:</strong> <code>copy .env.example .env</code></li>
+<li><strong>Start MongoDB &amp; Redis</strong> (Docker: <code>docker-compose up -d</code>)</li>
+<li><strong>Seed database:</strong> <code>npm run seed</code></li>
+<li><strong>Start server:</strong> <code>npm run dev</code></li>
+<li>Open <code>http://localhost:3000</code></li>
+</ol>
+<h2>Demo Login Credentials</h2>
+<div class="box box-info">
+<p>All demo users password: <strong>password123</strong></p>
+<table>
+<tr><th>Name</th><th>Email</th><th>Role</th></tr>
+<tr><td>Admin User</td><td>super.admin@globaltech.com</td><td>Super Admin</td></tr>
+<tr><td>Org Admin</td><td>org.admin@globaltech.com</td><td>Organization Admin</td></tr>
+<tr><td>Priya Sharma</td><td>priya.sharma@globaltech.com</td><td>Compliance Manager</td></tr>
+<tr><td>Meera Nair</td><td>meera.nair@globaltech.com</td><td>Audit Manager</td></tr>
+<tr><td>Rohit Kapoor</td><td>rohit.kapoor@globaltech.com</td><td>Auditor</td></tr>
+<tr><td>Ananya Desai</td><td>ananya.desai@globaltech.com</td><td>Auditor (On Leave)</td></tr>
+<tr><td>Arjun Verma</td><td>arjun.verma@globaltech.com</td><td>Risk Manager</td></tr>
+<tr><td>Kritika Bose</td><td>kritika.bose@globaltech.com</td><td>Document Manager</td></tr>
+<tr><td>Reviewer User</td><td>reviewer@globaltech.com</td><td>Reviewer</td></tr>
+<tr><td>Vendor Manager</td><td>vendor.mgr@globaltech.com</td><td>Vendor Manager</td></tr>
+<tr><td>Employee User</td><td>employee@globaltech.com</td><td>Employee</td></tr>
+<tr><td>CA Consultant</td><td>ca@consulting.com</td><td>CA / Consultant</td></tr>
+<tr><td>James Whitfield</td><td>jwhitfield@securecore.com</td><td>External Company User</td></tr>
+</table>
+</div>
+<h2>Step 1: Pehli Baar Login Karo</h2>
+<ol>
+<li>Browser kholo &rarr; <code>http://localhost:3000</code></li>
+<li>Login page dikhega</li>
+<li>Email: <code>super.admin@globaltech.com</code></li>
+<li>Password: <code>password123</code></li>
+<li>"Login" click karo</li>
+<li>Dashboard dikhega &mdash; sab kuch ready hai!</li>
+</ol>
+<h2>Step 2: Explore Karo</h2>
+<ol>
+<li>Dashboard dekho &mdash; Active Audits, Findings, Certs, Risks</li>
+<li>Users page jao &mdash; Saare demo users dikheenge</li>
+<li>Audits page jao &mdash; 8 pre-loaded audits</li>
+<li>Findings dekho &mdash; 6 findings with different severities</li>
+<li>Risk Heatmap dekho &mdash; 5x5 grid</li>
+<li>Certificates dekho &mdash; 10 certs with different statuses</li>
+<li>AI Assistant try karo &mdash; "Kitne open findings hain?" pucho</li>
+</ol>
+<h2>Key Architecture Notes</h2>
+<ul>
+<li>Backend: Express.js on port 3000</li>
+<li>Frontend: React on port 5173 (dev), served from /dist in production</li>
+<li>Database: MongoDB on port 27017</li>
+<li>Cache: Redis on port 6379</li>
+<li>All API routes: /api/* prefix</li>
+<li>All routes require authentication (except /register, /login, /refresh)</li>
+</ul>
+</div>
+
+<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:.85rem;border-top:1px solid var(--border);margin-top:40px">
+<p>Vendor Passport Tutorial &mdash; Auto-generated from codebase analysis</p>
+<p>All claims verified against actual codebase evidence</p>
+</div>
+
+</main>
+</div>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&uarr;</button>
+
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
+function filterNav(){var q=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('#nav a').forEach(function(a){a.style.display=a.textContent.toLowerCase().indexOf(q)>-1?'block':'none'})}
+function switchTab(e,id){var btns=e.target.parentElement.querySelectorAll('.tab-btn');btns.forEach(function(b){b.classList.remove('active')});e.target.classList.add('active');var parent=e.target.closest('.section')||document;parent.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});parent.querySelector('#'+id).classList.add('active')}
+function toggleTree(el){el.classList.toggle('expanded')}
+window.addEventListener('scroll',function(){var b=document.getElementById('backTop');if(window.scrollY>400)b.classList.add('show');else b.classList.remove('show')});
+document.querySelectorAll('nav a').forEach(function(a){a.addEventListener('click',function(){if(window.innerWidth<=900)toggleSidebar()})});
+</script>
+</body>
+</html>

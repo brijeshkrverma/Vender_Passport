@@ -1,0 +1,690 @@
+<div class="mainbody">
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="page-header">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="7" viewBox="0 0 10 7"
+                                fill="none">
+                                <path
+                                    d="M3.62174 0.133169C3.70646 0.221905 3.75436 0.342178 3.75501 0.467804C3.75565 0.593431 3.709 0.71424 3.6252 0.803933L1.51755 3.02357H9.54864C9.66835 3.02357 9.78316 3.07349 9.8678 3.16234C9.95245 3.2512 10 3.3717 10 3.49736C10 3.62302 9.95245 3.74353 9.8678 3.83238C9.78316 3.92123 9.66835 3.97115 9.54864 3.97115H1.51755L3.62866 6.19286C3.71175 6.28294 3.75791 6.4036 3.75727 6.52898C3.75662 6.65437 3.70921 6.77449 3.6252 6.86363C3.58325 6.9072 3.53352 6.94166 3.47888 6.96506C3.42423 6.98846 3.36573 7.00033 3.30671 6.99999C3.24769 6.99966 3.18931 6.98712 3.13491 6.9631C3.08051 6.93908 3.03115 6.90404 2.98965 6.86L0.128421 3.83274C0.089341 3.7889 0.0576169 3.73842 0.0345938 3.68345C0.0111431 3.62581 -0.0006289 3.56367 2.58903e-05 3.50099C-6.27392e-05 3.37705 0.0460159 3.25799 0.128421 3.16924L2.98965 0.144054C3.03029 0.0994511 3.07896 0.0637572 3.13284 0.0390404C3.18672 0.0143237 3.24474 0.00107527 3.30353 6.27797e-05C3.36232 -0.000949711 3.42072 0.0102936 3.47535 0.0331418C3.52997 0.0559901 3.57973 0.089989 3.62174 0.133169Z"
+                                    fill="#939393" />
+                            </svg>
+                            <span class="dashboard-text" (click)="locationApi.back()">Back ></span>
+                        </div>
+                        <div class="page-title" style="display: flex;justify-content: space-between;">
+                            <h3 class="mb-0">Final Score Card</h3>
+                            <app-inner-dropdown *ngIf="applicantId && isFromAdmin"
+                                [applicant_id]="applicantId"></app-inner-dropdown>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 10px;
+            border: 1px solid gray;border-radius: 8px;">
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <i style="font-size: 30px;" *ngIf="!isLoad()" (click)="captureAndAddPdf()" class="fa fa-download"
+                        aria-hidden="true"></i>
+
+                    <i *ngIf="isLoad()" style="font-size: 30px;" class="fa fa-circle-o-notch fa-spin"></i>
+                </div>
+                <!-- *ngIf="userMeta?.role=='admin'" -->
+                <div id="print-section" class="row mb-4" #pdfSection1>
+                    <h4 style="text-align: center; font-size: 22px; font-weight: 600;margin-top: 7px;">{{companyName}}
+                        Eco Edge Score Card</h4>
+                    <div class="col-md-5 mb-4" [ngClass]="isLoad() ? 'col-md-12' : 'col-md-5'">
+                        <div class="card rounded-0">
+                            <div class="finalscore bg-white">
+                                <div class="">
+                                    <p class="text-dark fs-5 mb-1 heading">Final Score</p>
+                                    <!-- <span class="text-dark sub-heading">Score 20 for each section</span> -->
+                                </div>
+
+                            </div>
+                            <!-- <div style="width: 600; height: 581px;margin: auto;" id="chart-container">
+                                <canvas style="height:600px;width: 400 !important; margin: auto;" #mychart id="myChart"></canvas>
+                            </div> -->
+                            <div id="chart-container" style="width: 100%; max-width: 600px; margin: auto;">
+                                <canvas #mychart id="myChart" style="width: 100%; height: auto;"></canvas>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="col-md-7 mb-4" [ngClass]="isLoad() ? 'col-md-12' : 'col-md-7'">
+                        <div class="card rounded-0">
+                            <div class="finalscore bg-white d-block">
+                                <p class="text-dark fs-5 mb-1 heading">Focus Area Scores</p>
+                            </div>
+                            <div style="height:415px;width: 100%; margin: auto;">
+                                <canvas style="width: 100%; height: 100%;" id="canvas">{{ chart }}</canvas>
+                            </div>
+
+                            <!-- <div style="width: 100%; max-width: 600px; margin: auto;">
+                        <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
+                        </div> -->
+
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="scoreoverviewtext">
+                            <h2 class="mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="27" viewBox="0 0 28 27"
+                                    fill="none">
+                                    <path
+                                        d="M14.2773 0C11.6226 4.39049e-09 9.02751 0.791804 6.82023 2.27528C4.61295 3.75876 2.8926 5.86727 1.87674 8.33419C0.860867 10.8011 0.595109 13.5156 1.11307 16.1345C1.63103 18.7533 2.90944 21.1588 4.78664 23.0469C6.66384 24.9349 9.05551 26.2206 11.6592 26.7415C14.2629 27.2623 16.9617 26.9948 19.4142 25.9729C21.8668 24.951 23.963 23.2205 25.4377 21.0002C26.9125 18.78 27.6996 16.1698 27.6994 13.4996C27.6988 9.91935 26.2845 6.48591 23.7674 3.95435C21.2504 1.42279 17.8368 0.000410528 14.2773 0ZM14.2773 5.98994C14.7268 5.98994 15.1663 6.12402 15.54 6.37523C15.9138 6.62644 16.2052 6.98349 16.3772 7.40124C16.5492 7.81899 16.5942 8.27867 16.5065 8.72214C16.4188 9.16562 16.2024 9.57298 15.8845 9.89271C15.5666 10.2124 15.1616 10.4302 14.7207 10.5184C14.2798 10.6066 13.8228 10.5613 13.4074 10.3883C12.9921 10.2153 12.6371 9.92223 12.3874 9.54627C12.1376 9.17031 12.0043 8.7283 12.0043 8.27613C12.0043 7.66979 12.2438 7.08829 12.67 6.65955C13.0963 6.2308 13.6744 5.98994 14.2773 5.98994ZM17.3084 19.8163C17.3084 19.9896 17.2399 20.1558 17.1181 20.2783C16.9963 20.4008 16.831 20.4697 16.6587 20.4697H11.8958C11.7235 20.4697 11.5583 20.4008 11.4364 20.2783C11.3146 20.1558 11.2462 19.9896 11.2462 19.8163V18.5079C11.2462 18.3346 11.3146 18.1684 11.4364 18.0458C11.5583 17.9233 11.7235 17.8545 11.8958 17.8545H12.5454V14.3706H11.8958C11.7235 14.3706 11.5583 14.3017 11.4364 14.1792C11.3146 14.0567 11.2462 13.8905 11.2462 13.7172V12.4111C11.2462 12.2378 11.3146 12.0716 11.4364 11.9491C11.5583 11.8265 11.7235 11.7577 11.8958 11.7577H15.3595C15.5318 11.7577 15.697 11.8265 15.8188 11.9491C15.9407 12.0716 16.0091 12.2378 16.0091 12.4111V17.8545H16.6587C16.831 17.8545 16.9963 17.9233 17.1181 18.0458C17.2399 18.1684 17.3084 18.3346 17.3084 18.5079V19.8163Z"
+                                        fill="#F6871F" />
+                                </svg>
+                                Understanding Your Scorecard
+                            </h2>
+                            <div class="texts">
+                                Each focus area is assessed through a set of questions, with each question scored out of
+                                100 marks. The final score is calculated as follows:
+
+                                <ul>
+                                    <li>
+                                        Scaling Focus Area Scores: Each focus area score is adjusted to a 100-point
+                                        scale.
+                                    </li>
+                                    <li>
+                                        Applying Weightage: Each focus area is assigned an equal weightage of 20%.
+                                    </li>
+                                    <li>
+                                        Final Score Calculation: The weighted scores from all focus areas are summed to
+                                        arrive at the final score, which is presented out of 100.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- *ngIf="userMeta?.role!=='admin'" -->
+            <!-- <div  class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card rounded-0">
+                            <div class="finalscore">
+                                <p>Final Score Card</p>
+                                <p>Score
+                                    for each section
+                                </p>
+                            </div>
+                            <div class="scoreflex">
+                                <ng-container *ngFor="let item of questions">
+                                    <div class="numberbox">
+                                        <h2>{{item.totalObtendMark}}</h2>
+                                        <p>{{item.appliCategory}}</p>
+                                    </div>
+                                </ng-container>
+                            </div>
+                            <div class="cardbottom">
+                                <h6>Total Obtained Score: <span>{{totalObtainedMarkOfAllCategory}}</span></h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card rounded-0">
+                            <div class="finalscore bg-white">
+                                <p class="text-dark">Focus Area - Final Score Chart</p>
+                                <p></p>
+                            </div>
+                        
+                        </div>
+                    </div>
+                </div> -->
+
+            <div class="row mb-3" *ngIf="userMeta?.role=='admin'">
+                <div class="col-md-12" style="margin-top: 23px;">
+                    <ul class="nav nav-pills mb-4 gap-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-general-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-general" type="button" role="tab" aria-controls="pills-general"
+                                aria-selected="true">
+                                <div class="profile-card dasbg1">
+                                    <div class="dasfroright">
+                                        <div class="coutdataasser">
+                                            <h3>{{questions[0]?.totalObtendMark}}
+                                                <sub>/{{questions[0]?.totalMark}}</sub>
+                                            </h3>
+                                            <p>General</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-decarbonization-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-decarbonization" type="button" role="tab"
+                                aria-controls="pills-decarbonization" aria-selected="false">
+                                <div class="profile-card dasbg2">
+                                    <div class="dasfroright">
+                                        <div class="coutdataasser">
+                                            <h3>{{questions[1]?.totalObtendMark}}
+                                                <sub>/{{questions[1]?.totalMark}}</sub>
+                                            </h3>
+                                            <p>Decarbonization</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-circularity-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-circularity" type="button" role="tab"
+                                aria-controls="pills-circularity" aria-selected="false">
+                                <div class="profile-card dasbg3">
+                                    <div class="dasfroright">
+                                        <div class="coutdataasser">
+                                            <h3>{{questions[2]?.totalObtendMark}}
+                                                <sub>/{{questions[2]?.totalMark}}</sub>
+                                            </h3>
+                                            <p>Circularity</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-safety-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-safety" type="button" role="tab" aria-controls="pills-safety"
+                                aria-selected="false">
+                                <div class="profile-card dasbg4">
+                                    <div class="dasfroright">
+                                        <div class="coutdataasser">
+                                            <h3>{{questions[3]?.totalObtendMark}}
+                                                <sub>/{{questions[3]?.totalMark}}</sub>
+                                            </h3>
+                                            <p>Health & Safety</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-rights-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-rights" type="button" role="tab" aria-controls="pills-rights"
+                                aria-selected="false">
+                                <div class="profile-card dasbg5">
+                                    <div class="dasfroright">
+                                        <div class="coutdataasser">
+                                            <h3>{{questions[4]?.totalObtendMark}}
+                                                <sub>/{{questions[4]?.totalMark}}</sub>
+                                            </h3>
+                                            <p>Human Rights</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <mat-accordion>
+                        <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                            <mat-expansion-panel-header>
+                                <!-- <mat-panel-title> This is the expansion title </mat-panel-title> -->
+                                <mat-panel-description> Currently I am {{panelOpenState ? 'open' :
+                                    'closed'}}</mat-panel-description>
+                            </mat-expansion-panel-header>
+                            <div class="tab-content" id="pills-tabContent">
+                                <div class="tab-pane fade show active" id="pills-general" role="tabpanel"
+                                    aria-labelledby="pills-general-tab">
+
+                                    <div class="overflow-auto">
+
+
+                                        <table mat-table [dataSource]="dataSource">
+
+                                            <ng-container matColumnDef="position">
+                                                <th mat-header-cell *matHeaderCellDef style="width: 5%;"> <b>S No.</b>
+                                                </th>
+                                                <td mat-cell *matCellDef="let element;let i=index">
+                                                    {{i+1}}</td>
+                                            </ng-container>
+
+                                            <ng-container matColumnDef="name">
+                                                <th mat-header-cell *matHeaderCellDef><b>Questions</b> </th>
+                                                <td mat-cell *matCellDef="let element" class="w-75"
+                                                    style="word-wrap: break-word; white-space: normal;">{{
+                                                    element.question |
+                                                    extractText}}</td>
+                                            </ng-container>
+
+
+                                            <ng-container matColumnDef="weight">
+                                                <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Total Score -
+                                                        {{questions[0]?.totalObtendMark}}
+                                                        ({{questions[0]?.totalPercentageOfCategory}}%)</b> </th>
+                                                <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                    {{element?.isMarks?(element.obtendMark || 0):'No Scoring'}} </td>
+                                            </ng-container>
+
+                                            <ng-container matColumnDef="maxMark">
+                                                <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Max Mark</b>
+                                                </th>
+                                                <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                    {{element?.maxMark>0?element.maxMark:'No Scoring'}} </td>
+                                            </ng-container>
+
+
+
+                                            <ng-container matColumnDef="applicantObtendMark">
+                                                <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Applicant
+                                                        Obtained Mark</b> </th>
+                                                <td mat-cell *matCellDef="let element" class="text-end ">
+                                                    {{element?.applicantObtendMark}} </td>
+                                            </ng-container>
+
+                                            <ng-container matColumnDef="assessorObtendMark">
+                                                <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Assessor
+                                                        Obtained Mark</b> </th>
+                                                <td mat-cell *matCellDef="let element" class="text-end ">
+                                                    {{element?.assessorObtendMark}} </td>
+                                            </ng-container>
+
+                                            <ng-container matColumnDef="changedMark">
+                                                <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Change
+                                                        Mark</b> </th>
+                                                <td mat-cell *matCellDef="let element" class="text-end ">
+                                                    <input type="number" class="form-control"
+                                                        [ngModel]="element.changedMark ?? element.obtendMark"
+                                                        (ngModelChange)="element.changedMark = $event"
+                                                        (change)="onMarkChanged(element)" />
+
+                                                    <!-- {{element?.changedMark?element.changedMark:element?.isMarks?(element.obtendMark || 0):'No Scoring'}} </td> -->
+                                            </ng-container>
+
+                                     <ng-container matColumnDef="scoring">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                                                        <b>Scoring</b>
+                                                    </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end">
+                                                        
+                                                        <input type="checkbox" class="form-check-input"
+                                                            [ngModel]="element.isMarks"
+                                                            
+                                                            (change)="onScoringChanged(element)" />
+                                                        <!-- <span>{{ element.changedMark ?? (element.isMarks ? (element.obtendMark || 0) : 'No Scoring') }}</span> -->
+                                                    </td>
+                                                </ng-container>
+
+
+                                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                        </table>
+
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-decarbonization" role="tabpanel"
+                                    aria-labelledby="pills-decarbonization-tab">
+                                    <div class="tab-pane fade show active" id="pills-general" role="tabpanel"
+                                        aria-labelledby="pills-general-tab">
+
+
+                                        <div class="overflow-auto">
+                                            <table mat-table [dataSource]="dataSource1">
+
+
+                                                <ng-container matColumnDef="position">
+                                                    <th mat-header-cell *matHeaderCellDef style="width: 5%;"> <b>S
+                                                            No.</b> </th>
+                                                    <td mat-cell *matCellDef="let element;let i=index">
+                                                        {{i+1}}</td>
+                                                </ng-container>
+
+
+                                                <ng-container matColumnDef="name">
+                                                    <th mat-header-cell *matHeaderCellDef><b>Questions</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="w-75"
+                                                        style="word-wrap: break-word; white-space: normal;"> {{
+                                                        element.question
+                                                        | extractText}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="weight">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Total
+                                                            Score -
+                                                            {{questions[1]?.totalObtendMark}}
+                                                            ({{questions[1]?.totalPercentageOfCategory}}%)</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                        {{element?.isMarks?(element.obtendMark || 0):'No Scoring'}}
+                                                    </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="maxMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Max
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                        {{element?.maxMark>0?element.maxMark:'No Scoring'}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="applicantObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Applicant
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.applicantObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="assessorObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Assessor
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.assessorObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="changedMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Change
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        <input type="number" class="form-control"
+                                                            [ngModel]="element.changedMark ?? element.obtendMark"
+                                                            (ngModelChange)="element.changedMark = $event"
+                                                            (change)="onMarkChanged(element)" />
+                                                        <!-- {{element?.changedMark?element.changedMark:element?.isMarks?(element.obtendMark || 0):'No Scoring'}} </td> -->
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="scoring">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                                                        <b>Scoring</b>
+                                                    </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end">
+                                                        
+                                                        <input type="checkbox" class="form-check-input"
+                                                            [ngModel]="element.isMarks"
+                                                            
+                                                            (change)="onScoringChanged(element)" />
+                                                        <!-- <span>{{ element.changedMark ?? (element.isMarks ? (element.obtendMark || 0) : 'No Scoring') }}</span> -->
+                                                    </td>
+                                                </ng-container>
+
+
+                                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-circularity" role="tabpanel"
+                                    aria-labelledby="pills-circularity-tab">
+                                    <div class="tab-pane fade show active" id="pills-general" role="tabpanel"
+                                        aria-labelledby="pills-general-tab">
+
+
+                                        <div class="overflow-auto">
+                                            <table mat-table [dataSource]="dataSource2">
+
+                                                <ng-container matColumnDef="position">
+                                                    <th mat-header-cell *matHeaderCellDef style="width: 5%;"> <b>S
+                                                            No.</b> </th>
+                                                    <td mat-cell *matCellDef="let element;let i=index">
+                                                        {{i+1}}</td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="name">
+                                                    <th mat-header-cell *matHeaderCellDef><b>Questions</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="w-75"
+                                                        style="word-wrap: break-word; white-space: normal;"> {{
+                                                        element.question
+                                                        | extractText}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="weight">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Total
+                                                            Score -
+                                                            {{questions[2]?.totalObtendMark}}
+                                                            ({{questions[2]?.totalPercentageOfCategory}}%)</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.isMarks?(element.obtendMark || 0):'No Scoring'}}
+                                                    </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="maxMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Max
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                        {{element?.maxMark>0?element.maxMark:'No Scoring'}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="applicantObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Applicant
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.applicantObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="assessorObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Assessor
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.assessorObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="changedMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Change
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        <input type="number" class="form-control"
+                                                            [ngModel]="element.changedMark ?? element.obtendMark"
+                                                            (ngModelChange)="element.changedMark = $event"
+                                                            (change)="onMarkChanged(element)" />
+                                                        <!-- {{element?.changedMark?element.changedMark:element?.isMarks?(element.obtendMark || 0):'No Scoring'}} </td> -->
+                                                </ng-container>
+
+                                          <ng-container matColumnDef="scoring">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                                                        <b>Scoring</b>
+                                                    </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end">
+                                                        
+                                                        <input type="checkbox" class="form-check-input"
+                                                            [ngModel]="element.isMarks"
+                                                            
+                                                            (change)="onScoringChanged(element)" />
+                                                        <!-- <span>{{ element.changedMark ?? (element.isMarks ? (element.obtendMark || 0) : 'No Scoring') }}</span> -->
+                                                    </td>
+                                                </ng-container>
+
+                                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-safety" role="tabpanel"
+                                    aria-labelledby="pills-safety-tab">
+                                    <div class="tab-pane fade show active" id="pills-general" role="tabpanel"
+                                        aria-labelledby="pills-general-tab">
+
+
+                                        <div class="overflow-auto">
+                                            <table mat-table [dataSource]="dataSource3">
+
+                                                <ng-container matColumnDef="position">
+                                                    <th mat-header-cell *matHeaderCellDef style="width: 5%;"> <b>S
+                                                            No.</b> </th>
+                                                    <td mat-cell *matCellDef="let element;let i=index">
+                                                        {{i+1}}</td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="name">
+                                                    <th mat-header-cell *matHeaderCellDef><b>Questions</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="w-75"
+                                                        style="word-wrap: break-word; white-space: normal;"> {{
+                                                        element.question
+                                                        | extractText}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="weight">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Total
+                                                            Score -
+                                                            {{questions[3]?.totalObtendMark}}
+                                                            ({{questions[3]?.totalPercentageOfCategory}}%)</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.isMarks?(element.obtendMark || 0):'No Scoring'}}
+                                                    </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="maxMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Max
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                        {{element?.maxMark>0?element.maxMark:'No Scoring'}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="applicantObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Applicant
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.applicantObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="assessorObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Assessor
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.assessorObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="changedMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Change
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        <input type="number" class="form-control"
+                                                            [ngModel]="element.changedMark ?? element.obtendMark"
+                                                            (ngModelChange)="element.changedMark = $event"
+                                                            (change)="onMarkChanged(element)" />
+                                                        <!-- {{element?.changedMark?element.changedMark:element?.isMarks?(element.obtendMark || 0):'No Scoring'}} </td> -->
+                                                </ng-container>
+
+                                      <ng-container matColumnDef="scoring">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                                                        <b>Scoring</b>
+                                                    </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end">
+                                                        
+                                                        <input type="checkbox" class="form-check-input"
+                                                            [ngModel]="element.isMarks"
+                                                            
+                                                            (change)="onScoringChanged(element)" />
+                                                        <!-- <span>{{ element.changedMark ?? (element.isMarks ? (element.obtendMark || 0) : 'No Scoring') }}</span> -->
+                                                    </td>
+                                                </ng-container>
+                                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-rights" role="tabpanel"
+                                    aria-labelledby="pills-rights-tab">
+                                    <div class="tab-pane fade show active" id="pills-general" role="tabpanel"
+                                        aria-labelledby="pills-general-tab">
+
+
+                                        <div class="overflow-auto">
+                                            <table mat-table [dataSource]="dataSource4">
+
+                                                <ng-container matColumnDef="position">
+                                                    <th mat-header-cell *matHeaderCellDef style="width: 5%;"> <b>S
+                                                            No.</b> </th>
+                                                    <td mat-cell *matCellDef="let element;let i=index">
+                                                        {{i+1}}</td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="name">
+                                                    <th mat-header-cell *matHeaderCellDef><b>Questions</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="w-75"
+                                                        style="word-wrap: break-word; white-space: normal;"> {{
+                                                        element.question
+                                                        | extractText}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="weight">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Total
+                                                            Score -
+                                                            {{questions[4]?.totalObtendMark}}
+                                                            ({{questions[4]?.totalPercentageOfCategory}}%)</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.isMarks?(element.obtendMark || 0):'No Scoring'}}
+                                                    </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="maxMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Max
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+
+                                                        {{element?.maxMark>0?element.maxMark:'No Scoring'}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="applicantObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Applicant
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.applicantObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="assessorObtendMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Assessor
+                                                            Obtained Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        {{element?.assessorObtendMark}} </td>
+                                                </ng-container>
+
+                                                <ng-container matColumnDef="changedMark">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end"> <b>Change
+                                                            Mark</b> </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end ">
+                                                        <input type="number" class="form-control"
+                                                            [ngModel]="element.changedMark ?? element.obtendMark"
+                                                            (ngModelChange)="element.changedMark = $event"
+                                                            (change)="onMarkChanged(element)" />
+                                                        <!-- {{element?.changedMark?element.changedMark:element?.isMarks?(element.obtendMark || 0):'No Scoring'}} </td> -->
+                                                </ng-container>
+
+                                          <ng-container matColumnDef="scoring">
+                                                    <th mat-header-cell *matHeaderCellDef class="text-end">
+                                                        <b>Scoring</b>
+                                                    </th>
+                                                    <td mat-cell *matCellDef="let element" class="text-end">
+                                                        
+                                                        <input type="checkbox" class="form-check-input"
+                                                            [ngModel]="element.isMarks"
+                                                            (change)="onScoringChanged(element)" />
+                                                        <!-- <span>{{ element.changedMark ?? (element.isMarks ? (element.obtendMark || 0) : 'No Scoring') }}</span> -->
+                                                    </td>
+                                                </ng-container>
+
+
+                                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </mat-expansion-panel>
+
+                    </mat-accordion>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,56 @@
+{
+  "name": "vendor-passport",
+  "version": "1.0.0",
+  "description": "Enterprise Audit + GRC + Compliance + Risk + ESG + AI Platform",
+  "main": "server.js",
+  "scripts": {
+    "dev": "concurrently -n BACKEND,REACT -c blue,green \"node server.js\" \"cd frontend-react && npm run dev\"",
+    "start": "concurrently -n BACKEND,REACT -c blue,green \"node server.js\" \"cd frontend-react && npm run dev\"",
+    "seed": "node scripts/seed.js",
+    "backend": "node server.js",
+    "frontend": "cd frontend-react && npm run dev",
+    "frontend-build": "cd frontend-react && npm run build",
+    "install-all": "npm install && cd frontend-react && npm install && cd ../backend && npm install",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "keywords": [
+    "audit",
+    "grc",
+    "compliance",
+    "risk",
+    "esg",
+    "brsr",
+    "ai"
+  ],
+  "author": "Vendor Passport",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.3.0",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^9.0.4",
+    "winston": "^3.14.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "concurrently": "^9.0.1",
+    "http-server": "^14.1.1",
+    "vitest": "^2.1.9"
+  }
+}

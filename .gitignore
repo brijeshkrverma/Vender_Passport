@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets (never commit real .env)
+.env
+.env.local
+.env.*.local
+
+# Build output
+frontend-react/dist/
+dist/
+
+# Runtime artifacts
+*.log
+server.out.log
+server.err.log
+npm-debug.log*
+
+# File uploads (multer disk storage)
+uploads/
+
+# Test output
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local tool settings (per-developer, not shared)
+.claude/settings.local.json
+
+# Archives
+*.zip

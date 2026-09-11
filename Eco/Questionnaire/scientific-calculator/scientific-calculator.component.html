@@ -1,0 +1,39 @@
+   <div class="converter-container neumorphic">
+    <h2>Conversion Calculator</h2>
+  
+    <!-- Unit Category Selection -->
+    <label for="category">Select Category:</label>
+    <select class="form-control neumorphic-input" [(ngModel)]="selectedCategory" (change)="onCategoryChange($event)">
+      <option *ngFor="let category of categories" [ngValue]="category">
+        {{ category.name }}
+      </option>
+    </select>
+  
+    <!-- From Unit Input -->
+    <label for="from">From:</label>
+    <input class="form-control neumorphic-input" type="number" [(ngModel)]="fromValue" placeholder="Enter value" />
+  
+    <!-- From Unit Selection -->
+    <select class="form-control neumorphic-input" [(ngModel)]="selectedFromUnit">
+      <option *ngFor="let unit of selectedCategory.units" [ngValue]="unit">
+        {{ unit.name }}
+      </option>
+    </select>
+  
+    <!-- To Unit Selection -->
+    <label for="to">To:</label>
+    <select class="form-control neumorphic-input" [(ngModel)]="selectedToUnit">
+      <option *ngFor="let unit of selectedCategory.units" [ngValue]="unit">
+        {{ unit.name }}
+      </option>
+    </select>
+  
+    <!-- Conversion Button -->
+     <div class="addbutton mt-4">
+    <button class=" btn btn-fill" (click)="convert()">Convert</button>
+    </div>
+  
+    <!-- Result Display -->
+    <h3>Result: {{ result }}</h3>
+  </div>
+  

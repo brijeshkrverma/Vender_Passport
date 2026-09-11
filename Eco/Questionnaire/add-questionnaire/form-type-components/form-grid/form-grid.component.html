@@ -1,0 +1,128 @@
+<div style="margin-bottom: 13px;overflow: auto;margin-top: 5px;">
+    <div class="button-control" *ngIf="!isApplicantForm">
+        <button mat-raised-button (click)="addRow()">Add row</button>
+        <button mat-raised-button color="success" (click)="addColumn()">Add column</button>
+    </div>
+    <table mat-table [dataSource]="myformArray.controls" class="mat-elevation-z8">
+       
+        <ng-container *ngFor="let column of displayedColumns; let columnIndex = index" [matColumnDef]="column">
+            <th mat-header-cell *matHeaderCellDef [ngClass]="{'make-gold': columnIndex === 0}"> {{ column }} </th>
+          
+            <td mat-cell *matCellDef="let element; let rowIndex = index; let i = index;"
+                [ngClass]="{'make-gold':  (columnIndex === 0)}">
+                <!-- {{column}} -->
+                <ng-container *ngIf="userMeta =='admin'">
+                    <div class="flex-control">
+                        <div class="d-flex">
+                            <!-- {{element.get('assessorGuidence')?.value}} -->
+                        <button type="button" [ngClass]="element.get('assessorOption')?.value?.length>0  ? 'is-option-filled' : 'btn-fill'" class="btn" (click)="addGridAssessorOption(rowIndex)"
+                        *ngIf="!checkIsInputType(i,column) && rowIndex.toString()!=='0'  && userMeta=='admin' && !checkDisabledFunction(i,column) && gridInput?.view!==true">A+</button>
+                         <!-- {{i}}--{{column}} -->
+                        <input *ngIf="!checkIsInputType(i,column) && userMeta=='admin' && !checkDisabledFunction(i,column)" data-toggle="tooltip"
+                        [ngClass]="getIsChange(element.get(i.toString() + column.toString())) ? 'white-bg' : 'yellow-bg'"
+                            [title]="element.get(i.toString() + column.toString())?.value"
+                            [readonly]="checkDisabledFunction(i,column)" class="form-control"
+                            [formControl]="getControls(element.get(i.toString() + column.toString()))"
+                            (input)="changeInput($event,rowIndex,column,element)"
+                            >
+                            </div>
+    
+                          <div style="color: white;" *ngIf="!checkIsInputType(i,column) && userMeta=='admin' && checkDisabledFunction(i,column)">
+                             {{getControls(element.get(i.toString() + column.toString()))?.value}}
+                          </div>
+                          <div>
+                            <select style="appearance:auto" *ngIf="checkIsInputType(i,column)" class="form-control"
+                            [ngClass]="getIsChange(element.get(i.toString() + column.toString())) ? 'white-bg' : 'yellow-bg'"
+                            (input)="changeInput($event,rowIndex,column,element)"
+                            [formControl]="getTypeControls(element.get(i.toString() + column.toString()))"
+                            (change)="updateFormArrayKey(i,column,$event)">
+                            <option value="text" selected>Text</option>
+                            <option value="dropdown">Dropdown</option>
+                            <option value="number">Number</option>
+                            <!-- Ye asli input type nahi hai — cell ko formula ke liye
+                                 select/deselect karta hai. Choose karte hi dropdown
+                                 wapas apne type pe chala jaata hai. -->
+                            <option value="__calc__">{{ isCalcCell(i, column) ? '✓ In calculation — remove' : '+ Add Calc' }}</option>
+                        </select>
+                        <span class="calc-tag" *ngIf="isCalcCell(i, column)" title="Can be used in a formula">
+                            fx {{ i }}{{ column }}
+                        </span>
+                    </div>
+        
+
+                            <!-- <mat-checkbox *ngIf="checkIsInputType(i,column)"
+                            (change)="chengeDisableCell(i,column,$event)"
+                            [formControl]="getControlsDisable(element.get(i.toString() + column.toString()))"
+                            class="example-margin"
+                            ></mat-checkbox> -->
+
+                      </div>
+                   
+                </ng-container>
+
+                <ng-container *ngIf="!checkIsInputType(i,column) && userMeta !=='admin'">
+                    <!-- {{rowIndex.toString()}}-{{ column.toString()}} -->
+
+                              <ng-container
+                        *ngIf="(getControlsType(element.get(i.toString() + column.toString())) == 'text')">
+                        
+                        <textarea  data-toggle="tooltip" *ngIf="!checkDisabledFunction(rowIndex, column)"
+                        [ngClass]="getIsChange(element.get(i.toString() + column.toString())) ? 'white-bg' : 'yellow-bg'"
+                            [title]="getControlValue(element.get(rowIndex.toString() + column.toString()))"
+                            [readonly]="checkDisabledFunction(rowIndex, column)  || getDisabledField(element.get(i.toString() + column.toString())) || isComputedCell(rowIndex, column)" class="form-control"
+                            [formControl]="getControls(element.get(rowIndex.toString() + column.toString()))"
+                            (input)="changeInput($event,rowIndex,column,element)"
+                            ></textarea>
+
+                            <div style="color: white;" *ngIf="checkDisabledFunction(rowIndex, column)">
+                                {{getControls(element.get(rowIndex.toString() + column.toString()))?.value}}
+                             </div>
+                    </ng-container>
+
+                    <ng-container
+                    *ngIf="(getControlsType(element.get(i.toString() + column.toString())) == 'number');">
+                    <!-- appRightClickDialog -->
+                    <input  appNumbersOnly [type]="getControlsType(element.get(i.toString() + column.toString()))" data-toggle="tooltip" *ngIf="!checkDisabledFunction(rowIndex, column)"
+                    [ngClass]="getIsChange(element.get(i.toString() + column.toString())) ? 'white-bg' : 'yellow-bg'"
+                        [title]="getControlValue(element.get(rowIndex.toString() + column.toString()))"
+                        [readonly]="checkDisabledFunction(rowIndex, column)  || getDisabledField(element.get(i.toString() + column.toString())) || isComputedCell(rowIndex, column)" class="form-control"
+                        [formControl]="getControls(element.get(rowIndex.toString() + column.toString()))"
+                        (input)="changeInput($event,rowIndex,column,element)"
+                        >
+
+                        <div style="color: white;" *ngIf="checkDisabledFunction(rowIndex, column)">
+                            {{getControls(element.get(rowIndex.toString() + column.toString()))?.value}}
+                         </div>
+                </ng-container>
+
+
+                <!-- &&
+                !checkDisabledFunction(rowIndex, column)" -->
+
+                    <ng-container *ngIf="(getControlsType(element.get(i.toString() + column.toString())) == 'dropdown')">
+                        <select style="appearance:auto" class="form-control"
+                        (input)="changeInput($event,rowIndex,column,element)"
+                            [formControl]="getControls(element.get(i.toString() + column.toString()))">
+                            <option value="yes" selected>Yes</option>
+                            <option value="no">No</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </ng-container>
+
+                    <!-- <div style="color: white;" *ngIf="checkDisabledFunction(rowIndex, column)">
+                        {{getControls(element.get(i.toString() + column.toString()))?.value}}
+                     </div> -->
+                </ng-container>
+
+
+
+            </td>
+        </ng-container>
+
+
+        <tr mat-row *matRowDef="let row; let rowIndex = index; columns: columnsToDisplay"
+            [ngClass]="{'make-gold': (rowIndex === 0)}"></tr>
+    </table>
+
+
+</div>

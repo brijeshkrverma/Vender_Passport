@@ -1,0 +1,117 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.assessordropdown li a {
+  color: #002850;
+  font-size: 14px;
+  font-weight: 400;
+}
+.colortab .nav-link {
+    color: #F6871F;
+      font-size: 15px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: normal;
+      width:max-content;
+      border-radius: 6px;
+      border: 1px solid #F6871F;
+      background: #FFF2E5;
+      transition: 0.5s;
+}
+.colortab .nav-link.active {
+  color: #fff !important;
+  background-color: #F6871F !important;
+}
+.documentslist thead th{
+      background-color: #48A842 ;
+      height: 54px;
+      color: #fff;
+          vertical-align: middle;
+}
+.documentslist thead td {
+  height: 54px;
+  vertical-align: middle;
+}
+
+.appli-status {
+  display: flex;
+  gap: 10px;
+  justify-content: end;
+}
+.actionmanu li:hover{
+    background-color: #48a842 ;
+      color: #fff;
+
+}
+
+.mark-container {
+  /* width: 200px;
+        display: flex;
+        justify-content: space-around;
+        margin-left:17vw; */
+
+  width: 503px;
+  display: flex;
+  /* justify-content: space-around;
+        margin-left: 6.7vw; */
+}
+
+.mark-span {
+  border: 1px solid;
+  /* border-radius: 10px; */
+  /* padding: 3px; */
+  width: 100px;
+  /* margin-left: 16px; */
+  max-width: 20px;
+  width: 10px;
+  padding: 5px 30px 5px 30px;
+  background-color: rgba(26, 219, 26, 0.37);
+  border-radius: 10px;
+}
+
+.isInnerField {
+  padding: 10px 15px 16px 34px;
+}
+
+.alignSubControl {
+  display: flex !important;
+}
+
+.alignSubControl > span {
+  margin-right: 11px;
+  line-height: 3;
+  /* font-size: 15px; */
+  font-weight: 600;
+}
+
+.innerUpload {
+  margin: 10px 10px 10px 0px;
+}
+.stat {
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 35px;
+}
+.stat p {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+.stat h4 {
+  margin-bottom: 0;
+  font-size: 20px;
+  color: #002850;
+  font-weight: 600;
+}
+
+
+.fiv-cla, .fiv-viv, .fiv-sqo{
+  font-size: 2rem;
+}
+
+

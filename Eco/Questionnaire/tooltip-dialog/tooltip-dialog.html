@@ -1,0 +1,15 @@
+<div class="modalebox" style="padding: 15px;">
+
+    <div style="display: flex; justify-content: space-between;">
+        <h2 mat-dialog-title>Guidance</h2>
+        <mat-icon style="    color: red;
+    font-size: 30px;" color="danger" (click)="onNoClick()">close</mat-icon>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div [innerHTML]="data?.tooltip_value | extractText">
+            </div>
+        </div>
+    </div>
+</div>

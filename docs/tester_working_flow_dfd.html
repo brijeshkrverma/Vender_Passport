@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendor Passport — Tester Working Flow (Single DFD)</title>
+<style>
+:root{
+  --bg:#F7F5EF; --surface:#FFFFFF; --ink:#1C2430; --muted:#6C7280;
+  --edge:#DAD5C4; --wire:#9AA3B2; --codebg:#F1EEE4;
+  --seal:#B8863B; --sealbg:#FBF3E4;
+  --blue:#2E5F82; --bluebg:#EAF2F8;
+  --green:#2F7A55; --greenbg:#E9F5EE;
+  --violet:#5B4B8A; --violetbg:#F0EDF8;
+  --red:#B0362A; --redbg:#FCEEEC;
+  --teal:#1F6F72; --tealbg:#E7F4F4;
+  --grey:#4A5464; --greybg:#EEF0F3;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1B2D; --surface:#16233A; --ink:#E8ECF3; --muted:#98A3B5;
+    --edge:#2C3A54; --wire:#5C6B85; --codebg:#1E2E48;
+    --seal:#E0B978; --sealbg:#2A2113;
+    --blue:#8FBEDD; --bluebg:#14283A;
+    --green:#7ED2A5; --greenbg:#122B20;
+    --violet:#B7A6E8; --violetbg:#211B33;
+    --red:#F0A197; --redbg:#331916;
+    --teal:#7FD3D6; --tealbg:#0F2C2D;
+    --grey:#B4BECD; --greybg:#1B2536;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1B2D; --surface:#16233A; --ink:#E8ECF3; --muted:#98A3B5;
+  --edge:#2C3A54; --wire:#5C6B85; --codebg:#1E2E48;
+  --seal:#E0B978; --sealbg:#2A2113; --blue:#8FBEDD; --bluebg:#14283A;
+  --green:#7ED2A5; --greenbg:#122B20; --violet:#B7A6E8; --violetbg:#211B33;
+  --red:#F0A197; --redbg:#331916; --teal:#7FD3D6; --tealbg:#0F2C2D;
+  --grey:#B4BECD; --greybg:#1B2536;
+}
+:root[data-theme="light"]{
+  --bg:#F7F5EF; --surface:#FFFFFF; --ink:#1C2430; --muted:#6C7280;
+  --edge:#DAD5C4; --wire:#9AA3B2; --codebg:#F1EEE4;
+  --seal:#B8863B; --sealbg:#FBF3E4; --blue:#2E5F82; --bluebg:#EAF2F8;
+  --green:#2F7A55; --greenbg:#E9F5EE; --violet:#5B4B8A; --violetbg:#F0EDF8;
+  --red:#B0362A; --redbg:#FCEEEC; --teal:#1F6F72; --tealbg:#E7F4F4;
+  --grey:#4A5464; --greybg:#EEF0F3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:36px 22px 80px}
+h1{font-size:30px;line-height:1.2;margin:0 0 6px;font-weight:650;letter-spacing:-.01em}
+h2{font-size:20px;margin:44px 0 12px;font-weight:650;padding-bottom:7px;border-bottom:2px solid var(--edge)}
+h3{font-size:15.5px;margin:26px 0 8px;font-weight:650}
+p{margin:0 0 12px}
+.sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
+  background:var(--codebg);padding:1px 5px;border-radius:4px;border:1px solid var(--edge)}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0 18px;background:var(--surface)}
+th,td{border:1px solid var(--edge);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--greybg);font-weight:650;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--greybg) 45%,transparent)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.card{background:var(--surface);border:1px solid var(--edge);border-radius:12px;padding:16px 18px;margin:14px 0}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;
+  border:1px solid currentColor;margin-right:6px}
+.p-seal{color:var(--seal);background:var(--sealbg)} .p-blue{color:var(--blue);background:var(--bluebg)}
+.p-green{color:var(--green);background:var(--greenbg)} .p-violet{color:var(--violet);background:var(--violetbg)}
+.p-red{color:var(--red);background:var(--redbg)} .p-teal{color:var(--teal);background:var(--tealbg)}
+.p-grey{color:var(--grey);background:var(--greybg)}
+.note{border-left:4px solid var(--seal);background:var(--sealbg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+.warnbox{border-left:4px solid var(--red);background:var(--redbg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+
+/* ---------- DFD ---------- */
+.dfdbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0 8px}
+.dfdbar button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:7px;
+  border:1px solid var(--edge);background:var(--surface);color:var(--ink);cursor:pointer}
+.dfdbar button:hover{background:var(--greybg)}
+.dfdbar .hint{font-size:12px;color:var(--muted)}
+.dfdview{overflow:auto;border:1px solid var(--edge);border-radius:12px;background:var(--surface);
+  max-height:86vh;padding:10px}
+.dfdzoom{transform-origin:0 0}
+.dfd{position:relative;width:1720px;height:2480px}
+.dfd svg.wires{position:absolute;inset:0;width:1720px;height:2480px;pointer-events:none}
+.dfd2{width:1500px;height:1790px}
+.dfd2 svg.wires{width:1500px;height:1790px}
+.dfd .wl{font-size:10.5px;font-weight:700;fill:var(--muted)}
+
+.n{position:absolute;border:1.6px solid var(--edge);border-radius:10px;background:var(--surface);
+  padding:8px 11px;font-size:11.5px;line-height:1.4;overflow:hidden}
+.n .h{font-weight:750;font-size:11.5px;display:block;margin-bottom:3px;letter-spacing:.01em}
+.n .s{color:var(--muted);font-size:10.5px;display:block}
+.n b{font-weight:700}
+.n .k{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;background:var(--codebg);
+  padding:0 3px;border-radius:3px;border:1px solid var(--edge)}
+.n .btn{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:5px;
+  border:1.4px solid var(--ink);background:var(--ink);color:var(--surface);margin:2px 3px 0 0}
+.start{background:var(--greenbg);border-color:var(--green);border-radius:28px}
+.dec{background:var(--sealbg);border-color:var(--seal);border-radius:28px;display:flex;
+  align-items:center;justify-content:center;text-align:center;font-weight:700}
+.step{background:var(--surface)}
+.api{background:var(--bluebg);border-color:var(--blue)}
+.store{background:var(--violetbg);border-color:var(--violet);border-left-width:5px}
+.router{background:var(--greybg);border-color:var(--grey);display:flex;align-items:center;
+  justify-content:center;text-align:center;font-weight:700;font-size:13px}
+.lane{background:var(--ink);color:var(--surface);border-color:var(--ink);display:flex;
+  flex-direction:column;justify-content:center}
+.lane .s{color:color-mix(in srgb,var(--surface) 70%,transparent)}
+.stage{background:var(--tealbg);border-color:var(--teal);display:flex;flex-direction:column;justify-content:center}
+.flag{background:var(--redbg);border-color:var(--red)}
+.bandlbl{position:absolute;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);background:var(--bg);padding:2px 8px;border:1px dashed var(--edge);border-radius:5px}
+.l1{color:var(--seal)} .l2{color:var(--blue)} .l3{color:var(--green)} .l4{color:var(--violet)} .l5{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Vendor Passport — Tester Working Flow</h1>
+<p class="sub">Poore project ka working flow <b>ek hi DFD</b> me — kis role se start karna hai, register/login kaise karna hai,
+kaun sa button dabane se kya hota hai, aur backend me kaun sa API hit hota hai. Neeche role-wise step-by-step tables hain.</p>
+
+<div class="card">
+  <h3 style="margin-top:0">Setup — DFD start karne se pehle</h3>
+  <table>
+    <thead><tr><th style="width:34%">Step</th><th>Command / Action</th><th style="width:30%">Expected</th></tr></thead>
+    <tbody>
+      <tr><td>1. Dependencies</td><td><code>npm run install-all</code></td><td>root + frontend-react ke node_modules</td></tr>
+      <tr><td>2. Env</td><td><code>copy .env.example .env</code> → <code>MONGO_URI</code>, <code>JWT_SECRET</code> set karo</td><td>Mongo local ya Atlas reachable</td></tr>
+      <tr><td>3. Demo data</td><td><code>npm run seed</code></td><td>7 orgs, 13 frameworks, 13 users, audits/findings/risks seed</td></tr>
+      <tr><td>4. Run</td><td><code>npm run dev</code></td><td>Backend <code>:3000</code> + React (Vite) <code>:5173</code></td></tr>
+      <tr><td>5. Health</td><td>Browser → <code>http://localhost:5173</code></td><td>Login page; <code>GET /api/health</code> ok = server banner nahi dikhega</td></tr>
+    </tbody>
+  </table>
+  <p style="margin:0;font-size:13px;color:var(--muted)">Vite <code>/api</code> aur <code>/uploads</code> ko <code>localhost:3000</code> par proxy karta hai — dono servers chalne chahiye.</p>
+</div>
+
+<h3>Seeded test accounts — password sabka <code>password123</code></h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Start order</th><th>Role</th><th>Email</th><th>Org</th><th>Kis lane ko test karega</th></tr></thead>
+  <tbody>
+    <tr><td><b>1st</b></td><td>Super Admin</td><td><code>super.admin@globaltech.com</code></td><td>ORG-101</td><td>Sab kuch — Users, Settings, cross-org data</td></tr>
+    <tr><td>2nd</td><td>Organization Admin</td><td><code>org.admin@globaltech.com</code></td><td>ORG-101</td><td>Apne org ka admin + user create</td></tr>
+    <tr><td><b>3rd</b></td><td>Audit Manager</td><td><code>meera.nair@globaltech.com</code></td><td>ORG-101</td><td><b>Audit create</b> + auditor assign — yahi se lifecycle shuru hota hai</td></tr>
+    <tr><td>4th</td><td>Auditor</td><td><code>rohit.kapoor@globaltech.com</code></td><td>ORG-101</td><td>Execution, evidence upload, findings</td></tr>
+    <tr><td>5th</td><td>Compliance Manager</td><td><code>priya.sharma@globaltech.com</code></td><td>ORG-101</td><td>Questionnaire, CAPA create, report — audit bhi bana sakta hai</td></tr>
+    <tr><td>6th</td><td>Reviewer</td><td><code>reviewer@globaltech.com</code></td><td>ORG-101</td><td>Evidence verify + CAPA close</td></tr>
+    <tr><td>7th</td><td>Risk Manager</td><td><code>arjun.verma@globaltech.com</code></td><td>ORG-101</td><td>Risks + Heatmap (restricted nav)</td></tr>
+    <tr><td>8th</td><td>Document Manager</td><td><code>kritika.bose@globaltech.com</code></td><td>ORG-101</td><td>Documents, Policy lifecycle</td></tr>
+    <tr><td>9th</td><td>Vendor Manager</td><td><code>vendor.mgr@globaltech.com</code></td><td>ORG-101</td><td>Vendors, Scorecard, Bulk invite</td></tr>
+    <tr><td>10th</td><td>Employee</td><td><code>employee@globaltech.com</code></td><td>ORG-101</td><td>Sabse kam access — negative testing</td></tr>
+    <tr><td>11th</td><td>External Company User</td><td><code>jwhitfield@securecore.com</code></td><td>ORG-103</td><td>Tenant isolation test (dusra org!)</td></tr>
+    <tr><td>12th</td><td>CA / Consultant</td><td><code>ca@consulting.com</code></td><td>ORG-101</td><td>Client Portfolio, allow-list nav</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Sabse pehle kaun sa role? — school wali misaal se samjho</h2>
+
+<p>Is app ko ek <b>school</b> maan lo. Har role school ke ek insaan jaisa hai. Agar tum ulta-pulta order me test karoge
+to har jagah "khaali page" milega — isliye <b>order maayne rakhta hai</b>.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:22%">App ka role</th><th style="width:22%">School me kaun</th><th>Kaam kya hai</th></tr></thead>
+  <tbody>
+    <tr><td><b>Super Admin</b></td><td>Principal</td><td>Sabke admission (account) banata hai. Poore school (saare orgs) ka data dekh sakta hai.</td></tr>
+    <tr><td><b>Organization Admin</b></td><td>Vice Principal</td><td>Sirf apne school (apne org) ka intezaam — users, settings.</td></tr>
+    <tr><td><b>Audit Manager</b></td><td>Class Teacher</td><td>Exam (audit) banata hai aur decide karta hai kaun invigilator hoga.</td></tr>
+    <tr><td><b>Auditor</b></td><td>Invigilator</td><td>Exam leta hai, copy check karta hai, galti (finding) likhta hai, proof (evidence) lagata hai.</td></tr>
+    <tr><td><b>Compliance Manager</b></td><td>Exam Controller</td><td>Paper set (questionnaire), rules, CAPA aur final result/report sambhalta hai. <b>Par exam khud nahi bana sakta.</b></td></tr>
+    <tr><td><b>Reviewer</b></td><td>Head Examiner (rechecker)</td><td>Auditor ka kaam verify karta hai, CAPA ko close karta hai.</td></tr>
+    <tr><td><b>Risk Manager</b></td><td>Safety in-charge</td><td>Sirf khatre (risks) aur unka heatmap dekhta hai.</td></tr>
+    <tr><td><b>Document Manager</b></td><td>Record room in-charge</td><td>Files, policy versions, documents.</td></tr>
+    <tr><td><b>Vendor Manager</b></td><td>Canteen/supplier in-charge</td><td>Bahar ke vendors, unka scorecard aur bulk invite.</td></tr>
+    <tr><td><b>Employee</b></td><td>Student</td><td>Apna kaam, self assessment, notifications. Sabse kam power.</td></tr>
+    <tr><td><b>External Company User</b></td><td>Doosre school ka student</td><td>Sirf apne school (ORG-103) ka data — dusre ka bilkul nahi.</td></tr>
+    <tr><td><b>CA / Consultant</b></td><td>Bahar se aaya expert</td><td>Kai clients dekhta hai, mostly read-only kaam.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+<b>Seedha jawab — order ye rakho:</b><br>
+<b>1)</b> <code>super.admin@globaltech.com</code> → dekho ki users/orgs/frameworks maujood hain (ye "school khula hai" ka proof hai).<br>
+<b>2)</b> <code>meera.nair@globaltech.com</code> (Audit Manager) → <b>naya audit yahi banao</b>, aur auditor assign karo.<br>
+<b>3)</b> <code>rohit.kapoor@globaltech.com</code> (Auditor) → evidence upload + finding banao.<br>
+<b>4)</b> <code>priya.sharma@globaltech.com</code> (Compliance Manager) → us finding par CAPA banao.<br>
+<b>5)</b> <code>reviewer@globaltech.com</code> (Reviewer) → evidence verify + CAPA close.<br>
+<b>6)</b> Uske baad baaki 7 roles se login karke sirf <b>"kya nahi dikhna chahiye"</b> check karo (negative testing).
+</div>
+
+<div class="warnbox">
+<b>Pehle yahan ek trap tha:</b> Compliance Manager audit nahi bana sakta tha kyunki wo <code>requireAuditor</code>
+list me nahi tha — 403 milta tha aur UI error bhi nahi dikhata tha. <b>Dono fix ho chuke hain.</b>
+Ab Compliance Manager aur Audit Manager dono audit bana sakte hain, aur fail hone par saaf error dikhta hai.
+</div>
+
+<h2>DFD 2 — kis role ke action se kis role ko access milta hai</h2>
+<p>Ye "relay race" hai: har row me <b>kaun kaam karta hai → kya button dabata hai → database me kya banta hai →
+usse kis role ko naya kaam/access milta hai</b>. Upar se neeche padho; upar wali row skip karoge to neeche wali
+row fail hogi (laal 🔒 arrow yahi dikhata hai).</p>
+
+<div class="dfdbar">
+  <button onclick="zoomBy('d2',-0.1)">− Zoom out</button>
+  <button onclick="zoomBy('d2',0.1)">+ Zoom in</button>
+  <button onclick="setZoom('d2',1)">Reset 100%</button>
+  <button onclick="fitWidth('d2')">Fit width</button>
+  <span class="hint">Laal dashed = "pehle ye bana hoga tabhi ye chalega"</span>
+</div>
+
+<div class="dfdview" id="dfdview2">
+<div class="dfdzoom" id="dfdzoom2">
+<div class="dfd dfd2">
+
+<svg class="wires" viewBox="0 0 1500 1790" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <marker id="ah2" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 z" fill="var(--wire)"/>
+    </marker>
+    <marker id="ahr2" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 z" fill="var(--red)"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="var(--wire)" stroke-width="1.7" marker-end="url(#ah2)">
+    <path d="M290,190 H316"/><path d="M750,190 H786"/><path d="M1070,190 H1106"/>
+    <path d="M290,352 H316"/><path d="M750,352 H786"/><path d="M1070,352 H1106"/>
+    <path d="M290,514 H316"/><path d="M750,514 H786"/><path d="M1070,514 H1106"/>
+    <path d="M290,676 H316"/><path d="M750,676 H786"/><path d="M1070,676 H1106"/>
+    <path d="M290,838 H316"/><path d="M750,838 H786"/><path d="M1070,838 H1106"/>
+    <path d="M290,1000 H316"/><path d="M750,1000 H786"/><path d="M1070,1000 H1106"/>
+    <path d="M290,1162 H316"/><path d="M750,1162 H786"/><path d="M1070,1162 H1106"/>
+    <path d="M290,1324 H316"/><path d="M750,1324 H786"/><path d="M1070,1324 H1106"/>
+    <path d="M290,1486 H316"/><path d="M750,1486 H786"/><path d="M1070,1486 H1106"/>
+    <path d="M290,1648 H316"/><path d="M750,1648 H786"/><path d="M1070,1648 H1106"/>
+    <path d="M165,260 V278"/><path d="M165,422 V440"/><path d="M165,584 V602"/><path d="M165,746 V764"/>
+    <path d="M165,908 V926"/><path d="M165,1070 V1088"/><path d="M165,1232 V1250"/><path d="M165,1394 V1412"/>
+    <path d="M165,1556 V1574"/>
+  </g>
+  <path d="M800,592 H305 V1158" fill="none" stroke="var(--red)" stroke-width="1.7"
+        stroke-dasharray="6 4" marker-end="url(#ahr2)"/>
+  <path d="M800,1240 H305 V1320" fill="none" stroke="var(--red)" stroke-width="1.7"
+        stroke-dasharray="6 4" marker-end="url(#ahr2)"/>
+  <text class="wl" x="316" y="880" fill="var(--red)">🔒 auditId</text>
+  <text class="wl" x="316" y="1290" fill="var(--red)">🔒 findingId</text>
+</svg>
+
+<div class="n router" style="left:40px;top:56px;width:250px;height:42px;font-size:11.5px">KAUN KAAM KARTA HAI</div>
+<div class="n router" style="left:320px;top:56px;width:430px;height:42px;font-size:11.5px">KYA KARTA HAI (button + API)</div>
+<div class="n router" style="left:790px;top:56px;width:280px;height:42px;font-size:11.5px">DB ME KYA BANTA HAI</div>
+<div class="n router" style="left:1110px;top:56px;width:350px;height:42px;font-size:11.5px">ISSE KIS ROLE KO KYA MILTA HAI</div>
+
+<!-- R1 -->
+<div class="n lane" style="left:40px;top:120px;width:250px;height:140px">
+  <span class="h">STEP 1 · Super Admin / Organization Admin</span>
+  <span class="s">School ka Principal / Vice Principal</span>
+</div>
+<div class="n step" style="left:320px;top:120px;width:430px;height:140px">
+  <span class="h l1">Account banata hai</span>
+  <span class="k">/users</span> → <span class="btn">+ Add User</span> → naam, email, temporary password, role.<br>
+  Body ka <b>role</b> field hi decide karta hai naya banda kaun banega.
+  <span class="s">Local testing me ye kaam <span class="k">npm run seed</span> pehle hi kar deta hai — 13 users ban jaate hain.</span>
+</div>
+<div class="n store" style="left:790px;top:120px;width:280px;height:140px">
+  <span class="h">users</span>
+  <span class="s">name, email, password (bcrypt), <b>role</b>, orgId, status</span>
+</div>
+<div class="n step" style="left:1110px;top:120px;width:350px;height:140px">
+  <span class="h l3">Sabhi 12 roles ko: LOGIN karne ka haq</span>
+  Ye step na ho to koi bhi role exist hi nahi karta — login screen se aage kuch nahi.
+  <span class="s">Sirf Super Admin &amp; Org Admin hi ye kar sakte hain (<span class="k">requireAdmin</span>).</span>
+</div>
+
+<!-- R2 -->
+<div class="n lane" style="left:40px;top:282px;width:250px;height:140px">
+  <span class="h">STEP 2 · Super Admin / Organization Admin</span>
+  <span class="s">School ka setup</span>
+</div>
+<div class="n step" style="left:320px;top:282px;width:430px;height:140px">
+  <span class="h l1">Org + Framework + Settings set karta hai</span>
+  <span class="k">/organizations</span> · <span class="k">/frameworks</span> · <span class="k">/settings</span>
+  <span class="s">Frameworks = ISO 27001, SOC 2, GDPR… ye master list hai.</span>
+</div>
+<div class="n store" style="left:790px;top:282px;width:280px;height:140px">
+  <span class="h">organizations · frameworks · settings</span>
+  <span class="s">orgId = tenant ki deewar (ORG-101, ORG-103…)</span>
+</div>
+<div class="n step" style="left:1110px;top:282px;width:350px;height:140px">
+  <span class="h l3">Audit Manager / Auditor / Compliance Mgr ko:</span>
+  Audit wizard ka <b>Step-2 framework dropdown</b> bharna, aur har role ka data uske org tak limit ho jaana.
+  <span class="s">Isi se External User (ORG-103) ko ORG-101 ka data nahi dikhta.</span>
+</div>
+
+<!-- R3 -->
+<div class="n lane" style="left:40px;top:444px;width:250px;height:140px">
+  <span class="h">STEP 3 · Audit Manager</span>
+  <span class="s">(ya Auditor / Admin / CA) — Class Teacher<br><b>Compliance Manager NAHI</b></span>
+</div>
+<div class="n step" style="left:320px;top:444px;width:430px;height:140px">
+  <span class="h l3">Naya audit banata hai — poore flow ki jaan</span>
+  Topbar <span class="btn">+ Create</span> → <span class="btn">New Audit</span> → 6 steps →
+  <span class="btn">Create Audit</span> → <span class="k">POST /api/audits</span>
+  <span class="s">Route par <span class="k">requireAuditor</span> = SA, OA, Audit Manager, Auditor, CA. Compliance Manager → 403.</span>
+</div>
+<div class="n store" style="left:790px;top:444px;width:280px;height:140px">
+  <span class="h">audits</span>
+  <span class="s">status <b>Planning</b>, stageIdx 0, orgId auto-inject, <b>_id = auditId</b></span>
+</div>
+<div class="n step" style="left:1110px;top:444px;width:350px;height:140px">
+  <span class="h l3">Auditor ko kaam · Reviewer &amp; Compliance Mgr ko dekhne ka access</span>
+  Aur sabse important: <b>auditId</b> ban jaata hai jiske bina finding, evidence-link aur questionnaire kuch nahi ban sakte.
+</div>
+
+<!-- R4 -->
+<div class="n lane" style="left:40px;top:606px;width:250px;height:140px">
+  <span class="h">STEP 4 · Audit Manager</span>
+  <span class="s">Kaun invigilator hoga, ye decide karta hai</span>
+</div>
+<div class="n step" style="left:320px;top:606px;width:430px;height:140px">
+  <span class="h l3">Auditor assign karta hai</span>
+  <span class="k">/audits/:id</span> → Auditors tab → naam likho → <span class="btn">Add</span>
+  → <span class="k">POST /api/audits/:id/assign-auditor</span><br>
+  Hataane ke liye chip par <span class="btn">×</span> → <span class="k">/unassign-auditor</span>
+</div>
+<div class="n store" style="left:790px;top:606px;width:280px;height:140px">
+  <span class="h">audits.auditors[]</span>
+  <span class="s">naam ki list (string array)</span>
+</div>
+<div class="n step" style="left:1110px;top:606px;width:350px;height:140px">
+  <span class="h l3">Auditor ko: "ye audit mera hai"</span>
+  Auditor Workspace / Working Papers me wo audit uska dikhta hai.
+  <span class="s">Suggestion dropdown <span class="k">GET /api/users?role=Auditor</span> se aata hai — wo admin-only API hai,
+  isliye Audit Manager ke liye list khaali reh sakti hai. Naam manually type karo.</span>
+</div>
+
+<!-- R5 -->
+<div class="n lane" style="left:40px;top:768px;width:250px;height:140px">
+  <span class="h">STEP 5 · Compliance Manager</span>
+  <span class="s">Exam Controller — paper set karta hai</span>
+</div>
+<div class="n step" style="left:320px;top:768px;width:430px;height:140px">
+  <span class="h l2">Questionnaire assign karta hai</span>
+  <span class="k">/questionnaire</span> + <span class="k">/question-bank</span> →
+  <span class="k">/api/assessments/templates</span> · <span class="k">/responses</span>
+  <span class="s">Assessments API: SA, OA, Compliance Mgr, Audit Mgr, Auditor, Reviewer, CA.</span>
+</div>
+<div class="n store" style="left:790px;top:768px;width:280px;height:140px">
+  <span class="h">templates · responses · scores</span>
+  <span class="s">scoring.service se score nikalta hai</span>
+</div>
+<div class="n step" style="left:1110px;top:768px;width:350px;height:140px">
+  <span class="h l3">Auditor ko sawaal · Employee / External ko jawab dene ka kaam</span>
+  Audit stage 4 (Questionnaire) yahi se bharti hai.
+</div>
+
+<!-- R6 -->
+<div class="n lane" style="left:40px;top:930px;width:250px;height:140px">
+  <span class="h">STEP 6 · Auditor</span>
+  <span class="s">Evidence sabhi 12 roles upload kar sakte hain — Employee &amp; External bhi</span>
+</div>
+<div class="n step" style="left:320px;top:930px;width:430px;height:140px">
+  <span class="h l3">Proof (evidence) upload + link karta hai</span>
+  <span class="k">/evidence</span> → <span class="btn">Upload Evidence</span> → <span class="k">POST /api/evidence/upload</span><br>
+  phir <span class="btn">Link</span> → finding / control / question → <span class="k">POST /api/evidence/:id/links</span>
+</div>
+<div class="n store" style="left:790px;top:930px;width:280px;height:140px">
+  <span class="h">evidence + evidenceLink</span>
+  <span class="s">status Draft, verificationStatus <b>Pending</b></span>
+</div>
+<div class="n step" style="left:1110px;top:930px;width:350px;height:140px">
+  <span class="h l4">Reviewer ko: verify karne ka kaam</span>
+  Pending pada evidence hi Reviewer ki queue hai.
+  <span class="s">Evidence + Documents + Certificates — teeno API sabhi 12 roles ko allowed hain.</span>
+</div>
+
+<!-- R7 -->
+<div class="n lane" style="left:40px;top:1092px;width:250px;height:140px">
+  <span class="h">STEP 7 · Auditor / Audit Manager</span>
+  <span class="s">Galti mili to likh do</span>
+</div>
+<div class="n step flag" style="left:320px;top:1092px;width:430px;height:140px">
+  <span class="h l5">Finding banata hai — 🔒 STEP 3 ke bina possible nahi</span>
+  <span class="k">POST /api/findings</span> — body me <b>auditId zaroori</b> hai, warna <b>400</b>.<br>
+  Fields: criteria, condition, cause, consequence, recommendation, owner, due
+  <span class="s">UI par create button nahi hai — Postman ya Topbar "New Finding" se.</span>
+</div>
+<div class="n store" style="left:790px;top:1092px;width:280px;height:140px">
+  <span class="h">findings</span>
+  <span class="s">status <b>Open</b> → … → Closed, severity, <b>_id = findingId</b></span>
+</div>
+<div class="n step" style="left:1110px;top:1092px;width:350px;height:140px">
+  <span class="h l2">Compliance Manager &amp; Reviewer ko: CAPA banane ka base</span>
+  Risk Manager / Document Manager / Vendor Manager / Employee / External ko findings API par <b>403</b> milega.
+</div>
+
+<!-- R8 -->
+<div class="n lane" style="left:40px;top:1254px;width:250px;height:140px">
+  <span class="h">STEP 8 · Compliance Manager</span>
+  <span class="s">(ya Admin / Reviewer)</span>
+</div>
+<div class="n step flag" style="left:320px;top:1254px;width:430px;height:140px">
+  <span class="h l5">CAPA banata hai — 🔒 STEP 7 ke bina possible nahi</span>
+  <span class="k">POST /api/capa</span> — body me <b>findingId zaroori</b>.<br>
+  rootCause · actionPlan · verificationCriteria · owner · due
+  <span class="s">CAPA API sirf 4 roles ko: SA, OA, Compliance Manager, Reviewer. <b>Auditor &amp; Audit Manager ko 403.</b></span>
+</div>
+<div class="n store" style="left:790px;top:1254px;width:280px;height:140px">
+  <span class="h">capa</span>
+  <span class="s">Open → In Progress → Pending Verification → Verified → Closed</span>
+</div>
+<div class="n step" style="left:1110px;top:1254px;width:350px;height:140px">
+  <span class="h l4">Reviewer ko: Kanban card verify/close karne ka kaam</span>
+  <span class="s">⚠ CA / Consultant ke sidebar me CAPA dikhta hai par API 403 deta hai — ye asli mismatch bug hai.</span>
+</div>
+
+<!-- R9 -->
+<div class="n lane" style="left:40px;top:1416px;width:250px;height:140px">
+  <span class="h">STEP 9 · Reviewer</span>
+  <span class="s">Head Examiner — recheck</span>
+</div>
+<div class="n step" style="left:320px;top:1416px;width:430px;height:140px">
+  <span class="h l4">Verify + close karta hai</span>
+  Evidence: <span class="k">PATCH /api/evidence/:id/verify</span> → Verified / Rejected<br>
+  CAPA: Kanban card par <b>ek click</b> → <span class="k">POST /api/capa/:id/advance</span>
+  <span class="s">Reject kiya to Finding <b>Reopened</b> ho jaata hai — flow wapas Step 6/7 par.</span>
+</div>
+<div class="n store" style="left:790px;top:1416px;width:280px;height:140px">
+  <span class="h">verificationStatus · capa.status</span>
+  <span class="s">Verified / Closed</span>
+</div>
+<div class="n step" style="left:1110px;top:1416px;width:350px;height:140px">
+  <span class="h l1">Audit Manager / Compliance Mgr ko: audit band karne ka rasta</span>
+  Jab tak CAPA Closed nahi, audit ko Closed dikhana galat hoga — yahi business rule test karo.
+</div>
+
+<!-- R10 -->
+<div class="n lane" style="left:40px;top:1578px;width:250px;height:140px">
+  <span class="h">STEP 10 · Audit Mgr / Compliance Mgr</span>
+  <span class="s">Result declare</span>
+</div>
+<div class="n step" style="left:320px;top:1578px;width:430px;height:140px">
+  <span class="h l1">Audit close + report + certificate</span>
+  <span class="k">POST /api/audits/:id/advance</span> (Report → Closed) ·
+  <span class="k">GET /api/reports/summary</span> · <span class="k">/api/reports/export/:type</span> ·
+  <span class="k">/certificates</span>
+  <span class="s">Reports API: SA, OA, Compliance Mgr, Audit Mgr, Risk Mgr, CA — <b>Auditor &amp; Reviewer ko 403</b>.</span>
+</div>
+<div class="n store" style="left:790px;top:1578px;width:280px;height:140px">
+  <span class="h">audits.completedAt · certificates</span>
+  <span class="s">status Closed + cert record</span>
+</div>
+<div class="n step" style="left:1110px;top:1578px;width:350px;height:140px">
+  <span class="h l5">Vendor Manager · External User · Employee ko: final output</span>
+  Certificate, scorecard aur expiry alerts — yahi in roles ka poora matlab hai.
+</div>
+
+</div>
+</div>
+</div>
+
+<h3>Permission matrix — kaun sa role kis API tak pahunch sakta hai</h3>
+<p style="font-size:13px;color:var(--muted)">
+SA = Super Admin · OA = Organization Admin · CM = Compliance Manager · AM = Audit Manager · AU = Auditor ·
+RV = Reviewer · RM = Risk Manager · DM = Document Manager · VM = Vendor Manager · EM = Employee ·
+EX = External Company User · CA = CA / Consultant. &nbsp; ✔ = allowed, ✖ = <b>403 Forbidden</b> milega.</p>
+<div class="scroll">
+<table style="font-size:12px">
+  <thead><tr><th style="width:20%">Module / API</th>
+    <th>SA</th><th>OA</th><th>CM</th><th>AM</th><th>AU</th><th>RV</th>
+    <th>RM</th><th>DM</th><th>VM</th><th>EM</th><th>EX</th><th>CA</th></tr></thead>
+  <tbody>
+    <tr><td><code>/api/users</code></td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td></tr>
+    <tr><td><code>/api/settings</code>, <code>/api/ccm</code></td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td></tr>
+    <tr><td><code>/api/organizations</code></td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/capa</code></td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td></tr>
+    <tr><td><code>/api/risks</code></td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/vendors</code></td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/reports</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/audits</code> — <b>read</b></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/audits</code> — <b>create / delete</b></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/findings</code>, <code>/api/comments</code>, <code>/api/assessments</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/controls</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✔</td></tr>
+    <tr><td><code>/api/evidence</code>, <code>/api/documents</code>, <code>/api/certificates</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><code>/api/evidence/:id/verify</code> <b>(attest)</b></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td></tr>
+    <tr><td><code>/api/auditlogs</code> (audit trail)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td></tr>
+    <tr><td><code>/api/frameworks</code>, <code>/api/requirements</code>, <code>/api/notifications</code>, <code>/api/assistant</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+<b>Matrix padhne ka tareeka:</b> ek row me jitne ✖ hain, utne hi negative test cases banenge. Us role se login karke
+wo page/API kholo — <b>403 aana hi pass hai</b>, data aa gaya to wo security bug hai.
+Aur ek cheez alag hai: sidebar me item na dikhna (frontend) aur API 403 dena (backend) — <b>dono alag layers hain</b>,
+dono check karo.
+</div>
+
+<h2>Master DFD — sab kuch ek diagram me</h2>
+<div class="dfdbar">
+  <button onclick="zoomBy('d1',-0.1)">− Zoom out</button>
+  <button onclick="zoomBy('d1',0.1)">+ Zoom in</button>
+  <button onclick="setZoom('d1',1)">Reset 100%</button>
+  <button onclick="fitWidth('d1')">Fit width</button>
+  <span class="hint">Band 0 → 6 tak upar se neeche padho. Box ke andar kaala button chip = UI par actual button.</span>
+</div>
+
+<div class="dfdview" id="dfdview">
+<div class="dfdzoom" id="dfdzoom">
+<div class="dfd">
+
+<svg class="wires" viewBox="0 0 1720 2480" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 z" fill="var(--wire)"/>
+    </marker>
+    <marker id="ahr" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 z" fill="var(--red)"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="var(--wire)" stroke-width="1.7" marker-end="url(#ah)">
+    <!-- BAND 0 -->
+    <path d="M240,97 H286"/>
+    <path d="M460,97 H486 V78 H506"/>
+    <path d="M460,97 H486 V224 H506"/>
+    <path d="M870,78 H896 V143 H916"/>
+    <path d="M870,224 H896 V143 H916"/>
+    <path d="M1240,143 H1286"/>
+    <path d="M1485,208 V262 H205 V326"/>
+    <!-- BAND 1 -->
+    <path d="M370,390 H406"/>
+    <path d="M730,390 H752 V405 H766"/>
+    <path d="M1170,405 H1206"/>
+    <!-- to router -->
+    <path d="M1445,480 V536"/>
+    <path d="M970,480 V536"/>
+    <!-- router to lanes -->
+    <path d="M194,602 V636"/>
+    <path d="M527,602 V636"/>
+    <path d="M860,602 V636"/>
+    <path d="M1193,602 V636"/>
+    <path d="M1526,602 V636"/>
+    <!-- lane header to step 1 -->
+    <path d="M194,704 V726"/><path d="M527,704 V726"/><path d="M860,704 V726"/><path d="M1193,704 V726"/><path d="M1526,704 V726"/>
+    <!-- step chains (5 lanes x 4 links) -->
+    <path d="M194,842 V862"/><path d="M194,978 V998"/><path d="M194,1114 V1134"/><path d="M194,1250 V1270"/>
+    <path d="M527,842 V862"/><path d="M527,978 V998"/><path d="M527,1114 V1134"/><path d="M527,1250 V1270"/>
+    <path d="M860,842 V862"/><path d="M860,978 V998"/><path d="M860,1114 V1134"/><path d="M860,1250 V1270"/>
+    <path d="M1193,842 V862"/><path d="M1193,978 V998"/><path d="M1193,1114 V1134"/><path d="M1193,1250 V1270"/>
+    <path d="M1526,842 V862"/><path d="M1526,978 V998"/><path d="M1526,1114 V1134"/><path d="M1526,1250 V1270"/>
+    <!-- lanes converge to lifecycle -->
+    <path d="M194,1386 V1418 H860 V1448"/>
+    <path d="M527,1386 V1418 H860"/>
+    <path d="M1193,1386 V1418 H860"/>
+    <path d="M1526,1386 V1418 H860"/>
+    <path d="M860,1386 V1448"/>
+    <path d="M860,1498 V1520"/>
+    <!-- lifecycle row 1 -->
+    <path d="M288,1557 H314"/><path d="M566,1557 H592"/><path d="M844,1557 H870"/><path d="M1122,1557 H1148"/><path d="M1400,1557 H1426"/>
+    <!-- row1 -> row2 -->
+    <path d="M1554,1590 V1620 H164 V1646"/>
+    <!-- lifecycle row 2 -->
+    <path d="M288,1683 H314"/><path d="M566,1683 H592"/><path d="M844,1683 H870"/><path d="M1122,1683 H1148"/><path d="M1400,1683 H1426"/>
+    <!-- lifecycle -> band 4 -->
+    <path d="M164,1716 V1784"/>
+    <!-- band 4 chain -->
+    <path d="M348,1873 H369"/><path d="M681,1873 H702"/><path d="M1014,1873 H1035"/><path d="M1347,1873 H1368"/>
+    <!-- band4 -> backend -->
+    <path d="M1526,1958 V1996 H860 V2030 H145 V2068"/>
+    <!-- backend chain -->
+    <path d="M250,2110 H271"/><path d="M485,2110 H506"/><path d="M720,2110 H741"/><path d="M955,2110 H976"/>
+    <path d="M1190,2110 H1211"/><path d="M1425,2110 H1446"/>
+    <!-- store ticks -->
+    <path d="M137,2172 V2186"/><path d="M343,2172 V2186"/><path d="M549,2172 V2186"/><path d="M755,2172 V2186"/>
+    <path d="M961,2172 V2186"/><path d="M1167,2172 V2186"/><path d="M1373,2172 V2186"/><path d="M1579,2172 V2186"/>
+    <!-- exit -->
+    <path d="M420,2382 H456"/><path d="M880,2382 H916"/>
+  </g>
+  <!-- store bus (no arrowhead) -->
+  <path d="M1555,2148 V2172 H137" fill="none" stroke="var(--wire)" stroke-width="1.7"/>
+  <!-- reopen feedback (red, dashed) -->
+  <path d="M1193,1958 V1980 H194 V1962" fill="none" stroke="var(--red)" stroke-width="1.7"
+        stroke-dasharray="6 4" marker-end="url(#ahr)"/>
+
+  <text class="wl" x="470" y="72">NO</text>
+  <text class="wl" x="470" y="243">YES</text>
+  <text class="wl" x="600" y="1975" fill="var(--red)">Rejected / Reopened → wapas Finding par</text>
+  <text class="wl" x="1560" y="1614">stage 7 → 12</text>
+</svg>
+
+<!-- ============ BAND 0 — ENTRY ============ -->
+<div class="bandlbl" style="left:20px;top:20px">Band 0 · Entry &amp; Auth</div>
+
+<div class="n start" style="left:40px;top:70px;width:200px;height:54px">
+  <span class="h">▶ START — Tester</span>
+  <span class="s">seed + dev chal raha ho → <span class="k">:5173</span></span>
+</div>
+
+<div class="n dec" style="left:286px;top:70px;width:174px;height:54px">Account pehle se hai?</div>
+
+<div class="n step" style="left:506px;top:20px;width:364px;height:116px">
+  <span class="h l1">1A · REGISTER — <span class="k">/register</span></span>
+  Full Name · Work Email · Password (min 8) · Organization Name<br>
+  Role chip: Org Admin / Compliance Mgr / Audit Mgr / Auditor / Vendor Mgr / External / CA
+  <span class="btn">Create Account →</span>
+  <span class="s"><b>Naya org banta hai</b>; <span class="k">orgId</span> server generate karta hai. Existing org name → 409.</span>
+</div>
+
+<div class="n step" style="left:506px;top:158px;width:364px;height:132px">
+  <span class="h l2">1B · LOGIN — <span class="k">/login</span></span>
+  Sirf Email + Password. Role chips hata diye gaye — role hamesha aapke account se aata hai,
+  sign-in par chuni gayi cheez se nahi.
+  <span class="btn">Sign in →</span>
+  <span class="s">Page load par <span class="k">GET /api/health</span> — fail hua to "Server is unreachable" banner.</span>
+</div>
+
+<div class="n api" style="left:916px;top:78px;width:324px;height:130px">
+  <span class="h">2 · AUTH API</span>
+  <span class="k">POST /api/auth/register</span> → zod validate → bcrypt hash → user insert<br>
+  <span class="k">POST /api/auth/login</span> → <span class="k">loginLimiter</span> → bcrypt compare
+  <span class="s">Response: <span class="k">accessToken</span> (JWT HS256, 24h) + user object.</span>
+</div>
+
+<div class="n store" style="left:1286px;top:78px;width:394px;height:130px">
+  <span class="h">3 · SESSION STORE (browser)</span>
+  <span class="k">localStorage.vp_token</span> + <span class="k">localStorage.vp_user</span><br>
+  AuthContext → har API call me <span class="k">Authorization: Bearer &lt;token&gt;</span>
+  <span class="s">Success par <span class="k">navigate('/dashboard')</span>. Refresh par session bani rehti hai.</span>
+</div>
+
+<!-- ============ BAND 1 — SHELL ============ -->
+<div class="bandlbl" style="left:20px;top:296px">Band 1 · Gate, Onboarding &amp; Shell</div>
+
+<div class="n step" style="left:40px;top:326px;width:330px;height:124px">
+  <span class="h l3">4 · ProtectedLayout (route guard)</span>
+  <b>user null?</b> → redirect <span class="k">/login</span><br>
+  <b>canAccessPage(role, path) false?</b> → redirect <span class="k">/dashboard</span>
+  <span class="s">Ye frontend guard hai. Real enforcement backend RBAC me hai (Band 5).</span>
+</div>
+
+<div class="n step" style="left:406px;top:326px;width:324px;height:124px">
+  <span class="h l3">5 · Onboarding Wizard (modal)</span>
+  Steps: Add your company → Upload a certificate → Invite a vendor
+  <span class="btn">Skip</span><span class="btn">Back</span><span class="btn">Next</span><span class="btn">Finish</span>
+  <span class="s">Flag <span class="k">sessionStorage.vp_onboarding_done</span> — dobara dekhne ko tab band karo.</span>
+</div>
+
+<div class="n step" style="left:766px;top:326px;width:404px;height:154px">
+  <span class="h l3">6 · APP SHELL — har page par</span>
+  <b>Sidebar</b>: 12 sections, role ke hisaab se filter (<span class="k">isNavVisibleForRole</span>). Section title click = expand/collapse.<br>
+  <b>Topbar</b>: <span class="btn">+ Create</span> menu · Global search · 🔔 Notifications · Avatar → Sign out<br>
+  <b>FAB</b>: <span class="btn">Ask Passport</span> → AI assistant panel
+  <span class="s">+ Create items: New Audit (modal) / New Finding / New CAPA / Request Evidence / Add Certificate / Share Documents / Invite Vendor.</span>
+</div>
+
+<div class="n step" style="left:1206px;top:326px;width:474px;height:154px">
+  <span class="h l3">7 · DASHBOARD — <span class="k">/dashboard</span> (landing for every role)</span>
+  KPI cards (compliance %, open findings, expiring certs, active audits) + charts + recent activity.
+  <span class="s">Yahi se tester apni role-lane choose karta hai. Har role ko yahi page milta hai — sirf sidebar alag hota hai.</span>
+</div>
+
+<!-- ============ BAND 2 — ROLE ROUTER ============ -->
+<div class="bandlbl" style="left:20px;top:506px">Band 2 · Role Router — 12 roles → 5 lanes</div>
+
+<div class="n router" style="left:40px;top:536px;width:1640px;height:66px">
+  ROLE ROUTER &nbsp;·&nbsp; frontend: <span class="k" style="margin:0 5px">isNavVisibleForRole(user.role, navId)</span> &nbsp;·&nbsp;
+  backend: <span class="k" style="margin:0 5px">restrictTo(...roles)</span> + <span class="k" style="margin:0 5px">tenantIsolation(orgId)</span>
+</div>
+
+<div class="n lane" style="left:40px;top:636px;width:308px;height:68px">
+  <span class="h">LANE 1 · ADMIN</span>
+  <span class="s">Super Admin · Organization Admin &nbsp;— <b>allowedAll</b></span>
+</div>
+<div class="n lane" style="left:373px;top:636px;width:308px;height:68px">
+  <span class="h">LANE 2 · COMPLIANCE (start here)</span>
+  <span class="s">Compliance Manager — <b>allowedAll</b>, lifecycle driver</span>
+</div>
+<div class="n lane" style="left:706px;top:636px;width:308px;height:68px">
+  <span class="h">LANE 3 · AUDIT EXECUTION</span>
+  <span class="s">Audit Manager (10 items hidden) · Auditor (bada hidden set)</span>
+</div>
+<div class="n lane" style="left:1039px;top:636px;width:308px;height:68px">
+  <span class="h">LANE 4 · ASSURANCE</span>
+  <span class="s">Reviewer · Risk Manager · Document Manager</span>
+</div>
+<div class="n lane" style="left:1372px;top:636px;width:308px;height:68px">
+  <span class="h">LANE 5 · EXTERNAL / LIMITED</span>
+  <span class="s">Vendor Mgr · Employee · External User · CA / Consultant</span>
+</div>
+
+<!-- ============ BAND 3 — LANE STEPS ============ -->
+<!-- LANE 1 -->
+<div class="n step" style="left:40px;top:726px;width:308px;height:116px">
+  <span class="h l1">A1 · Users — <span class="k">/users</span></span>
+  Table: name, role, email, status, last login.
+  <span class="s">API sirf Super/Org Admin ke liye. UI me ab <b>+ Add User</b>, Edit aur Remove buttons hain —
+  Postman ki zaroorat nahi. Remove soft-delete hai.</span>
+</div>
+<div class="n step" style="left:40px;top:862px;width:308px;height:116px">
+  <span class="h l1">A2 · Organizations — <span class="k">/organizations</span></span>
+  7 seeded orgs (Own / Supplier / Vendor / Partner / Client) with compliance &amp; risk score.
+  <span class="s">Super Admin cross-org dekh sakta hai; baaki roles sirf apna <span class="k">orgId</span>.</span>
+</div>
+<div class="n step" style="left:40px;top:998px;width:308px;height:116px">
+  <span class="h l1">A3 · Frameworks — <span class="k">/frameworks</span></span>
+  ISO 27001 / 9001 / 14001 / 45001, SOC 2, GDPR, PCI DSS, SOX, NIST, COBIT, HIPAA, GRI.
+  <span class="s">Ye master data audit wizard ke Step-2 me dropdown feed karta hai.</span>
+</div>
+<div class="n step" style="left:40px;top:1134px;width:308px;height:116px">
+  <span class="h l1">A4 · Settings — <span class="k">/settings</span></span>
+  Org profile, notification preferences, SLA config.
+  <span class="s"><span class="k">GET/PUT /api/settings</span>. Non-admin role ko sidebar me ye item hi nahi dikhega.</span>
+</div>
+<div class="n step" style="left:40px;top:1270px;width:308px;height:116px">
+  <span class="h l1">A5 · Admin extras</span>
+  Audit Trail · Webhooks · Permission Matrix · SLA Dashboard · Audit Cost
+  <span class="s">Ye abhi <b>StubPage</b> hain — "coming soon" type placeholder. Bug mat likhna, gap hai.</span>
+</div>
+
+<!-- LANE 2 -->
+<div class="n step" style="left:373px;top:726px;width:308px;height:116px">
+  <span class="h l2">C1 · Naya audit banao</span>
+  Topbar <span class="btn">+ Create</span> → <span class="btn">New Audit</span> → 6-step wizard modal.
+  <span class="s">Steps: Type &amp; Title → Framework → Scope &amp; Risk → Assign Auditor → Dates → Review.</span>
+</div>
+<div class="n step" style="left:373px;top:862px;width:308px;height:116px">
+  <span class="h l2">C2 · Wizard finish</span>
+  <span class="btn">Create Audit</span> → <span class="k">POST /api/audits</span> → <b>201</b>
+  <span class="s">Compliance Manager ab allowed hai. Fail hone par modal khula rehta hai aur field error dikhata hai.</span>
+</div>
+<div class="n step" style="left:373px;top:998px;width:308px;height:116px">
+  <span class="h l2">C3 · Plan &amp; schedule</span>
+  Audit Universe · Calendar · Gantt · Report Scheduler
+  <span class="s">Naya audit list me <span class="k">Planning</span> status + <span class="k">stageIdx 0</span> ke saath aata hai.</span>
+</div>
+<div class="n step" style="left:373px;top:1134px;width:308px;height:116px">
+  <span class="h l2">C4 · Questionnaire assign</span>
+  <span class="k">/questionnaire</span> (template list, row click = expand) + <span class="k">/question-bank</span>
+  <span class="s">API: <span class="k">/api/assessments/templates</span>, <span class="k">/api/assessments/responses</span>.</span>
+</div>
+<div class="n step" style="left:373px;top:1270px;width:308px;height:116px">
+  <span class="h l2">C5 · Oversight</span>
+  CAPA board · Reports · Certificates · Expiry Alerts
+  <span class="s">Compliance Manager <b>un 4 roles me se ek hai</b> jinhe CAPA API allowed hai.</span>
+</div>
+
+<!-- LANE 3 -->
+<div class="n step" style="left:706px;top:726px;width:308px;height:116px">
+  <span class="h l3">B1 · Audits list — <span class="k">/audits</span></span>
+  Filter chips: All / Planning / Execution / Findings / Closed (count ke saath).
+  <span class="s">Row click se <span class="k">/audits/&lt;id&gt;</span> detail page khulta hai.</span>
+</div>
+<div class="n step" style="left:706px;top:862px;width:308px;height:116px">
+  <span class="h l3">B2 · Audit detail — <span class="k">/audits/:id</span></span>
+  Tabs: Overview · Auditors · Evidence · Findings · Questionnaire
+  <span class="btn">← Back to Audits</span>
+  <span class="s">12-stage progress bar dikhata hai (stageIdx).</span>
+</div>
+<div class="n step" style="left:706px;top:998px;width:308px;height:116px">
+  <span class="h l3">B3 · Auditor assign</span>
+  Auditors tab → naam type karo → <span class="btn">Add</span> → <span class="k">POST /api/audits/:id/assign-auditor</span><br>
+  chip par <span class="btn">×</span> → <span class="k">/unassign-auditor</span>
+  <span class="s">Suggestion list <span class="k">GET /api/users?role=Auditor</span> se aati hai (admin-only API).</span>
+</div>
+<div class="n step" style="left:706px;top:1134px;width:308px;height:116px">
+  <span class="h l3">B4 · Fieldwork</span>
+  Auditor Workspace · Working Papers · Control Testing · Evidence upload
+  <span class="s">Yahi se Band 4 (Evidence) trigger hota hai.</span>
+</div>
+<div class="n step" style="left:706px;top:1270px;width:308px;height:116px">
+  <span class="h l3">B5 · Stage aage badhao</span>
+  Overview tab → <span class="btn">Advance Stage →</span> / <span class="btn">← Back</span>
+  <span class="s"><span class="k">POST /api/audits/:id/advance</span> · <span class="k">/retreat</span> → data refetch.
+  Poore 12 stages ab chalte hain.</span>
+</div>
+
+<!-- LANE 4 -->
+<div class="n step" style="left:1039px;top:726px;width:308px;height:116px">
+  <span class="h l4">D1 · Reviewer — evidence verify</span>
+  <span class="k">PATCH /api/evidence/:id/verify</span> — sirf SA / OA / Compliance Mgr / Audit Mgr / Reviewer.
+  <span class="s">Uploader khud verify nahi kar sakta → 403. Pending → Verified / Rejected.</span>
+</div>
+<div class="n step" style="left:1039px;top:862px;width:308px;height:116px">
+  <span class="h l4">D2 · Risk Manager</span>
+  Sirf ye nav dikhega: Risks · Risk Heatmap · Risk Scheduler · Reports · Certificates · Documents · Evidence · Dashboard.
+  <span class="s">Audits/Findings sidebar me nahi honge — allow-list role hai.</span>
+</div>
+<div class="n step" style="left:1039px;top:998px;width:308px;height:116px">
+  <span class="h l4">D3 · Document Manager</span>
+  Documents · Doc Versions · Policy Lifecycle · Exchange · Certificates
+  <span class="s">Findings/Audits API par <span class="k">403 Forbidden</span> milna <b>expected</b> hai.</span>
+</div>
+<div class="n step" style="left:1039px;top:1134px;width:308px;height:116px">
+  <span class="h l4">D4 · CAPA verification</span>
+  <span class="k">/capa</span> Kanban: Open → In Progress → Pending Verification → Verified → Closed
+  <span class="s">Card click par confirm dialog aata hai. Closed column click par kuch nahi hota.</span>
+</div>
+<div class="n step" style="left:1039px;top:1270px;width:308px;height:116px">
+  <span class="h l4">D5 · Sign-off</span>
+  Reports → <span class="k">/api/reports</span> · certificate issue · audit Closed
+  <span class="s">Reviewer role CAPA + evidence dono verify kar sakta hai.</span>
+</div>
+
+<!-- LANE 5 -->
+<div class="n step" style="left:1372px;top:726px;width:308px;height:116px">
+  <span class="h l5">E1 · Vendor Manager</span>
+  Vendors · Vendor Scorecard (<span class="k">/vendors/:id/scorecard</span>) · Bulk Invite
+  <span class="s">Audits, Findings, Risks, Controls sidebar se <b>hide</b> hain.</span>
+</div>
+<div class="n step" style="left:1372px;top:862px;width:308px;height:116px">
+  <span class="h l5">E2 · Bulk Invite — <span class="k">/bulk-invite</span></span>
+  CSV paste → <span class="btn">Parse CSV</span> → preview table → <span class="btn">Send Invites</span>
+  <span class="s">Vendor onboarding ka entry point.</span>
+</div>
+<div class="n step" style="left:1372px;top:998px;width:308px;height:116px">
+  <span class="h l5">E3 · External Company User</span>
+  Sabse tight nav: Documents · Evidence · Certificates · Exchange · Notifications.
+  <span class="s">Seed user ORG-103 ka hai — <b>tenant isolation test</b> yahi karo: ORG-101 ka data nahi dikhna chahiye.</span>
+</div>
+<div class="n step" style="left:1372px;top:1134px;width:308px;height:116px">
+  <span class="h l5">E4 · Employee</span>
+  My Workspace · Self Assessment · Documents · Notifications
+  <span class="s">Negative testing ke liye best role — URL me <span class="k">/users</span> type karo → <span class="k">/dashboard</span> par bounce hona chahiye.</span>
+</div>
+<div class="n step" style="left:1372px;top:1270px;width:308px;height:116px">
+  <span class="h l5">E5 · CA / Consultant</span>
+  Client Portfolio · Organizations · Audits · Findings · Risks · CAPA (nav) · Reports
+  <span class="s">CAPA ab nav me nahi dikhta — nav aur API permissions sync kar diye gaye hain.</span>
+</div>
+
+<!-- ============ BAND 3 — LIFECYCLE ============ -->
+<div class="bandlbl" style="left:20px;top:1420px">Band 3 · Audit Lifecycle — 12 stages (core data flow)</div>
+
+<div class="n router" style="left:40px;top:1448px;width:1640px;height:50px;font-size:12px">
+  <span><span class="k">audit.status</span> enum &nbsp;·&nbsp; <span class="k">stageIdx</span> counter &nbsp;·&nbsp;
+  aage: <span class="k">POST /api/audits/:id/advance</span> &nbsp;·&nbsp; peeche: <span class="k">POST /api/audits/:id/retreat</span></span>
+</div>
+
+<div class="n stage" style="left:40px;top:1524px;width:248px;height:66px"><span class="h">1 · Planning</span><span class="s">Audit create hote hi default status</span></div>
+<div class="n stage" style="left:318px;top:1524px;width:248px;height:66px"><span class="h">2 · Scoping</span><span class="s">Scope text + framework lock</span></div>
+<div class="n stage" style="left:596px;top:1524px;width:248px;height:66px"><span class="h">3 · Risk Assessment</span><span class="s">riskLevel: Low/Med/High/Critical</span></div>
+<div class="n stage" style="left:874px;top:1524px;width:248px;height:66px"><span class="h">4 · Questionnaire</span><span class="s">Template assign + responses</span></div>
+<div class="n stage" style="left:1152px;top:1524px;width:248px;height:66px"><span class="h">5 · Auditor Assigned</span><span class="s">assign-auditor API</span></div>
+<div class="n stage" style="left:1430px;top:1524px;width:248px;height:66px"><span class="h">6 · Execution</span><span class="s">Fieldwork, working papers</span></div>
+
+<div class="n stage" style="left:40px;top:1650px;width:248px;height:66px"><span class="h">7 · Evidence Review</span><span class="s">Upload → link → verify</span></div>
+<div class="n stage" style="left:318px;top:1650px;width:248px;height:66px"><span class="h">8 · Findings</span><span class="s">Non-conformity raise</span></div>
+<div class="n stage" style="left:596px;top:1650px;width:248px;height:66px"><span class="h">9 · Corrective Actions</span><span class="s">CAPA create + execute</span></div>
+<div class="n stage" style="left:874px;top:1650px;width:248px;height:66px"><span class="h">10 · Verification</span><span class="s">Reviewer sign-off</span></div>
+<div class="n stage" style="left:1152px;top:1650px;width:248px;height:66px"><span class="h">11 · Report</span><span class="s">Report + certificate issue</span></div>
+<div class="n stage" style="left:1430px;top:1650px;width:248px;height:66px"><span class="h">12 · Closed</span><span class="s">completedAt set</span></div>
+
+<!-- ============ BAND 4 — FINDING CHAIN ============ -->
+<div class="bandlbl" style="left:20px;top:1756px">Band 4 · Finding → CAPA → Evidence → Verify → Close</div>
+
+<div class="n step" style="left:40px;top:1788px;width:308px;height:170px">
+  <span class="h l2">F1 · FINDING</span>
+  <span class="k">POST /api/findings</span> (auditId required)<br>
+  Fields: title, criteria, condition, cause, consequence, recommendation, owner, due<br>
+  Status: <b>Open → Acknowledged → In Progress → Resolved → Closed</b> (+ Overdue, Reopened)<br>
+  <span class="k">/:id/advance</span> · <span class="k">/:id/reopen</span>
+  <span class="s">UI: <span class="k">/findings</span> → <span class="btn">+ New Finding</span> (audit chunna zaroori), row par Edit / Remove.</span>
+</div>
+
+<div class="n step" style="left:373px;top:1788px;width:308px;height:170px">
+  <span class="h l4">F2 · CAPA</span>
+  <span class="k">POST /api/capa</span> (findingId required)<br>
+  Fields: rootCause, actionPlan, verificationCriteria, owner, due, severity<br>
+  Status: <b>Open → In Progress → Pending Verification → Verified → Closed</b>
+  <span class="s">RBAC: sirf <b>Super Admin, Organization Admin, Compliance Manager, Reviewer</b>.
+  Auditor / Audit Manager ko yahan 403 milega.</span>
+</div>
+
+<div class="n step" style="left:706px;top:1788px;width:308px;height:170px">
+  <span class="h l3">F3 · EVIDENCE</span>
+  <span class="btn">Upload Evidence</span> → modal → file + name + type + confidentiality + audit ref
+  → <span class="k">POST /api/evidence/upload</span> (multipart)<br>
+  <span class="btn">Link</span> → target: finding / control / question → <span class="k">POST /api/evidence/:id/links</span><br>
+  <span class="btn">Download</span> → <span class="k">GET /api/evidence/:id/download</span>
+  <span class="s">Status: Draft → Submitted → Under Review → Approved / Rejected / Expired.</span>
+</div>
+
+<div class="n step" style="left:1039px;top:1788px;width:308px;height:170px">
+  <span class="h l4">F4 · VERIFICATION</span>
+  <span class="k">PATCH /api/evidence/:id/verify</span> → Verified / Rejected<br>
+  CAPA card click → <span class="k">POST /api/capa/:id/advance</span> → Verified<br>
+  Finding → Resolved → Closed
+  <span class="s">Reject / dobara problem mile to Finding <b>Reopened</b> ho jaata hai (laal wapas jaane wala arrow).</span>
+</div>
+
+<div class="n step" style="left:1372px;top:1788px;width:308px;height:170px">
+  <span class="h l1">F5 · REPORT &amp; CERTIFICATE</span>
+  <span class="k">/reports</span> → <span class="k">GET /api/reports</span> · Export CSV<br>
+  <span class="k">/certificates</span> → issue / renew · <span class="k">/expiry-alerts</span> → expiring soon<br>
+  Audit → <span class="k">Closed</span>
+  <span class="s">Notifications module cert expiry aur overdue finding par alert generate karta hai.</span>
+</div>
+
+<!-- ============ BAND 5 — BACKEND ============ -->
+<div class="bandlbl" style="left:20px;top:2040px">Band 5 · Har API request ka backend chain</div>
+
+<div class="n api" style="left:40px;top:2068px;width:210px;height:84px">
+  <span class="h">Request</span><span class="s">React fetch + <span class="k">Bearer &lt;vp_token&gt;</span></span>
+</div>
+<div class="n api" style="left:275px;top:2068px;width:210px;height:84px">
+  <span class="h">authenticate</span><span class="s">JWT verify → <span class="k">req.user</span> = {userId, role, orgId}</span>
+</div>
+<div class="n api" style="left:510px;top:2068px;width:210px;height:84px">
+  <span class="h">restrictTo(roles)</span><span class="s">Role list me nahi → <b>403 Forbidden</b></span>
+</div>
+<div class="n api" style="left:745px;top:2068px;width:210px;height:84px">
+  <span class="h">tenantIsolation</span><span class="s">Doosre org ka id → 403. POST par orgId auto-inject.</span>
+</div>
+<div class="n api" style="left:980px;top:2068px;width:210px;height:84px">
+  <span class="h">validate (zod)</span><span class="s">Schema fail → <b>400</b> + field errors</span>
+</div>
+<div class="n api" style="left:1215px;top:2068px;width:210px;height:84px">
+  <span class="h">controller → service</span><span class="s">Business logic + pagination</span>
+</div>
+<div class="n api" style="left:1450px;top:2068px;width:210px;height:84px">
+  <span class="h">MongoDB (Mongoose)</span><span class="s">orgId-scoped query</span>
+</div>
+
+<div class="n store" style="left:40px;top:2186px;width:195px;height:60px"><span class="h">users</span><span class="s">/api/users</span></div>
+<div class="n store" style="left:246px;top:2186px;width:195px;height:60px"><span class="h">organizations</span><span class="s">/api/organizations</span></div>
+<div class="n store" style="left:452px;top:2186px;width:195px;height:60px"><span class="h">audits</span><span class="s">/api/audits</span></div>
+<div class="n store" style="left:658px;top:2186px;width:195px;height:60px"><span class="h">findings</span><span class="s">/api/findings</span></div>
+<div class="n store" style="left:864px;top:2186px;width:195px;height:60px"><span class="h">capa</span><span class="s">/api/capa</span></div>
+<div class="n store" style="left:1070px;top:2186px;width:195px;height:60px"><span class="h">evidence + links</span><span class="s">/api/evidence</span></div>
+<div class="n store" style="left:1276px;top:2186px;width:195px;height:60px"><span class="h">certificates · docs</span><span class="s">/api/certificates</span></div>
+<div class="n store" style="left:1482px;top:2186px;width:195px;height:60px"><span class="h">risks · controls</span><span class="s">/api/risks</span></div>
+
+<!-- ============ BAND 6 — EXIT ============ -->
+<div class="bandlbl" style="left:20px;top:2300px">Band 6 · Exit &amp; role switch (loop)</div>
+
+<div class="n step" style="left:40px;top:2332px;width:380px;height:100px">
+  <span class="h">G1 · Logout</span>
+  Topbar avatar → <span class="btn">Sign out</span>
+  <span class="s"><span class="k">vp_token</span> + <span class="k">vp_user</span> clear → <span class="k">/login</span> par redirect.</span>
+</div>
+<div class="n step" style="left:456px;top:2332px;width:424px;height:100px">
+  <span class="h">G2 · Agla role</span>
+  Seed table ke order me next account se login karo (1 → 12).
+  <span class="s">Har role par check: sidebar items, page access, aur API 403 behaviour.</span>
+</div>
+<div class="n start" style="left:916px;top:2332px;width:300px;height:100px">
+  <span class="h">↺ Band 0 par wapas</span>
+  <span class="s">Sabhi 12 roles cover hone tak loop repeat karo.</span>
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="dfdbar" style="margin-top:10px">
+  <span class="pill p-green">Start / End</span>
+  <span class="pill p-seal">Decision</span>
+  <span class="pill p-grey">Process / Screen</span>
+  <span class="pill p-blue">API / Middleware</span>
+  <span class="pill p-violet">Data store</span>
+  <span class="pill p-teal">Lifecycle stage</span>
+  <span class="hint">Laal dashed arrow = rework/rollback path</span>
+</div>
+
+<h2>Role-wise step-by-step — button, action aur expected result</h2>
+
+<h3>Step 0 — Register (naya account) &amp; Login</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:20%">Screen</th><th style="width:22%">Button / Field</th><th style="width:28%">Kya hota hai</th><th>Expected result</th></tr></thead>
+  <tbody>
+    <tr><td><code>/login</code> (app kholte hi <code>/</code> yahi redirect karta hai)</td><td>Sign in →</td>
+      <td><code>POST /api/auth/login</code> — bcrypt compare, JWT 24h</td>
+      <td>Success → <code>/dashboard</code>. Galat password → "Invalid credentials". 5+ fast attempts → rate limiter block.</td></tr>
+    <tr><td><code>/login</code></td><td>Role chips — <b>hata diye gaye</b></td>
+      <td>—</td>
+      <td>Role hamesha aapke account se aata hai. Ab koi bhramit karne wala chip nahi hai.</td></tr>
+    <tr><td><code>/register</code></td><td>Sign in link</td><td>Navigate</td><td><code>/login</code> khulega</td></tr>
+    <tr><td><code>/register</code></td><td>Role chips (7 options)</td><td>Form state set</td><td>Yahi role body me jaata hai. <b>Super Admin kabhi nahi</b> — server allow-list se reject karega.</td></tr>
+    <tr><td><code>/register</code></td><td>Create Account →</td>
+      <td><code>POST /api/auth/register</code> — email unique, password ≥ 8</td>
+      <td>Naya org banta hai → token + <code>/dashboard</code>. Duplicate email ya existing org name → asli error message screen par.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Lane 1 — Super Admin / Organization Admin</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:26%">Page</th><th style="width:24%">Action</th><th style="width:24%">API</th><th>Expected</th></tr></thead>
+  <tbody>
+    <tr><td><code>/users</code></td><td>Page load</td><td><code>GET /api/users</code></td><td>Seeded users list + pagination. Non-admin role isi URL par jaaye to <code>/dashboard</code> par bounce.</td></tr>
+    <tr><td><code>/users</code></td><td><b>+ Add User</b> → Create user</td><td><code>POST /api/users</code></td><td>201 → list me naya row. Organization Admin agar <b>Super Admin</b> role chune to <b>403</b>. Role enum se bahar → 400.</td></tr>
+    <tr><td><code>/users</code></td><td><b>Edit</b> / <b>Remove</b></td><td><code>PUT</code> / <code>DELETE /api/users/:id</code></td><td>Remove soft-delete hai — user login nahi kar paayega par audit trail me uska naam rehta hai. Apni row par Remove nahi dikhta.</td></tr>
+    <tr><td><code>/organizations</code></td><td>Page load</td><td><code>GET /api/organizations</code></td><td>Super Admin ko saare 7 org; baaki roles ko sirf apna.</td></tr>
+    <tr><td><code>/frameworks</code></td><td>Page load</td><td><code>GET /api/frameworks</code></td><td>13 frameworks — yahi audit wizard step-2 me dikhne chahiye.</td></tr>
+    <tr><td><code>/settings</code></td><td>Save</td><td><code>PUT /api/settings</code></td><td>Value persist ho, reload ke baad bhi dikhe.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Lane 2 — Compliance Manager (yahi se main flow start karo)</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:26%">Step</th><th style="width:24%">Button</th><th style="width:24%">API</th><th>Expected</th></tr></thead>
+  <tbody>
+    <tr><td>Topbar</td><td>+ Create → New Audit</td><td>—</td><td>6-step wizard modal khule</td></tr>
+    <tr><td>Wizard 1 · Type &amp; Title</td><td>Type card + party chip + title</td><td>—</td><td>Title 5 char se chhota → step-6 par 400 aayega</td></tr>
+    <tr><td>Wizard 2 · Framework</td><td>Framework card</td><td><code>GET /api/frameworks</code></td><td>Selected card highlight ho</td></tr>
+    <tr><td>Wizard 3 · Scope &amp; Risk</td><td>Scope textarea + Low/Medium/High/Critical</td><td>—</td><td>Risk chip select ho</td></tr>
+    <tr><td>Wizard 4 · Assign Auditor</td><td>Lead auditor</td><td>—</td><td>Naam form me set ho</td></tr>
+    <tr><td>Wizard 5 · Dates</td><td>Start / Due date</td><td>—</td><td>Due &gt; Start rakho</td></tr>
+    <tr><td>Wizard 6 · Review</td><td><b>Create Audit</b></td><td><code>POST /api/audits</code></td>
+      <td>201 → audit list me naya row. Compliance Manager ab allowed hai. Validation fail hone par modal khula
+      rehta hai aur field-level error dikhata hai.</td></tr>
+    <tr><td><code>/capa</code></td><td>Kanban card click</td><td><code>POST /api/capa/:id/advance</code></td><td>Card agli column me shift ho jaaye</td></tr>
+    <tr><td><code>/certificates</code>, <code>/reports</code></td><td>Page load</td><td><code>GET /api/certificates</code>, <code>/api/reports</code></td><td>Seeded data render ho</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Lane 3 — Audit Manager / Auditor</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:26%">Step</th><th style="width:24%">Button</th><th style="width:24%">API</th><th>Expected</th></tr></thead>
+  <tbody>
+    <tr><td><code>/audits</code></td><td>Filter chips (All / Planning / Execution / Findings / Closed)</td><td><code>GET /api/audits</code></td><td>List filter ho, count sahi ho</td></tr>
+    <tr><td><code>/audits/:id</code></td><td>Tabs</td><td><code>GET /api/audits/:id</code></td><td>Overview / Auditors / Evidence / Findings / Questionnaire</td></tr>
+    <tr><td>Auditors tab</td><td>naam type → <b>Add</b></td><td><code>POST /api/audits/:id/assign-auditor</code></td><td>Chip list me naam add ho</td></tr>
+    <tr><td>Auditors tab</td><td>chip ka <b>×</b></td><td><code>POST /api/audits/:id/unassign-auditor</code></td><td>Chip hat jaaye</td></tr>
+    <tr><td>Overview tab</td><td><b>Advance Stage →</b></td><td><code>POST /api/audits/:id/advance</code></td><td>Status agli stage par + page reload</td></tr>
+    <tr><td>Overview tab</td><td><b>← Back</b></td><td><code>POST /api/audits/:id/retreat</code></td><td>Status ek stage peeche</td></tr>
+    <tr><td><code>/evidence</code></td><td><b>Upload Evidence</b> → Save</td><td><code>POST /api/evidence/upload</code></td><td>Naya evidence row, status <code>Draft</code></td></tr>
+    <tr><td><code>/evidence</code></td><td><b>Link</b> → finding/control/question → Save</td><td><code>POST /api/evidence/:id/links</code></td><td>Row ke neeche link chip dikhe</td></tr>
+    <tr><td><code>/evidence</code></td><td><b>Download</b></td><td><code>GET /api/evidence/:id/download</code></td><td>File download ho</td></tr>
+    <tr><td>Negative test</td><td><code>/capa</code> kholo</td><td><code>GET /api/capa</code></td><td><b>403</b> — Auditor CAPA API me allowed nahi</td></tr>
+    <tr><td>Negative test</td><td>Apna hi uploaded evidence verify karo</td><td><code>PATCH /api/evidence/:id/verify</code></td><td><b>403</b> — uploader khud attest nahi kar sakta</td></tr>
+    <tr><td>Negative test</td><td>Khud ko auditor assign karo</td><td><code>POST /api/audits/:id/assign-auditor</code></td><td><b>403</b> — self-appointment blocked</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Lane 4 — Reviewer / Risk Manager / Document Manager</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:26%">Role</th><th style="width:24%">Action</th><th style="width:24%">API</th><th>Expected</th></tr></thead>
+  <tbody>
+    <tr><td>Reviewer</td><td>Evidence verify</td><td><code>PATCH /api/evidence/:id/verify</code></td><td>verificationStatus → Verified / Rejected</td></tr>
+    <tr><td>Reviewer</td><td>CAPA card → Verified → Closed</td><td><code>POST /api/capa/:id/advance</code></td><td>Kanban column shift, Closed par click dead</td></tr>
+    <tr><td>Risk Manager</td><td>Sidebar dekho</td><td>—</td><td>Sirf Risks, Heatmap, Risk Scheduler, Reports, Certificates, Documents, Evidence, Dashboard, Notifications, Settings-item visible</td></tr>
+    <tr><td>Risk Manager</td><td><code>/risks</code>, <code>/risk-heatmap</code></td><td><code>GET /api/risks</code></td><td>Inherent/residual rating + heatmap cells</td></tr>
+    <tr><td>Document Manager</td><td><code>/documents</code>, <code>/policy-lifecycle</code></td><td><code>GET /api/documents</code></td><td>Doc list; <code>/api/audits</code> hit karo to <b>403</b></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Lane 5 — Vendor Manager / Employee / External User / CA</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:26%">Role</th><th style="width:24%">Action</th><th style="width:24%">API</th><th>Expected</th></tr></thead>
+  <tbody>
+    <tr><td>Vendor Manager</td><td><code>/vendors</code> → scorecard</td><td><code>GET /api/vendors</code></td><td>Vendor list + score view</td></tr>
+    <tr><td>Vendor Manager</td><td><code>/bulk-invite</code> → <b>Parse CSV</b> → <b>Send Invites</b></td><td>—</td><td>Parse ke baad preview table; invalid CSV par error</td></tr>
+    <tr><td>External Company User (ORG-103)</td><td><code>/documents</code>, <code>/evidence</code></td><td><code>GET /api/documents</code></td><td><b>Sirf ORG-103 ka data</b> — ORG-101 ka ek bhi record na dikhe (tenant isolation)</td></tr>
+    <tr><td>Employee</td><td>URL me <code>/users</code> type karo</td><td>—</td><td><code>/dashboard</code> par redirect (frontend guard)</td></tr>
+    <tr><td>CA / Consultant</td><td><code>/client-portfolio</code></td><td><code>GET /api/organizations</code></td><td>Client list render ho</td></tr>
+    <tr><td>CA / Consultant</td><td>Sidebar → CAPA</td><td><code>GET /api/capa</code></td><td>CAPA ab nav me dikhta hi nahi — nav API permissions ke saath sync hai</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Testing ke waqt in cheezon par dhyan do</h2>
+
+<div class="note">
+<b>Ye section update ho chuka hai.</b> Pehle yahan 8 bugs listed the. Un sab par fix apply ho chuka hai —
+neeche <b>ab kya expected behaviour hai</b> wo likha hai. Agar aapko purana behaviour dikhe to wo genuine
+regression hai, bug report karo.
+</div>
+
+<div class="warnbox">
+<b>1 · Bina token ke API 401 deta hai.</b> <code>server.js</code> me ek demo-user fallback likha hai, par har module
+route uske baad <code>authenticate</code> chalata hai jo <code>Bearer</code> header na hone par
+<b>401 "No token provided"</b> throw karta hai. Ye <b>sahi behaviour</b> hai — fallback effectively dead code hai.
+</div>
+
+<div class="warnbox">
+<b>2 · Register ab naya organization banata hai — existing me join nahi karta.</b> Ye sabse bada security fix hai.
+Pehle koi bhi <code>role: "Super Admin"</code> aur <code>orgId: "ORG-101"</code> bhejkar poore platform ka
+admin ban sakta tha. Ab:
+<ul style="margin:8px 0 0;padding-left:20px">
+<li><code>orgId</code> request se liya hi nahi jaata — server khud generate karta hai</li>
+<li><code>role</code> ek fixed allow-list se hi aa sakta hai; <b>Super Admin kabhi nahi</b></li>
+<li>Agar us naam ka org pehle se hai to <b>409</b> milega — "apne admin se invite maango"</li>
+</ul>
+<b>Test karo:</b> "GlobalTech Solutions" naam se register karo → 409 aana chahiye. Koi naya naam do → naya
+ORG-xxx banega aur usme aap akele honge.
+</div>
+
+<div class="note">
+<b>3 · Register ki error ab asli wajah dikhati hai.</b> Duplicate email, existing org name, ya rejected role —
+teeno ka apna message screen par aayega. Pehle har failure par "Cannot reach the server…" dikhta tha.
+</div>
+
+<div class="note">
+<b>4 · Audits list se detail page ab khulta hai.</b> Row par click (ya Enter) karne se
+<code>/audits/&lt;id&gt;</code> khul jaata hai. Pehle sirf <code>console.log</code> hota tha.
+</div>
+
+<div class="note">
+<b>5 · CAPA card ab confirmation maangta hai.</b> Card click karne par dialog aayega jisme target status likha
+hoga. Cancel karoge to kuch nahi hoga. Har change audit trail me record hota hai.
+</div>
+
+<div class="note">
+<b>6 · "Advance Stage →" aur "← Back" ab kaam karte hain.</b> Auth header ab bheja jaata hai, page reload
+ke bajaye data refetch hota hai, aur fail hone par error banner dikhta hai. Saath me
+<b>lifecycle ka bug bhi fix ho gaya</b> — pehle stage 5 (Execution) ke aage jaana impossible tha kyunki service
+ek aisi status value bhejti thi jo model ke enum me hai hi nahi. Ab poore 12 stages chalte hain.
+</div>
+
+<div class="note">
+<b>7 · Create Audit ab failure chhupata nahi.</b> 400/403 aane par modal khula rehta hai aur field-level error
+dikhata hai. Aur <b>Compliance Manager ab audit bana sakta hai</b> — wo <code>requireAuditor</code> list me add
+kar diya gaya hai.
+</div>
+
+<div class="note">
+<b>8 · Stub pages ab sidebar me "SOON" badge ke saath dikhte hain.</b> 23 nav items par ye badge hai —
+click karne se pehle hi pata chal jaayega ki wo page abhi bana nahi hai.
+<b>Audit Trail ab stub nahi hai</b> — wo asli page ban gaya hai (<code>/audit-trail</code>).
+</div>
+
+<div class="note">
+<b>9 · Mock data ab kahin fallback nahi hota.</b> API fail hone par "Could not load…" error state dikhta hai,
+fake rows nahi. Jo 4 pages sirf sample content dikhate hain (Client Portfolio, Regulatory Changes, Working
+Papers, AI Drafts) unke upar saaf-saaf <b>"Sample data"</b> banner hai.
+</div>
+
+<div class="warnbox">
+<b>10 · Naye rules jo ab test karne chahiye:</b>
+<ul style="margin:8px 0 0;padding-left:20px">
+<li><b>Evidence self-verification block:</b> jo user evidence upload kare wahi use verify nahi kar sakta → <b>403</b></li>
+<li><b>Verify sirf reviewer-class roles:</b> Auditor, Employee, External User ab verify nahi kar sakte → <b>403</b></li>
+<li><b>Auditor assignment:</b> koi bhi naam type nahi chalega — active user hona chahiye; khud ko assign nahi kar sakte;
+audited org ka member auditor nahi ban sakta</li>
+<li><b>Delete ab soft delete hai:</b> record list se hat jaata hai par DB me <code>deletedAt</code> ke saath rehta hai</li>
+<li><b>Audit trail:</b> har create/update/delete <code>/audit-trail</code> page par dikhna chahiye, actor ke naam ke saath</li>
+<li><b>Audit log immutable hai:</b> uski entry ko update ya delete karne ki koshish error deni chahiye</li>
+<li><b>Login page par role chips nahi hain</b> — role account se aata hai</li>
+</ul>
+</div>
+
+<div class="note">
+<b>11 · Ab create/edit UI se hota hai, Postman se nahi.</b> Pehle sirf Documents aur Evidence me create flow tha;
+baaki 9 entity pages read-only the. Ab in sab par create button hai:
+<ul style="margin:8px 0 0;padding-left:20px">
+<li><b>Users</b> — <span class="k">+ Add User</span>, Edit, Remove. <b>Ye sabse zaroori hai:</b> ab sign-up hamesha naya org
+banata hai, isliye kisi ko apne org me laane ka <b>ekmatra</b> tareeka yahi page hai.</li>
+<li><b>Findings</b> — <span class="k">+ New Finding</span> (audit chunna zaroori), Edit, Remove</li>
+<li><b>CAPA</b> — <span class="k">+ New CAPA</span> (finding chunna zaroori)</li>
+<li><b>Risks · Controls · Certificates · Vendors</b> — apne-apne create buttons</li>
+</ul>
+Topbar ka <span class="k">+ Create</span> menu ab seedha wo dialog kholta hai (<span class="k">?new=1</span> se), sirf list page par
+chhod nahi deta.
+</div>
+
+<div class="warnbox">
+<b>12 · In create flows ko test karo:</b>
+<ul style="margin:8px 0 0;padding-left:20px">
+<li>Required field khaali chhodo → dialog band nahi hona chahiye, upar "Required: …" dikhna chahiye</li>
+<li>Organization Admin se user banate waqt role <b>Super Admin</b> chuno → <b>403</b> (list me option tabhi dikhega jab aap Super Admin ho)</li>
+<li>Finding banate waqt audit na chuno → form hi rok dega; API par bhejo to 400</li>
+<li>Naya user banao → uske email/password se login karo → uska role sidebar me reflect hona chahiye</li>
+<li>User ko Remove karo → wo login nahi kar paayega (<b>401</b>) par <span class="k">/audit-trail</span> me uske purane actions rahenge</li>
+<li>Har create/edit/remove ke baad <span class="k">/audit-trail</span> kholo → entry actor ke <b>naam</b> ke saath dikhni chahiye</li>
+</ul>
+</div>
+
+<h3>Ek complete end-to-end run (30 min ka happy path)</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:8%">#</th><th style="width:22%">Role</th><th style="width:34%">Kya karo</th><th>Verify</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Super Admin</td><td>Login → <code>/users</code>, <code>/organizations</code>, <code>/frameworks</code></td><td>Seeded data dikhe, koi 403 na aaye</td></tr>
+    <tr><td>2</td><td>Audit Manager <i>ya</i> Compliance Manager</td><td>+ Create → New Audit → 6 steps → Create Audit</td><td>201 → <code>/audits</code> me naya row, status Planning</td></tr>
+    <tr><td>3</td><td>Audit Manager</td><td><code>/audits/:id</code> → Auditors tab → Add "Rohit Kapoor"</td><td>Chip add ho</td></tr>
+    <tr><td>4</td><td>Auditor</td><td>Overview tab → <b>Advance Stage →</b> 6 baar</td><td>Status Execution → Evidence Review tak badhe (ab poore 12 stages chalte hain)</td></tr>
+    <tr><td>5</td><td>Auditor</td><td><code>/evidence</code> → Upload Evidence → Link to a finding</td><td>Evidence row + link chip</td></tr>
+    <tr><td>6</td><td>Auditor</td><td><code>/findings</code> → <b>+ New Finding</b> → audit chuno → Create</td><td><code>/findings</code> me Open status ka naya row</td></tr>
+    <tr><td>7</td><td>Compliance Manager</td><td><code>/capa</code> → <b>+ New CAPA</b> → finding chuno → Create</td><td>Kanban ke Open column me card</td></tr>
+    <tr><td>8</td><td>Reviewer</td><td>Evidence verify (kisi doosre ka upload) + CAPA card ko Closed tak click</td><td>Status chain complete. Apna upload verify karo to <b>403</b> aana chahiye.</td></tr>
+    <tr><td>9</td><td>Compliance Manager</td><td>Audit ko Report → Closed tak advance karo</td><td>Status Closed, <code>completedAt</code> set</td></tr>
+    <tr><td>10</td><td>External User (ORG-103)</td><td>Login → documents/evidence dekho</td><td>ORG-101 ka koi data na dikhe</td></tr>
+    <tr><td>11</td><td>Employee</td><td>URL se <code>/users</code>, <code>/settings</code> try karo</td><td>Har baar <code>/dashboard</code> par bounce</td></tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+var DFDS = {
+  d1: { view:'dfdview',  zoom:'dfdzoom',  w:1720, h:2480, z:1 },
+  d2: { view:'dfdview2', zoom:'dfdzoom2', w:1500, h:1790, z:1 }
+};
+function apply(k){
+  var c = DFDS[k], el = document.getElementById(c.zoom);
+  if (!el) return;
+  el.style.transform = 'scale(' + c.z + ')';
+  el.style.width  = (c.w * c.z) + 'px';
+  el.style.height = (c.h * c.z) + 'px';
+}
+function setZoom(k, v){ DFDS[k].z = Math.min(2, Math.max(0.3, v)); apply(k); }
+function zoomBy(k, d){ setZoom(k, DFDS[k].z + d); }
+function fitWidth(k){
+  var c = DFDS[k], view = document.getElementById(c.view);
+  if (!view) return;
+  setZoom(k, (view.clientWidth - 24) / c.w);
+}
+window.addEventListener('load', function(){ fitWidth('d1'); fitWidth('d2'); });
+</script>
+</body>
+</html>

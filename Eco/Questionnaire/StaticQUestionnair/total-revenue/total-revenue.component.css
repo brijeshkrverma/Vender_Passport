@@ -1,0 +1,149 @@
+.questionnaire-container {
+    padding: 20px;
+    background-color: #f9f9f9; /* Adjust based on your design */
+    border-radius: 8px;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.info-section {
+    margin-bottom: 20px;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-left: 41px;
+}
+
+.custom-table th, .custom-table td {
+    padding: 10px;
+    border: 1px solid #e0e0e0; /* Adjust border color */
+    text-align: left;
+}
+
+.select-input {
+    width: 100%; /* Ensure select inputs take the full width */
+}
+
+.input-field {
+    width: 100%; /* Ensure input fields take the full width */
+}
+
+.no-info-options {
+    margin-top: 20px;
+}
+
+
+.demo-table {
+    width: 100%;
+  }
+  
+  .demo-button-container {
+    padding-bottom: 16px;
+  }
+  
+  .demo-button + .demo-button {
+    margin-left: 8px;
+  }
+  
+  .example-container {
+    height: 400px;
+    overflow: auto;
+  }
+  
+  .mat-mdc-table-sticky {
+    background: #59abfd;
+    opacity: 1;
+  }
+  
+  .example-sticky-toggle-group {
+    margin: 8px;
+  }
+  
+  .mat-column-filler {
+    padding: 0 8px;
+    font-size: 10px;
+    text-align: center;
+  }
+  
+  .mat-mdc-header-cell,
+  .mat-mdc-footer-cell,
+  .mat-mdc-cell {
+    min-width: 80px;
+    box-sizing: border-box;
+  }
+  
+  .mat-mdc-header-row,
+  .mat-mdc-footer-row,
+  .mat-mdc-row {
+    min-width: 1920px; /* 24 columns, 80px each */
+  }
+  
+  .mat-mdc-table-sticky-border-elem-top {
+    border-bottom: 2px solid midnightblue;
+  }
+  
+  .mat-mdc-table-sticky-border-elem-right {
+    border-left: 2px solid midnightblue;
+  }
+  
+  .mat-mdc-table-sticky-border-elem-bottom {
+    border-top: 2px solid midnightblue;
+  }
+  
+  .mat-mdc-table-sticky-border-elem-left {
+    border-right: 2px solid midnightblue;
+  }
+  
+  .make-gold {
+    background-color: #008000cc;
+  }
+  
+  .background-none {
+    background-color: white;
+  }
+  
+  .button-control {
+    display: flex;
+     justify-content: flex-start !important;
+        gap: 15px;
+    margin-bottom: 16px;
+  }
+  
+  th {
+    text-align: center;
+  }
+  
+  ::ng-deep .mat-mdc-table{
+    border-radius: 6px;
+  }
+  ::ng-deep .mat-mdc-table th{
+    border: 1px solid #8fcd8f;
+  }
+  
+  ::ng-deep .mat-mdc-table td{
+    border: 1px solid #8fcd8f;
+  }
+  
+
+
+th {
+    background-color: #008000cc !important;
+    color: white !important;;
+  }
+  tr > td:first-child {
+    background-color: #008000cc !important;
+    color: white !important;
+}
+
+.radio-group{
+    display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+  align-items: flex-start;
+}

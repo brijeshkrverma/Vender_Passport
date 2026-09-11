@@ -1,0 +1,101 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 mat-dialog-title>Assessor's Options</h2>
+  <button class="btn btn-fill" (click)="addOption()">+ Add Option</button>
+</div>
+
+<mat-dialog-content>
+  <form [formGroup]="optionForm">
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <label class="form-label">Option Type</label>
+        <select class="form-control" formControlName="assessorOptionType" (change)="changeOptionType($event)">
+          <option value="radio">Radio</option>
+          <option value="checkbox">Checkbox</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <label class="form-label">Assessor Guidance</label>
+        <textarea rows="2" class="form-control" formControlName="assessorGuidence" placeholder="Enter assessor guidance"></textarea>
+      </div>
+    </div>
+
+    <div formArrayName="assessorOption">
+      <div *ngFor="let optionGroup of assessorOptions.controls; let i = index" [formGroupName]="i" class="container border p-3 mb-3 rounded">
+        <div class="row fw-bold border-bottom pb-2 mb-2">
+          <div class="col-1 text-center">S No.</div>
+          <div class="col-4">Option</div>
+          <div class="col-2">Marks</div>
+          <div class="col-2 text-center">N/A</div>
+          <div class="col-1"></div>
+          <div class="col-1"></div>
+        </div>
+
+        <div class="row align-items-center mb-2">
+          <div class="col-1 text-center">{{ i + 1 }}</div>
+
+          <div class="col-4">
+            <input formControlName="option" class="form-control" type="text" appMaxWordLength [maxWords]="200" />
+          </div>
+
+          <div class="col-2">
+            <input formControlName="marks" class="form-control" type="number" />
+          </div>
+
+          <div class="col-2 text-center">
+            <input formControlName="marksnotapplicable" type="checkbox" class="form-check-input" (change)="checkStatus($event, i)" />
+          </div>
+
+          <div class="col-1 text-center">
+            <i class="bx bx-minus-circle" (click)="removeOption(i)"></i>
+          </div>
+
+          <div class="col-1 text-center">
+            <i class="bx bx-plus-circle" (click)="addSubAnswer(i)"></i>
+          </div>
+        </div>
+
+        <!-- SubOption section -->
+        <div class="ms-4" *ngIf="subOption(i)?.length > 0">
+          <label class="form-label">Sub Option Type</label>
+          <select class="form-control mb-2" formControlName="assessorOptionType" (change)="changeSubOptionType($event, i)">
+            <option value="radio">Radio</option>
+            <option value="checkbox">Checkbox</option>
+          </select>
+
+          <label class="form-label">Sub Assessor Guidance</label>
+          <textarea rows="2" class="form-control mb-3" formControlName="assessorGuidence" placeholder="Enter assessor guidance"></textarea>
+
+          <div formArrayName="subOption">
+            <div *ngFor="let sub of subOption(i).controls; let j = index" [formGroupName]="j" class="row align-items-center mb-2">
+              <div class="col-1 text-center">{{ j + 1 }}</div>
+
+              <div class="col-4">
+                <input formControlName="option" class="form-control" type="text" appMaxWordLength [maxWords]="200" />
+              </div>
+
+              <div class="col-2">
+                <input formControlName="marks" class="form-control" type="number" />
+              </div>
+
+              <div class="col-2 text-center">
+                <input formControlName="marksnotapplicable" type="checkbox" class="form-check-input" (change)="checkSubStatus($event, i, j)" />
+              </div>
+
+              <div class="col-1 text-center">
+                <i class="bx bx-minus-circle" (click)="removeSubOption(i, j)"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button (click)="submitData()" [disabled]="!formIsValid" cdkFocusInitial>Save</button>
+</mat-dialog-actions>

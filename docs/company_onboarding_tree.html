@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Passport — कंपनी ऑनबोर्डिंग ट्री गाइड (Company Onboarding Tree Guide)</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #090d16;
+            --bg-secondary: #111827;
+            --bg-card: #1f2937;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: rgba(59, 130, 246, 0.12);
+            --accent-glow: rgba(59, 130, 246, 0.35);
+            --border-color: #1f2937;
+            --border-light: #374151;
+            --line-color: #3b82f6;
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.12);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.12);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.12);
+            --purple: #8b5cf6;
+            --purple-light: rgba(139, 92, 246, 0.12);
+            --cyan: #06b6d4;
+            --cyan-light: rgba(6, 182, 212, 0.12);
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --shadow-lg: 0 16px 36px rgba(0,0,0,0.4);
+        }
+
+        .light-theme {
+            --bg-primary: #f3f4f6;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-elevated: #f9fafb;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --border-color: #e5e7eb;
+            --border-light: #d1d5db;
+            --line-color: #2563eb;
+            --accent-light: rgba(59, 130, 246, 0.08);
+            --success-light: rgba(16, 185, 129, 0.08);
+            --warning-light: rgba(245, 158, 11, 0.08);
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --purple-light: rgba(139, 92, 246, 0.08);
+            --cyan-light: rgba(6, 182, 212, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            overflow-x: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Top Navigation Header */
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.9) 100%), var(--gradient-primary);
+            background-blend-mode: overlay;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 36px 40px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 850px;
+            margin: 0 auto 24px;
+        }
+
+        .badge-pill {
+            display: inline-block;
+            background: var(--accent-light);
+            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        /* TREE STRUCTURE LAYOUT (Hierarchical Flow) */
+        .tree-wrapper {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 48px 30px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 50px;
+            overflow-x: auto;
+        }
+
+        .tree-title {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .tree-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+        }
+
+        /* Root Node Styling */
+        .tree-root {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .root-card {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 18px 36px;
+            border-radius: 16px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative;
+        }
+
+        .root-card::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 40px;
+            background: var(--line-color);
+        }
+
+        /* Horizontal Connector Line */
+        .tree-connector-line {
+            height: 3px;
+            background: var(--line-color);
+            width: 88%;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        /* Branches Grid (6 Phases) */
+        .branches-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            position: relative;
+        }
+
+        @media (max-width: 1100px) {
+            .branches-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .branches-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .branch-column {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .branch-column:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        }
+
+        .branch-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .branch-step-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .b-1 .branch-step-num { background: var(--accent); }
+        .b-2 .branch-step-num { background: var(--purple); }
+        .b-3 .branch-step-num { background: var(--cyan); }
+        .b-4 .branch-step-num { background: var(--warning); }
+        .b-5 .branch-step-num { background: var(--success); }
+        .b-6 .branch-step-num { background: var(--danger); }
+
+        .branch-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Nodes List (Tree Children) */
+        .node-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            padding-left: 16px;
+            border-left: 2px dashed var(--border-light);
+        }
+
+        .node-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .node-item::before {
+            content: '';
+            position: absolute;
+            left: -18px;
+            top: 50%;
+            width: 14px;
+            height: 2px;
+            background: var(--border-light);
+        }
+
+        .node-item:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent);
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .node-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .node-desc {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .node-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        /* Detailed Step Expansion Cards */
+        .detail-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .section-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-card-title {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .task-checklist {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .task-checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+        }
+
+        .task-checklist li::before {
+            content: "✔";
+            color: var(--success);
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        /* Action Code Blocks */
+        pre {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: var(--cyan);
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-area">
+            <svg width="32" height="32" viewBox="0 0 32 32">
+                <rect x="4" y="4" width="24" height="24" rx="6" fill="#3b82f6" />
+                <path d="M12 16 L20 16 M16 12 L16 20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+            </svg>
+            <div class="logo-title">Vendor Passport</div>
+        </div>
+
+        <button class="theme-btn" onclick="toggleTheme()">
+            <span>🌓</span>
+            <span>थीम बदलें</span>
+        </button>
+    </header>
+
+    <div class="container">
+        
+        <!-- Hero Section -->
+        <div class="hero">
+            <span class="badge-pill">Onboarding & Compliance Blueprint</span>
+            <h1>🏢 नई कंपनी ऑनबोर्डिंग प्रक्रिया — ट्री गाइड</h1>
+            <p>
+                जब कोई नई कंपनी (Enterprise या Supplier) **Vendor Passport** प्लेटफॉर्म पर आती है, 
+                तो उसे स्टेप-बाय-स्टेप कौन-से चरण पूरे करने होते हैं? नीचे दिए गए **ट्री स्ट्रक्चर (Decision & Workflow Tree)** से पूरी प्रक्रिया को समझें।
+            </p>
+        </div>
+
+        <!-- VISUAL TREE STRUCTURE -->
+        <div class="tree-wrapper">
+            <div class="tree-title">🌳 कंपनी ऑनबोर्डिंग निर्णय एवं प्रक्रिया ट्री (Tree Structure)</div>
+            <div class="tree-subtitle">क्लिक करें या नीचे दी गई विस्तृत चरणबद्ध गाइड पढ़ें</div>
+
+            <!-- Root Level -->
+            <div class="tree-root">
+                <div class="root-card">
+                    <span>🏬</span>
+                    <span>1. Vendor Passport — कंपनी ऑनबोर्डिंग हब</span>
+                </div>
+            </div>
+
+            <!-- Horizontal Connection Line -->
+            <div class="tree-connector-line"></div>
+
+            <!-- 6 Major Branches Grid -->
+            <div class="branches-grid">
+                
+                <!-- Branch 1: Account Setup -->
+                <div class="branch-column b-1">
+                    <div class="branch-header">
+                        <div class="branch-step-num">1</div>
+                        <div class="branch-title">अकाउंट व प्रोफ़ाइल सेटअप</div>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">1.1 कंपनी रजिस्ट्रेशन</div>
+                                <span class="node-tag">Step 1.1</span>
+                            </div>
+                            <div class="node-desc"><code>/register</code> पेज पर जाकर कंपनी का नाम व एडमिन ईमेल दर्ज करें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">1.2 प्रोफ़ाइल व इंडस्ट्री चयन</div>
+                                <span class="node-tag">Step 1.2</span>
+                            </div>
+                            <div class="node-desc">इंडस्ट्री प्रकार (उदा: IT, Manufacturing, Healthcare) चुनें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">1.3 टेनेंट आईडी आवंटन</div>
+                                <span class="node-tag">Step 1.3</span>
+                            </div>
+                            <div class="node-desc">सिस्टम स्वतः यूनिक <code>ORG-ID</code> (उदा: ORG-108) आवंटित करता है।</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 2: Team Onboarding -->
+                <div class="branch-column b-2">
+                    <div class="branch-header">
+                        <div class="branch-step-num">2</div>
+                        <div class="branch-title">टीम व RBAC रोल्स जोड़ना</div>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">2.1 सुपर/ऑर्ग एडमिन</div>
+                                <span class="node-tag">Super Admin</span>
+                            </div>
+                            <div class="node-desc">कंपनी के मुख्य अधिकारी को फुल एडमिनिस्ट्रेटिव राइट्स मिलते हैं।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">2.2 ऑडिट टीम सदस्य</div>
+                                <span class="node-tag">Audit Team</span>
+                            </div>
+                            <div class="node-desc">Compliance Mgr, Audit Mgr एवं Auditors के ईमेल इनवाइट करें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">2.3 स्पेशलिस्ट रोल्स</div>
+                                <span class="node-tag">Specialists</span>
+                            </div>
+                            <div class="node-desc">Risk Manager, Document Manager व Reviewer रोल्स असाइन करें।</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 3: Compliance Framework Scoping -->
+                <div class="branch-column b-3">
+                    <div class="branch-header">
+                        <div class="branch-step-num">3</div>
+                        <div class="branch-title">फ्रेमवर्क व स्कोप तय करना</div>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">3.1 फ्रेमवर्क्स का चयन</div>
+                                <span class="node-tag">Frameworks</span>
+                            </div>
+                            <div class="node-desc">ISO 27001, SOC 2, PCI DSS, GDPR या HIPAA लागू करें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">3.2 सुरक्षा कंट्रोल्स मैपिंग</div>
+                                <span class="node-tag">Controls</span>
+                            </div>
+                            <div class="node-desc">आवश्यक कंट्रोल्स व सुरक्षा पॉलिसीज की सूची तैयार करें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">3.3 इनहेरेंट रिस्क रेटिंग</div>
+                                <span class="node-tag">Risk Score</span>
+                            </div>
+                            <div class="node-desc">कंपनी के प्रारंभिक जोखिम स्तर (Inherent Risk) का मूल्यांकन करें।</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 4: Vendors Invitation -->
+                <div class="branch-column b-4">
+                    <div class="branch-header">
+                        <div class="branch-step-num">4</div>
+                        <div class="branch-title">सप्लायर्स व वेंडर्स इनविटेशन</div>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">4.1 वेंडर इनवाइट (Bulk CSV)</div>
+                                <span class="node-tag">Bulk Invite</span>
+                            </div>
+                            <div class="node-desc"><code>/bulk-invite</code> से थर्ड-पार्टी वेंडर्स को ईमेल निमंत्रण भेजें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">4.2 टेनेंट आइसोलेशन</div>
+                                <span class="node-tag">Isolation</span>
+                            </div>
+                            <div class="node-desc">वेंडर्स को केवल उनकी कंपनी का डेटा देखने का सीमित अधिकार मिले।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">4.3 वेंडर स्कोरकार्ड</div>
+                                <span class="node-tag">Scorecard</span>
+                            </div>
+                            <div class="node-desc">सप्लायर्स का परफॉरमेंस व रिस्क स्कोरकार्ड ट्रैक करना।</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 5: Audit Execution -->
+                <div class="branch-column b-5">
+                    <div class="branch-header">
+                        <div class="branch-step-num">5</div>
+                        <div class="branch-title">ऑडिट निष्पादन व एविडेंस</div>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">5.1 ऑडिट शेड्यूलिंग</div>
+                                <span class="node-tag">Audits</span>
+                            </div>
+                            <div class="node-desc">नया ऑडिट बनाएं (उदा: ISO 27001 Surveillance Audit)।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">5.2 प्रश्नावली (Questionnaire)</div>
+                                <span class="node-tag">Questionnaire</span>
+                            </div>
+                            <div class="node-desc">वेंडर को सुरक्षा प्रश्नों की सूची भेजकर उत्तर दर्ज करवाएं।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">5.3 एविडेंस अपलोड</div>
+                                <span class="node-tag">Evidence</span>
+                            </div>
+                            <div class="node-desc">सर्टिफिकेट्स व पॉलिसी दस्तावेज़ Evidence Vault में अपलोड करें।</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 6: Remediation & Continuous Monitoring -->
+                <div class="branch-column b-6">
+                    <div class="branch-header">
+                        <div class="branch-step-num">6</div>
+                        <div class="branch-title">त्रुटि सुधार व निरंतर निगरानी</div>
+                    </div>
+                    <div class="node-list">
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">6.1 फाइंडिंग्स ट्रैकिंग</div>
+                                <span class="node-tag">Findings</span>
+                            </div>
+                            <div class="node-desc">ऑडिट में मिली सुरक्षा कमियों का वर्गीकरण (Critical/High)।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">6.2 CAPA कानबन बोर्ड</div>
+                                <span class="node-tag">CAPA</span>
+                            </div>
+                            <div class="node-desc">कमियों का समाधान (Open ➔ In Progress ➔ Closed) ट्रैक करें।</div>
+                        </div>
+                        <div class="node-item">
+                            <div class="node-header">
+                                <div class="node-name">6.3 एक्सपायरी अलर्ट्स (CCM)</div>
+                                <span class="node-tag">Alerts</span>
+                            </div>
+                            <div class="node-desc">90 दिनों में एक्सपायर होने वाले सर्टिफिकेट्स के ऑटो-नोटिफिकेशन्स।</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DETAILED STEP-BY-STEP BREAKDOWN SECTIONS -->
+        <div class="detail-sections">
+
+            <!-- Section 1 Details -->
+            <div class="section-card">
+                <div class="section-card-title">
+                    <span>🔐</span> चरण 1: रजिस्ट्रेशन एवं कंपनी प्रोफाइल निर्माण (Account Setup)
+                </div>
+                <p style="color: var(--text-secondary);">
+                    जब कोई नई कंपनी Vendor Passport का उपयोग शुरू करती है, तो सबसे पहले कंपनी एडमिन का खाता बनता है:
+                </p>
+                <ul class="task-checklist">
+                    <li>ब्राउज़र में <code>http://localhost:5173/register</code> यूआरएल खोलें।</li>
+                    <li>कंपनी का पूरा नाम (उदा: <code>GlobalTech Solutions</code>), एडमिन ईमेल व पासवर्ड दर्ज करें।</li>
+                    <li>सिस्टम स्वतः कंपनी के लिए एक विशिष्ट <code>ORG-ID</code> (उदा: <code>ORG-101</code>) निर्मित कर देता है।</li>
+                </ul>
+            </div>
+
+            <!-- Section 2 Details -->
+            <div class="section-card">
+                <div class="section-card-title">
+                    <span>👥</span> चरण 2: टीम मेंबर्स को इनवाइट करना एवं RBAC रोल्स तय करना
+                </div>
+                <p style="color: var(--text-secondary);">
+                    कंपनी एडमिन अपनी ऑडिट और रिस्क टीम के सदस्यों को जोड़ता है:
+                </p>
+                <ul class="task-checklist">
+                    <li><strong>Compliance Manager:</strong> पूरे ऑडिट व CAPA वर्कफ़्लो का संचालन (उदा: <code>priya.sharma@globaltech.com</code>)।</li>
+                    <li><strong>Auditor:</strong> एविडेंस रिव्यू व फाइंडिंग्स दर्ज करना (उदा: <code>rohit.kapoor@globaltech.com</code>)।</li>
+                    <li><strong>Risk Manager:</strong> रिस्क रजिस्टर व कंट्रोल्स की निगरानी (उदा: <code>arjun.verma@globaltech.com</code>)।</li>
+                </ul>
+            </div>
+
+            <!-- Section 3 Details -->
+            <div class="section-card">
+                <div class="section-card-title">
+                    <span>📜</span> चरण 3: कंप्लायंस फ्रेमवर्क्स एवं सुरक्षा कंट्रोल्स लागू करना
+                </div>
+                <p style="color: var(--text-secondary);">
+                    कंपनी तय करती है कि उसे किन अंतरराष्ट्रीय सुरक्षा मानकों का पालन करना है:
+                </p>
+                <ul class="task-checklist">
+                    <li><code>/frameworks</code> पेज पर जाकर कंपनी के आवश्यक फ्रेमवर्क्स (ISO 27001, SOC 2 Type II, PCI DSS) चुनें।</li>
+                    <li>फ्रेमवर्क से जुड़े 100+ सुरक्षा कंट्रोल्स को अपनी कंपनी के डोमेन से लिंक करें।</li>
+                </ul>
+            </div>
+
+            <!-- Section 4 Details -->
+            <div class="section-card">
+                <div class="section-card-title">
+                    <span>🏪</span> चरण 4: सप्लायर्स व वेंडर्स को इनवाइट करना (Vendor Network)
+                </div>
+                <p style="color: var(--text-secondary);">
+                    थर्ड-पार्टी वेंडर्स को प्लेटफॉर्म पर जोड़ना ताकि वे अपने प्रमाणपत्र अपलोड कर सकें:
+                </p>
+                <ul class="task-checklist">
+                    <li><code>/bulk-invite</code> पेज पर जाएं और वेंडर्स की सूची (CSV या ईमेल) द्वारा निमंत्रण भेजें।</li>
+                    <li>वेंडर्स के पास <strong>External Company User</strong> का सीमित एक्सेस होगा — वे किसी अन्य कंपनी का डेटा नहीं देख पाएंगे (Strict Tenant Isolation)।</li>
+                </ul>
+            </div>
+
+            <!-- Section 5 Details -->
+            <div class="section-card">
+                <div class="section-card-title">
+                    <span>🛡️</span> चरण 5: ऑडिट निष्पादन एवं सबूत संग्रहण (Audit Execution)
+                </div>
+                <p style="color: var(--text-secondary);">
+                    वेंडर्स या आंतरिक विभागों का ऑडिट आयोजित करना:
+                </p>
+                <ul class="task-checklist">
+                    <li><code>+ Create ➔ New Audit</code> द्वारा नया ऑडिट शेड्यूल करें।</li>
+                    <li>ऑडिट 12 लाइफसाइकल चरणों (Planning ➔ Scoping ➔ Execution ➔ Closure) से गुजरता है।</li>
+                    <li>वेंडर <code>/documents</code> और <code>/evidence</code> पेज के माध्यम से सुरक्षा सर्टिफिकेट अपलोड करते हैं।</li>
+                </ul>
+            </div>
+
+            <!-- Section 6 Details -->
+            <div class="section-card">
+                <div class="section-card-title">
+                    <span>🔄</span> चरण 6: फाइंडिंग्स समाधान (CAPA) और निरंतर निगरानी (CCM)
+                </div>
+                <p style="color: var(--text-secondary);">
+                    त्रुटियों को ठीक करना और भविष्य के लिए ऑटोमेटेड अलर्ट्स चालू करना:
+                </p>
+                <ul class="task-checklist">
+                    <li>यदि ऑडिट में कोई कमी मिलती है, तो वह <code>/findings</code> लिस्ट में दर्ज होती है।</li>
+                    <li>कमी का सुधारात्मक कार्य <code>/capa</code> कानबन बोर्ड (Open ➔ In Progress ➔ Closed) में ट्रैक होता है।</li>
+                    <li>सिस्टम 90 दिन पहले एक्सपायर होने वाले प्रमाण पत्रों का ऑटो-अलर्ट डैशबोर्ड पर दिखाता है।</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2026 Vendor Passport. सर्वाधिकार सुरक्षित। कंपनी ऑनबोर्डिंग एवं अनुपालन कार्यप्रणाली दस्तावेज़।</p>
+        </footer>
+
+    </div>
+
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+@defer(when isShow) {
+
+
+<div class="modalebox" style="  max-height: 85vh;     /* Dialog never goes outside screen */
+  overflow-y: auto;     /* Enable vertical scroll */
+  padding-right: 10px;">
+    <div style="display: flex;justify-content: end;">
+        <mat-icon (click)="close()" style="color:red;margin-bottom: 10px;">highlight_off</mat-icon>
+    </div>
+    <div style="display: flex; margin-top: 12px;justify-content: space-between;">
+        <h2 style="margin-bottom: 0px;" mat-dialog-title *ngIf="userMeta?.role!=='assessor' && data?.role!=='assessor'">Questionnaire Status</h2>
+        <h2 mat-dialog-title *ngIf="userMeta?.role=='assessor' || data?.role=='assessor'">Assessment Status</h2>
+     
+        <button style="margin-right: 165px;" class="btn btn-primary questionnaire-btn" *ngIf="userMeta?.role=='applicant' || userMeta?.role=='vcp'"  (click)="goToViewQuestionnaire()">
+          <span>View Questionnaire</span>
+        </button>
+        <!-- <p *ngIf="(modalData?.totals?.total_count!==modalData?.totals?.attempt_count) && (modalData?.totals?.attempt_count < modalData?.totals?.total_count)" class="showError">Please complete
+            all questions. Some have been left unanswered.</p> -->
+    </div>
+
+    <div class="container" style="margin-top: 10px;">
+        <div class="row">
+            <table class="table">
+                <thead>
+                    <th>Category</th>
+                    <th>Total Questions</th>
+                    <th *ngIf="storageService.isAdmin()">Total Marks</th>
+                    <th>Attempted Questions</th>
+                    <th *ngIf="storageService.isAdmin()">Obtained Marks</th>
+
+                    <th class="text-center" *ngIf="isShowButtons">Action</th>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let data of (modalData?.data || [])">
+                        <tr>
+                            <th>{{data?.category}}</th>
+                            <td>{{data?.total_count}}</td>
+                            <td *ngIf="storageService.isAdmin()">{{data?.totalMaxMark}}</td>
+                            <td [ngStyle]="{'color': (data?.attempt_count) < (data?.total_count) ? 'red' : 'inherit'}">
+                                {{(data?.attempt_count>data?.total_count)?data?.total_count:data?.attempt_count}}
+                            </td>
+
+                            <td *ngIf="storageService.isAdmin()">{{data?.obtainedMarks}}</td>
+                            <td *ngIf="isShowButtons">
+                                <div class="addbutton text-center" type="button" (click)="onNoClick(data?.category)">
+                                    <a style="font-weight: 400;" class="btn btn-fill">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr>
+                        <th style="background-color: #E3FED5 ;">Total</th>
+                        <th style="background-color: #E3FED5 ;">{{modalData?.totals?.total_count}}</th>
+                        <th style="background-color: #E3FED5 ;" *ngIf="storageService.isAdmin()">
+                            {{modalData?.totals?.totalMaxMark}}</th>
+                            <th style="background-color: #E3FED5;">
+                                {{
+                                  (modalData?.totals?.attempt_count ?? 0) > (modalData?.totals?.total_count ?? 0)
+                                    ? (modalData?.totals?.total_count ?? 0)
+                                    : (modalData?.totals?.attempt_count ?? 0)
+                                }}
+                              </th>
+                              
+                        <th style="background-color: #E3FED5 ;" *ngIf="storageService.isAdmin()">
+                            {{modalData?.totals?.totalObtained}}</th>
+                        <td *ngIf="isShowButtons" style="background-color: #E3FED5 ;"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row" *ngIf="isShowSubmitButton && ((modalData?.allQuestionCount)== modalData?.totals?.attempt_count ||  (modalData?.allQuestionCount)== modalData?.totals?.attempt_count || modalData?.totals?.attempt_count > modalData?.totals?.total_count)">
+            <div class="col-md-12">
+                <button style="width: 100%;" (click)="finalSubmit()" class="btn btn-primary ">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+@placeholder(minimum 500ms) {
+
+<div class="loader"></div>
+
+}

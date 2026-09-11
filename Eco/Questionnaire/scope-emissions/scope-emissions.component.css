@@ -1,0 +1,90 @@
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #48A842;
+    color: #fff;
+    transition: .5s;
+}
+
+.nav-pills .nav-link {
+    background-color: #F0FFE8;
+    color: #64AE3E;
+    transition: .5s;
+    border: 1px solid #64AE3E;
+}
+
+table,
+th,
+td {
+    border: 1px solid #f1f1f1;
+    border-collapse: collapse;
+    padding: 14px;
+}
+
+::placeholder {
+    font-size: 12px;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+.scopetab{
+    border: 1px solid #ddd;
+}
+.scopetab h2{
+    padding: 14px;
+    border-bottom: 1px solid #ddd;
+}
+.scopetab .emplyebox{
+    padding: 14px;
+}
+
+.submit-btn{
+    background: #F6871F;
+    padding: 10px;
+    color: white;
+    border-radius: 6px;
+    margin-top: 11px;
+    border: 1px solid #F6871F;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 500;
+    transition: 0.5s;
+    line-height: normal;
+}
+
+.totaloftwo{
+    background-color: #dddddd !important;
+    font-size: 18px;
+    font-weight: 100;
+    border-radius: 8px;
+}

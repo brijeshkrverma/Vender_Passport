@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Passport — 12 रोल्स वर्कफ़्लो ट्री डायरेक्टरी (Detailed RBAC Guide)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-secondary: #12192c;
+            --bg-card: #1a233d;
+            --bg-elevated: #263354;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: rgba(59, 130, 246, 0.12);
+            --accent-glow: rgba(59, 130, 246, 0.35);
+            --border-color: #222d4a;
+            --border-light: #32426c;
+            --line-color: #3b82f6;
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.12);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.12);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.12);
+            --purple: #8b5cf6;
+            --purple-light: rgba(139, 92, 246, 0.12);
+            --cyan: #06b6d4;
+            --cyan-light: rgba(6, 182, 212, 0.12);
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --shadow-lg: 0 16px 36px rgba(0,0,0,0.4);
+        }
+        .light-theme {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-elevated: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #cbd5e1;
+            --border-light: #e2e8f0;
+            --line-color: #2563eb;
+            --accent-light: rgba(59, 130, 246, 0.08);
+            --success-light: rgba(16, 185, 129, 0.08);
+            --warning-light: rgba(245, 158, 11, 0.08);
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --purple-light: rgba(139, 92, 246, 0.08);
+            --cyan-light: rgba(6, 182, 212, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); line-height: 1.6; padding: 0; margin: 0; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 700; }
+        header { background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-title { font-size: 1.4rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .theme-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 30px; }
+        .hero { background: linear-gradient(135deg, rgba(18, 25, 44, 0.95) 0%, rgba(26, 35, 61, 0.9) 100%), var(--gradient-primary); background-blend-mode: overlay; border: 1px solid var(--border-color); border-radius: 20px; padding: 36px 40px; margin-bottom: 36px; box-shadow: var(--shadow-lg); text-align: center; }
+        .hero h1 { font-size: 2.3rem; margin-bottom: 10px; }
+        .hero p { color: var(--text-secondary); font-size: 1.02rem; max-width: 900px; margin: 0 auto 20px; }
+        .badge-pill { display: inline-block; background: var(--purple-light); color: var(--purple); border: 1px solid rgba(139, 92, 246, 0.3); padding: 6px 14px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+        .controls-bar { display: flex; gap: 16px; margin-bottom: 36px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+        .search-box { position: relative; flex-grow: 1; max-width: 480px; }
+        .search-input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px 18px 12px 42px; border-radius: 10px; font-size: 0.92rem; outline: none; }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .role-tabs { display: flex; gap: 8px; overflow-x: auto; }
+        .tab-btn { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 14px; border-radius: 8px; font-size: 0.84rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .tab-btn.active, .tab-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+        .summary-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 36px; box-shadow: var(--shadow-lg); }
+        .summary-title { font-size: 1.2rem; margin-bottom: 16px; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .summary-table th { background: rgba(0,0,0,0.2); color: var(--text-primary); text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .summary-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+        .summary-table tr:last-child td { border-bottom: none; }
+        .summary-table tr:hover td { background: rgba(255,255,255,0.02); color: var(--text-primary); }
+        .roles-grid { display: flex; flex-direction: column; gap: 40px; }
+        .role-tree-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 20px; padding: 32px 36px; box-shadow: var(--shadow-lg); position: relative; }
+        .role-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 16px; }
+        .role-title-group { display: flex; align-items: center; gap: 14px; }
+        .role-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(59, 130, 246, 0.2); flex-shrink: 0; }
+        .role-name { font-size: 1.4rem; color: var(--text-primary); font-weight: 800; }
+        .role-email-box { display: flex; align-items: center; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; color: var(--text-secondary); }
+        .btn-copy { background: var(--accent-light); border: 1px dashed var(--accent); color: var(--accent); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 700; }
+        .btn-copy:hover { background: var(--accent); color: white; border-style: solid; }
+        .role-branches-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        @media (max-width: 1200px) { .role-branches-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 650px) { .role-branches-grid { grid-template-columns: 1fr; } }
+        .role-branch { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; }
+        .branch-tag { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px; display: block; }
+        .branch-name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        .branch-nodes { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .node-box { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.4; }
+        .node-box strong { color: var(--text-primary); display: block; margin-bottom: 2px; }
+        .badge-allowed { background: var(--success-light); color: var(--success); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .badge-hidden { background: var(--danger-light); color: var(--danger); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .badge-scope { background: var(--accent-light); color: var(--accent); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .note-box { background: var(--accent-light); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 10px 10px 0; margin-bottom: 30px; color: var(--text-secondary); font-size: 0.92rem; }
+        .note-box strong { color: var(--text-primary); }
+        footer { margin-top: 60px; text-align: center; color: var(--text-muted); font-size: 0.88rem; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        #toast { position: fixed; bottom: 24px; right: 24px; background: var(--success); color: white; padding: 12px 22px; border-radius: 8px; box-shadow: var(--shadow-lg); font-weight: 600; display: none; z-index: 1000; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area">
+        <svg width="32" height="32" viewBox="0 0 32 32">
+            <rect x="4" y="4" width="24" height="24" rx="6" fill="#3b82f6" />
+            <path d="M12 16 L20 16 M16 12 L16 20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+        </svg>
+        <div class="logo-title">Vendor Passport</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">
+        <span>🌓</span>
+        <span>थीम बदलें</span>
+    </button>
+</header>
+
+<div class="container">
+
+    <div class="hero">
+        <span class="badge-pill">Role-Based Access Control (RBAC) Tree — Detailed Edition</span>
+        <h1>👥 12 रोल्स — वर्कफ़्लो, परमिशन और डेली कार्यप्रवाह</h1>
+        <p>
+            यह दस्तावेज़ Vendor Passport में मौजूद 12 यूज़र रोल्स को बहुत detail में समझाता है।
+            हर रोल के लिए आपको मिलेगा: <strong>login credentials</strong>, <strong>data scope</strong>, <strong>allowed routes</strong>,
+            <strong>restricted routes</strong>, <strong>daily workflow</strong>, <strong>sample scenarios</strong> और <strong>KPIs</strong>।
+            QA, Business Analysts, Developers और Compliance Teams सभी के लिए useful।
+        </p>
+    </div>
+
+    <div class="note-box">
+        <strong>💡 सभी रोल्स के लिए डेमो पासवर्ड:</strong> <code>password123</code>।
+        प्रोडक्शन में JWT Bearer token + HTTPS authentication होता है।
+        यदि कोई user अपने रोल से बाहर के page को direct URL से खोलने की कोशिश करता है, तो React <code>ProtectedRoute</code> उसे <code>/dashboard</code> पर redirect कर देता है।
+    </div>
+
+    <div class="controls-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="roleSearch" class="search-input" onkeyup="filterRoles()" placeholder="रोल, ईमेल, page या KPI खोजें (उदा: Auditor, Risk, Compliance, External)...">
+        </div>
+        <div class="role-tabs">
+            <button class="tab-btn active" onclick="filterCategory('all')">सभी 12 रोल्स</button>
+            <button class="tab-btn" onclick="filterCategory('admin')">एडमिन रोल्स</button>
+            <button class="tab-btn" onclick="filterCategory('audit')">ऑडिट टीम</button>
+            <button class="tab-btn" onclick="filterCategory('specialist')">स्पेशलिस्ट रोल्स</button>
+            <button class="tab-btn" onclick="filterCategory('external')">वेंडर व कंसल्टेंट</button>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-title">📋 12 रोल्स का Quick Reference Matrix</div>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>रोल</th>
+                    <th>कौन?</th>
+                    <th>मुख्य पेज</th>
+                    <th>एक्सेस पैटर्न</th>
+                    <th>क्रेडेंशियल</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Super Admin</strong></td>
+                    <td>Platform/IT Head</td>
+                    <td>Users, Settings, Audit Trail</td>
+                    <td><span class="badge-allowed">All Access</span></td>
+                    <td><code>super.admin@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Organization Admin</strong></td>
+                    <td>Company Admin</td>
+                    <td>Users, Settings, Organizations</td>
+                    <td><span class="badge-allowed">All Access</span></td>
+                    <td><code>org.admin@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Compliance Manager</strong></td>
+                    <td>Compliance Lead</td>
+                    <td>Audits, Findings, CAPA, Frameworks</td>
+                    <td><span class="badge-allowed">All Access</span></td>
+                    <td><code>priya.sharma@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Audit Manager</strong></td>
+                    <td>Audit Program Manager</td>
+                    <td>Audits, Reports, Calendar, Gantt</td>
+                    <td><span class="badge-scope">Most Pages</span></td>
+                    <td><code>meera.nair@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Auditor</strong></td>
+                    <td>Field Auditor</td>
+                    <td>Audits, Findings, Evidence, Controls</td>
+                    <td><span class="badge-scope">Execution Focused</span></td>
+                    <td><code>rohit.kapoor@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Reviewer</strong></td>
+                    <td>Independent Reviewer</td>
+                    <td>Audits, Findings, CAPA, Reports</td>
+                    <td><span class="badge-scope">Broad except Admin</span></td>
+                    <td><code>reviewer@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Risk Manager</strong></td>
+                    <td>Risk Officer</td>
+                    <td>Risks, Risk Heatmap, Reports</td>
+                    <td><span class="badge-scope">Allowed List</span></td>
+                    <td><code>arjun.verma@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Document Manager</strong></td>
+                    <td>Document Controller</td>
+                    <td>Documents, Evidence, Certificates</td>
+                    <td><span class="badge-scope">Allowed List</span></td>
+                    <td><code>kritika.bose@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Vendor Manager</strong></td>
+                    <td>Vendor Relations Lead</td>
+                    <td>Vendors, Bulk Invite, Scorecard</td>
+                    <td><span class="badge-scope">Vendor Focused</span></td>
+                    <td><code>vendor.mgr@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Employee</strong></td>
+                    <td>Internal Staff</td>
+                    <td>Dashboard, My Workspace, Certificates</td>
+                    <td><span class="badge-hidden">Limited</span></td>
+                    <td><code>employee@globaltech.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>External Company User</strong></td>
+                    <td>Vendor Employee</td>
+                    <td>Dashboard, Certificates, Documents</td>
+                    <td><span class="badge-hidden">Tenant Only</span></td>
+                    <td><code>external@securecore.com</code></td>
+                </tr>
+                <tr>
+                    <td><strong>CA / Consultant</strong></td>
+                    <td>External Consultant</td>
+                    <td>Client Portfolio, Audits, Reports</td>
+                    <td><span class="badge-scope">Allowed List</span></td>
+                    <td><code>ca@consulting.com</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="roles-grid" id="rolesGrid">
+
+        <!-- ROLE 1: Super Admin -->
+        <div class="role-tree-card" data-category="admin">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--danger-light); color: var(--danger);">👑</div>
+                    <div>
+                        <div class="role-name">1. Super Admin</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">सिस्टम का सर्वोच्च प्रशासक (Full Control)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>super.admin@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('super.admin@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101 (GlobalTech)</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-allowed">FULL ALL-ACCESS</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> All tenants, all modules, all users</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/users</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/settings</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audit-trail</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/api-integrations</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/perm-matrix</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><em>All other routes</em> <span class="badge-allowed">Allowed</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. लॉगिन:</strong> Dashboard overview + system health</div>
+                        <div class="node-box"><strong>2. यूज़र एडमिन:</strong> <code>/users</code> से accounts, roles, org assignment</div>
+                        <div class="node-box"><strong>3. सेटिंग्स:</strong> CORS, JWT, notifications, integrations</div>
+                        <div class="node-box"><strong>4. ऑडिट ट्रेल:</strong> security logs review</div>
+                        <div class="node-box"><strong>5. ग्लोबल मॉनिटरिंग:</strong> health API, rate limits</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> System security, tenant isolation, global config</div>
+                        <div class="node-box"><strong>KPIs:</strong> System uptime, failed logins, user growth</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Register new org admin and assign ORG-105"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 2: Organization Admin -->
+        <div class="role-tree-card" data-category="admin">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--purple-light); color: var(--purple);">🏢</div>
+                    <div>
+                        <div class="role-name">2. Organization Admin</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">ऑर्गनाइजेशन एडमिनिस्ट्रेटर</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>org.admin@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('org.admin@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-allowed">ORG ADMIN</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> अपनी org के भीतर full access</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/users</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/settings</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/organizations</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audit-trail</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><em>All operational routes</em> <span class="badge-allowed">Allowed</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. लॉगिन:</strong> Org dashboard देखें</div>
+                        <div class="node-box"><strong>2. टीम मैनेजमेंट:</strong> <code>/users</code> से roles assign करें</div>
+                        <div class="node-box"><strong>3. कंपनी प्रोफाइल:</strong> <code>/organizations</code> पर industry, risk rating</div>
+                        <div class="node-box"><strong>4. रिपोर्टिंग:</strong> Compliance rate monitor</div>
+                        <div class="node-box"><strong>5. सेटिंग्स:</strong> Org-level preferences</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Company profile, user management, org-level settings</div>
+                        <div class="node-box"><strong>KPIs:</strong> User onboarding time, role coverage, compliance rate</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Invite auditor Rohit to ISO 27001 audit"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 3: Compliance Manager -->
+        <div class="role-tree-card" data-category="audit">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--accent-light); color: var(--accent);">🛡️</div>
+                    <div>
+                        <div class="role-name">3. Compliance Manager</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">कंप्लायंस व ऑडिट प्रोग्राम प्रमुख</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>priya.sharma@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('priya.sharma@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-allowed">AUDIT PROGRAM LEAD</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> All modules within ORG-101</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/audits</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/findings</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/capa</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/frameworks</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/ccm-dashboard</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/users</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. ऑडिट निर्माण:</strong> <code>+ Create → New Audit</code></div>
+                        <div class="node-box"><strong>2. Framework:</strong> ISO/SOC/GDPR controls map</div>
+                        <div class="node-box"><strong>3. CAPA tracking:</strong> Kanban board status update</div>
+                        <div class="node-box"><strong>4. रिपोर्टिंग:</strong> Compliance reports generate</div>
+                        <div class="node-box"><strong>5. CCM:</strong> Continuous control alerts</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Audit program, CAPA closure, framework compliance</div>
+                        <div class="node-box"><strong>KPIs:</strong> Audit on-time closure, CAPA closure rate, open findings</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Create ISO 27001 surveillance audit, assign Rohit, due 30 Sept"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 4: Audit Manager -->
+        <div class="role-tree-card" data-category="audit">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--cyan-light); color: var(--cyan);">📋</div>
+                    <div>
+                        <div class="role-name">4. Audit Manager</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">ऑडिट मैनेजर (Audit Execution Manager)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>meera.nair@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('meera.nair@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">MOST PAGES</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> अपनी org; admin-only routes restricted</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/audits</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/questionnaire</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/reports</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/calendar</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/gantt</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/users</code>, <code>/settings</code>, <code>/audit-trail</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. असाइनमेंट:</strong> ऑडिटर को ऑडिट सौंपना</div>
+                        <div class="node-box"><strong>2. प्लानिंग:</strong> <code>/audit-universe</code> + <code>/calendar</code></div>
+                        <div class="node-box"><strong>3. रिव्यू:</strong> Evidence और scorecard review</div>
+                        <div class="node-box"><strong>4. रिपोर्ट:</strong> Audit completion reports</div>
+                        <div class="node-box"><strong>5. टाइमलाइन:</strong> <code>/gantt</code> से milestones</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Audit execution, resource allocation, timeline</div>
+                        <div class="node-box"><strong>KPIs:</strong> Audit completion %, auditor utilization, on-time delivery</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Assign Rohit to Q3 vendor audit and review evidence by Friday"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 5: Auditor -->
+        <div class="role-tree-card" data-category="audit">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--success-light); color: var(--success);">🔎</div>
+                    <div>
+                        <div class="role-name">5. Auditor</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">ऑडिटर (Fieldwork Auditor)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>rohit.kapoor@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('rohit.kapoor@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">EXECUTION FOCUSED</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Assigned audits, evidence, findings</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/audits</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/findings</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/evidence</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/controls</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/risk-heatmap</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/users</code>, <code>/settings</code>, <code>/capa</code>, <code>/calendar</code>, <code>/gantt</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. फील्डवर्क:</strong> Assigned audit open</div>
+                        <div class="node-box"><strong>2. कंट्रोल टेस्ट:</strong> <code>/controls</code> पर design/operating effectiveness</div>
+                        <div class="node-box"><strong>3. एविडेंस रिव्यू:</strong> <code>/evidence</code> से proof verify</div>
+                        <div class="node-box"><strong>4. फाइंडिंग्स:</strong> नई finding raise करना</div>
+                        <div class="node-box"><strong>5. वर्किंग पेपर्स:</strong> Notes draft</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Evidence authenticity, control testing, findings</div>
+                        <div class="node-box"><strong>KPIs:</strong> Findings per audit, evidence coverage, on-time fieldwork</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Raise critical finding for missing firewall logs"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 6: Reviewer -->
+        <div class="role-tree-card" data-category="audit">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--warning-light); color: var(--warning);">✍️</div>
+                    <div>
+                        <div class="role-name">6. Reviewer</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">इंडिपेंडेंट रिव्यूअर</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>reviewer@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('reviewer@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">BROAD EXCEPT ADMIN</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Read/review across org; no user management</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/findings</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/capa</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audits</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/reports</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/users</code>, <code>/settings</code>, <code>/audit-trail</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. समीक्षा:</strong> Audit reports review</div>
+                        <div class="node-box"><strong>2. Findings QA:</strong> Severity, criteria, consequence</div>
+                        <div class="node-box"><strong>3. CAPA verify:</strong> Corrective action closure</div>
+                        <div class="node-box"><strong>4. Sign-off:</strong> Final report approval</div>
+                        <div class="node-box"><strong>5. Independent feedback:</strong> Quality comments</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Quality, impartiality, report sign-off</div>
+                        <div class="node-box"><strong>KPIs:</strong> Review turnaround time, findings rejection rate</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Approve CAPA closure after evidence verification"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 7: Risk Manager -->
+        <div class="role-tree-card" data-category="specialist">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--danger-light); color: var(--danger);">⚡</div>
+                    <div>
+                        <div class="role-name">7. Risk Manager</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">जोखिम प्रबंधक (Risk Governance)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>arjun.verma@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('arjun.verma@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">ALLOWED-LIST</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Risk, certificates, documents, evidence</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/risks</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/risk-heatmap</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/risk-scheduler</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/reports</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audits</code>, <code>/findings</code>, <code>/capa</code>, <code>/users</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. असेसमेंट:</strong> <code>/risks</code> में नए risk register</div>
+                        <div class="node-box"><strong>2. हीटमैप:</strong> Top threats identify</div>
+                        <div class="node-box"><strong>3. मिटिगेशन:</strong> Inherent vs Residual score improve</div>
+                        <div class="node-box"><strong>4. लिंक:</strong> Controls और risks map</div>
+                        <div class="node-box"><strong>5. रिपोर्ट:</strong> Quarterly risk report</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Risk register, mitigation, risk culture</div>
+                        <div class="node-box"><strong>KPIs:</strong> High risk count, residual risk reduction, mitigation %</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Reduce cloud vendor access risk from 18 to 8 by adding MFA control"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 8: Document Manager -->
+        <div class="role-tree-card" data-category="specialist">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--purple-light); color: var(--purple);">📁</div>
+                    <div>
+                        <div class="role-name">8. Document Manager</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">दस्तावेज़ एवं एविडेंस मैनेजर</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>kritika.bose@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('kritika.bose@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">ALLOWED-LIST</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Documents, evidence, certificates, policy lifecycle</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/documents</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/evidence</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/certificates</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/doc-versions</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/policy-lifecycle</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audits</code>, <code>/findings</code>, <code>/risks</code>, <code>/users</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. वर्शनिंग:</strong> New policy upload</div>
+                        <div class="node-box"><strong>2. एक्सपायरी:</strong> 90-day expiring certs renewal</div>
+                        <div class="node-box"><strong>3. एविडेंस:</strong> Audit evidence link verify</div>
+                        <div class="node-box"><strong>4. डॉक्यूमेंट एक्सचेंज:</strong> Vendor document exchange</div>
+                        <div class="node-box"><strong>5. पॉलिसी लाइफसाइकल:</strong> Draft → Review → Approve → Retire</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Document authenticity, version control, renewal</div>
+                        <div class="node-box"><strong>KPIs:</strong> Expiring certs count, document version drift, evidence completeness</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Upload v2.0 of Data Protection Policy and notify all users"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 9: Vendor Manager -->
+        <div class="role-tree-card" data-category="specialist">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--warning-light); color: var(--warning);">🏪</div>
+                    <div>
+                        <div class="role-name">9. Vendor Manager</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">वेंडर व सप्लायर प्रबंधक</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>vendor.mgr@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('vendor.mgr@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">VENDOR FOCUSED</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Vendors, scorecards, certificates, documents</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/vendors</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/vendors/:id/scorecard</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/bulk-invite</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/certificates</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audits</code>, <code>/findings</code>, <code>/risks</code>, <code>/controls</code>, <code>/users</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. इनवाइट:</strong> <code>/bulk-invite</code> से vendor invitations</div>
+                        <div class="node-box"><strong>2. स्कोरकार्ड:</strong> Vendor risk score review</div>
+                        <div class="node-box"><strong>3. सर्टिफिकेट:</strong> Vendor cert expiry tracking</div>
+                        <div class="node-box"><strong>4. ऑनबोर्डिंग:</strong> New supplier approval</div>
+                        <div class="node-box"><strong>5. रिमाइंडर:</strong> Low scored vendors follow-up</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Supplier onboarding, score improvement, cert compliance</div>
+                        <div class="node-box"><strong>KPIs:</strong> Vendor score, onboarding TAT, expiring vendor certs</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Onboard SecureCore and request ISO 27001 certificate upload"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 10: Employee -->
+        <div class="role-tree-card" data-category="specialist">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--accent-light); color: var(--accent);">👤</div>
+                    <div>
+                        <div class="role-name">10. Employee</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">आंतरिक कर्मचारी (Basic User)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>employee@globaltech.com</code></span>
+                    <button class="btn-copy" onclick="copyText('employee@globaltech.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-hidden">LIMITED</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Self service, own tasks and org public docs</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/dashboard</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/my-workspace</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/certificates</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/documents</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/evidence</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audits</code>, <code>/findings</code>, <code>/risks</code>, <code>/users</code>, <code>/settings</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. टास्क:</strong> My workspace में personal tasks</div>
+                        <div class="node-box"><strong>2. पॉलिसी:</strong> Security policies read/acknowledge</div>
+                        <div class="node-box"><strong>3. सर्टिफिकेट:</strong> View org certificates</div>
+                        <div class="node-box"><strong>4. डॉक्यूमेंट:</strong> Access published documents</div>
+                        <div class="node-box"><strong>5. नोटिफिकेशन:</strong> Alerts और reminders</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Policy awareness, task completion</div>
+                        <div class="node-box"><strong>KPIs:</strong> Task completion %, policy acknowledgment rate</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Acknowledge updated Information Security Policy by EOD"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 11: External Company User -->
+        <div class="role-tree-card" data-category="external">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--danger-light); color: var(--danger);">🌐</div>
+                    <div>
+                        <div class="role-name">11. External Company User</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">बाहरी वेंडर (Isolated Tenant User)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>external@securecore.com</code></span>
+                    <button class="btn-copy" onclick="copyText('external@securecore.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-103 (SecureCore)</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-hidden">TENANT ONLY</span></div>
+                        <div class="node-box"><strong>डेटा अलगाव:</strong> <span class="badge-hidden">STRICT TENANT ISOLATION</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/dashboard</code> <span class="badge-allowed">Allowed (Own Org)</span></div>
+                        <div class="node-box"><code>/certificates</code> <span class="badge-allowed">Allowed (Own Org)</span></div>
+                        <div class="node-box"><code>/documents</code> <span class="badge-allowed">Allowed (Own Org)</span></div>
+                        <div class="node-box"><code>/evidence</code> <span class="badge-allowed">Allowed (Own Org)</span></div>
+                        <div class="node-box"><code>/audits</code>, <code>/findings</code>, <code>/risks</code>, <code>/users</code>, <code>/settings</code> <span class="badge-hidden">Blocked</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. अपलोड:</strong> अपनी कंपनी का ISO/SOC certificate upload</div>
+                        <div class="node-box"><strong>2. एविडेंस:</strong> Audit questions के answers और proof submit</div>
+                        <div class="node-box"><strong>3. डॉक्यूमेंट:</strong> Policy/procedure docs share</div>
+                        <div class="node-box"><strong>4. डैशबोर्ड:</strong> Only SecureCore stats</div>
+                        <div class="node-box"><strong>5. सहयोग:</strong> GlobalTech audit requests respond</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Submit own compliance documents only</div>
+                        <div class="node-box"><strong>KPIs:</strong> Document upload timeliness, audit response time</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Upload renewed SOC 2 Type II certificate for SecureCore"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROLE 12: CA / Consultant -->
+        <div class="role-tree-card" data-category="external">
+            <div class="role-header-row">
+                <div class="role-title-group">
+                    <div class="role-icon" style="background: var(--purple-light); color: var(--purple);">📊</div>
+                    <div>
+                        <div class="role-name">12. CA / Consultant</div>
+                        <div style="font-size: 0.84rem; color: var(--text-muted);">एक्सटर्नल कंसल्टेंट (Multi-Client Access)</div>
+                    </div>
+                </div>
+                <div class="role-email-box">
+                    <span>📧 <code>ca@consulting.com</code></span>
+                    <button class="btn-copy" onclick="copyText('ca@consulting.com')">Copy Email</button>
+                </div>
+            </div>
+            <div class="role-branches-grid">
+                <div class="role-branch">
+                    <span class="branch-tag">Branch A</span>
+                    <div class="branch-name">🔑 ऑथेंटिकेशन व स्कोप</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>Org ID:</strong> ORG-101 (Multi-Client)</div>
+                        <div class="node-box"><strong>पासवर्ड:</strong> <code>password123</code></div>
+                        <div class="node-box"><strong>एक्सेस स्तर:</strong> <span class="badge-scope">ALLOWED-LIST</span></div>
+                        <div class="node-box"><strong>स्कोप:</strong> Multiple clients, read + review + report</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch B</span>
+                    <div class="branch-name">🌐 अनुमति राउट्स</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><code>/client-portfolio</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/organizations</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/audits</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/findings</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/reports</code> <span class="badge-allowed">Allowed</span></div>
+                        <div class="node-box"><code>/users</code>, <code>/settings</code> <span class="badge-hidden">Restricted</span></div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch C</span>
+                    <div class="branch-name">🔄 दैनिक कार्यप्रवाह ट्री</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>1. पोर्टफोलियो:</strong> <code>/client-portfolio</code> में clients compliance rate</div>
+                        <div class="node-box"><strong>2. ऑर्ग रिव्यू:</strong> <code>/organizations</code> से client profiles</div>
+                        <div class="node-box"><strong>3. ऑडिट रिव्यू:</strong> <code>/audits</code> + <code>/findings</code></div>
+                        <div class="node-box"><strong>4. कंसल्टिंग:</strong> Independent audit report review</div>
+                        <div class="node-box"><strong>5. रिपोर्ट:</strong> Client compliance summary</div>
+                    </div>
+                </div>
+                <div class="role-branch">
+                    <span class="branch-tag">Branch D</span>
+                    <div class="branch-name">🎯 उत्तरदायित्व, KPIs और सैंपल</div>
+                    <div class="branch-nodes">
+                        <div class="node-box"><strong>उत्तरदायित्व:</strong> Multi-org compliance advice, independent assurance</div>
+                        <div class="node-box"><strong>KPIs:</strong> Client portfolio coverage, report sign-offs</div>
+                        <div class="node-box"><strong>सैंपल:</strong> "Review GlobalTech and SecureCube Q2 audits and issue gap report"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-title">🔒 RBAC सुरक्षा नियम सारांश</div>
+        <div class="branch-nodes">
+            <div class="node-box"><strong>1. Frontend Guard:</strong> React <code>ProtectedRoute</code> <code>canAccessPage(role, path)</code> चेक करता है। अगर access नहीं, <code>/dashboard</code> पर redirect।</div>
+            <div class="node-box"><strong>2. Backend Guard:</strong> Express <code>requireRole(...)</code> middleware 403 Forbidden देता है।</div>
+            <div class="node-box"><strong>3. Tenant Isolation:</strong> <code>orgId</code> auth session से derived होता है; client-supplied <code>orgId</code> reject किया जाता है।</div>
+            <div class="node-box"><strong>4. Navigation Filter:</strong> <code>AuthContext.jsx</code> में <code>ROLE_ROUTES</code> sidebar visibility control करता है।</div>
+            <div class="node-box"><strong>5. Demo Mode:</strong> MongoDB न होने पर mock user <code>{role, orgId}</code> default Compliance Manager role के साथ चलता है; login dropdown से role simulate होता है।</div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Vendor Passport. सर्वाधिकार सुरक्षित। 12 रोल्स, RBAC मैट्रिक्स और daily workflow tree — detailed edition।</p>
+    </footer>
+
+</div>
+
+<div id="toast">ईमेल कॉपी हो गया!</div>
+
+<script>
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-theme');
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        if (body.classList.contains('light-theme')) {
+            body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `ईमेल कॉपी हो गया: <strong>${text}</strong>`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        });
+    }
+
+    function filterRoles() {
+        const input = document.getElementById('roleSearch');
+        const filter = input.value.toLowerCase();
+        const cards = document.getElementsByClassName('role-tree-card');
+        for (let i = 0; i < cards.length; i++) {
+            const txt = cards[i].innerText.toLowerCase();
+            if (txt.indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+
+    function filterCategory(cat) {
+        const btns = document.getElementsByClassName('tab-btn');
+        for (let b of btns) b.classList.remove('active');
+        event.target.classList.add('active');
+
+        const cards = document.getElementsByClassName('role-tree-card');
+        for (let i = 0; i < cards.length; i++) {
+            if (cat === 'all' || cards[i].dataset.category === cat) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+</script>
+</body>
+</html>

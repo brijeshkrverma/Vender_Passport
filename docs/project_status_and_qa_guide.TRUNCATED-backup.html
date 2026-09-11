@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Passport — Project Status & QA Testing Guide (Hinglish)</title>
+<style>
+:root{
+  --bg:#0b1329; --bg2:#14213d; --card:#1c2b4d; --elev:#24355a;
+  --tx:#f8fafc; --tx2:#a8b3c7; --tx3:#6b7a99;
+  --acc:#3b82f6; --accL:rgba(59,130,246,.14);
+  --bd:#2e3e62; --bdL:#3d507a;
+  --ok:#10b981; --okL:rgba(16,185,129,.13);
+  --wr:#f59e0b; --wrL:rgba(245,158,11,.13);
+  --dg:#ef4444; --dgL:rgba(239,68,68,.13);
+  --inf:#06b6d4; --infL:rgba(6,182,212,.13);
+  --pp:#8b5cf6; --ppL:rgba(139,92,246,.13);
+  --mono:ui-monospace,"Cascadia Code","Consolas",monospace;
+}
+html[data-theme="light"]{
+  --bg:#eef2f7; --bg2:#fff; --card:#fff; --elev:#f6f8fb;
+  --tx:#0f172a; --tx2:#46556e; --tx3:#8290a8;
+  --bd:#d3dbe6; --bdL:#e4eaf2;
+  --accL:rgba(59,130,246,.09); --okL:rgba(16,185,129,.10);
+  --wrL:rgba(245,158,11,.12); --dgL:rgba(239,68,68,.09);
+  --infL:rgba(6,182,212,.10); --ppL:rgba(139,92,246,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.65 "Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 22px 90px}
+
+/* 🎨🎨 HERO 🎨🎨 */
+.hero{background:linear-gradient(135deg,#14213d 0%,#1e3a5f 50%,#0b1329 100%);
+  border-bottom:1px solid var(--bd);padding:46px 22px 40px;margin-bottom:30px}
+html[data-theme="light"] .hero{background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 50%,#14213d 100%)}
+.hero-in{max-width:1240px;margin:0 auto}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8fb4e8;font-weight:700;margin-bottom:12px}
+h1{font-size:clamp(26px,4vw,40px);font-weight:800;line-height:1.15;color:#fff;letter-spacing:-.5px}
+.sub{color:#b9c9e2;font-size:16px;margin-top:12px;max-width:800px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.hm{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:7px;
+  padding:6px 13px;font-size:12.5px;color:#dbe6f5}
+.hm b{color:#fff}
+
+/* 🎨🎨 THEME TOGGLE 🎨🎨 */
+.tt{position:fixed;top:16px;right:16px;z-index:99;background:var(--card);border:1px solid var(--bd);
+  color:var(--tx);border-radius:8px;padding:8px 13px;cursor:pointer;font-size:13px;font-weight:600}
+.tt:hover{border-color:var(--acc)}
+
+/* 🎨🎨 TOC 🎨🎨 */
+.toc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px 22px;margin-bottom:34px}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--tx3);margin-bottom:14px}
+.toc ol{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:7px}
+.toc a{color:var(--tx2);text-decoration:none;font-size:13.5px;display:block;padding:5px 9px;border-radius:6px;
+  border-left:2px solid transparent}
+.toc a:hover{background:var(--accL);color:var(--acc);border-left-color:var(--acc)}
+
+/* 🎨🎨 SECTIONS 🎨🎨 */
+section{margin-bottom:52px;scroll-margin-top:20px}
+h2{font-size:25px;font-weight:800;margin-bottom:8px;letter-spacing:-.3px;
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+h2 .num{background:var(--acc);color:#fff;width:31px;height:31px;border-radius:8px;display:inline-flex;
+  align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:none}
+h3{font-size:18.5px;font-weight:700;margin:30px 0 12px;color:var(--tx);
+  padding-bottom:8px;border-bottom:1px solid var(--bd)}
+h4{font-size:15px;font-weight:700;margin:22px 0 9px;color:var(--tx)}
+.lede{color:var(--tx2);font-size:14.5px;margin-bottom:20px;max-width:900px}
+p{color:var(--tx2);margin-bottom:12px}
+ul,ol{color:var(--tx2);margin:0 0 14px 20px}
+li{margin-bottom:6px}
+b,strong{color:var(--tx);font-weight:700}
+code{font-family:var(--mono);font-size:12.5px;background:var(--elev);border:1px solid var(--bd);
+  border-radius:4px;padding:1.5px 6px;color:#7fd4ff}
+html[data-theme="light"] code{color:#0b6c9a}
+a{color:var(--acc)}
+
+/* 🎨🎨 CARDS 🎨🎨 */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:22px;margin-bottom:18px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(175px,1fr))}
+
+/* 🎨🎨 STAT TILES 🎨🎨 */
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:19px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc)}
+.stat.ok::before{background:var(--ok)} .stat.wr::before{background:var(--wr)}
+.stat.dg::before{background:var(--dg)} .stat.pp::before{background:var(--pp)}
+.stat .v{font-size:33px;font-weight:800;line-height:1;letter-spacing:-1px}
+.stat .l{font-size:12px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-top:8px;font-weight:600}
+.stat .n{font-size:12.5px;color:var(--tx2);margin-top:7px}
+
+/* 🎨🎨 TABLES 🎨🎨 */
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:10px;margin-bottom:18px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.2px;min-width:560px}
+th{background:var(--elev);text-align:left;padding:11px 13px;font-weight:700;color:var(--tx);
+  border-bottom:1px solid var(--bd);white-space:nowrap;font-size:12.5px}
+td{padding:10px 13px;border-bottom:1px solid var(--bd);color:var(--tx2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--elev)}
+td b{color:var(--tx)}
+td code{font-size:11.5px}
+
+/* 🎨🎨 BADGES 🎨🎨 */
+.b{display:inline-block;padding:2.5px 9px;border-radius:20px;font-size:11px;font-weight:700;
+  white-space:nowrap;letter-spacing:.02em}
+.b.ok{background:var(--okL);color:var(--ok);border:1px solid rgba(16,185,129,.35)}
+.b.wr{background:var(--wrL);color:var(--wr);border:1px solid rgba(245,158,11,.35)}
+.b.dg{background:var(--dgL);color:var(--dg);border:1px solid rgba(239,68,68,.35)}
+.b.inf{background:var(--infL);color:var(--inf);border:1px solid rgba(6,182,212,.35)}
+.b.pp{background:var(--ppL);color:var(--pp);border:1px solid rgba(139,92,246,.35)}
+.b.nu{background:var(--elev);color:var(--tx3);border:1px solid var(--bd)}
+
+/* 🎨🎨 PROGRESS 🎨🎨 */
+.pb{height:8px;background:var(--elev);border-radius:20px;overflow:hidden;min-width:80px;border:1px solid var(--bd)}
+.pb i{display:block;height:100%;border-radius:20px;background:var(--ok)}
+.pb i.wr{background:var(--wr)} .pb i.dg{background:var(--dg)} .pb i.inf{background:var(--inf)}
+
+/* 🎨🎨 CALLOUTS 🎨🎨 */
+.call{border-radius:10px;padding:16px 19px;margin:16px 0;border:1px solid;font-size:14px}
+.call .t{font-weight:800;margin-bottom:7px;display:flex;align-items:center;gap:8px;font-size:14.5px}
+.call p:last-child{margin-bottom:0}
+.call.dg{background:var(--dgL);border-color:rgba(239,68,68,.4)} .call.dg .t{color:var(--dg)}
+.call.wr{background:var(--wrL);border-color:rgba(245,158,11,.4)} .call.wr .t{color:var(--wr)}
+.call.ok{background:var(--okL);border-color:rgba(16,185,129,.4)} .call.ok .t{color:var(--ok)}
+.call.inf{background:var(--infL);border-color:rgba(6,182,212,.4)} .call.inf .t{color:var(--inf)}
+.call.pp{background:var(--ppL);border-color:rgba(139,92,246,.4)} .call.pp .t{color:var(--pp)}
+
+/* 🎨🎨 CODE BLOCK 🎨🎨 */
+pre{background:#0a1020;border:1px solid var(--bd);border-radius:9px;padding:15px 17px;overflow-x:auto;
+  margin:12px 0;font-family:var(--mono);font-size:12.5px;line-height:1.62;color:#c8d6ea}
+html[data-theme="light"] pre{background:#101a2e;color:#d8e4f2}
+pre .c{color:#6b8299} pre .k{color:#7fd4ff} pre .s{color:#9be89b} pre .w{color:#ffcc70}
+
+.tag{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--acc);white-space:nowrap}
+hr{border:none;border-top:1px solid var(--bd);margin:26px 0}
+.mini{font-size:12.5px;color:var(--tx3)}
+footer{border-top:1px solid var(--bd);padding-top:24px;margin-top:50px;color:var(--tx3);font-size:13px}
+@media print{.tt,.toc{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<button class="tt" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light'">🌓 Theme</button>
+
+<div class="hero"><div class="hero-in">
+  <div class="eyebrow">Vendor Passport · Enterprise Audit / GRC / Compliance Platform</div>
+  <h1>Project Status Report &amp; QA Testing Documentation</h1>
+  <p class="sub">Poora project deep-dive kiya gaya hai — code inspection + <b>live running server pe actual API probes</b> +
+  unit tests + full E2E suite run. Ye document batata hai: kitna kaam <b>ho chuka</b>, kitna <b>bacha</b> hai,
+  <b>kaunse issues</b> hain, kya <b>recommend</b> karta hoon, aur QA engineer ke liye <b>step-by-step testing guide</b>.</p>
+  <div class="hero-meta">
+    <div class="hm">📅 Report date: <b>05 Aug 2026</b></div>
+    <div class="hm">📅 Report date: <b>05 August 2026</b> · Jab bhi Sprint 0 / Sprint 1 complete ho, ise refresh karo.</p>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.toc a').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+}));
+</script>
+</body>
+</html>

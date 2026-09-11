@@ -1,0 +1,399 @@
+<div class="mainbody">
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+
+                <div class="col-md-12">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <!-- <a routerLink="/dashboard"><i class='bx bx-left-arrow-alt'></i> Dashboard</a> -->
+                            <h3>Create Questionnaire</h3>
+                        </div>
+                        <div class="addbutton">
+                            <a class="btn btn-fill" (click)="submitForm()">SUBMIT</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <form [formGroup]="devloperform">
+                        <div class="row mb-4">
+                            <div class="col-md-2">
+                                <div class="form-title">
+                                    <h3>Basic Information</h3>
+                                    <p>Enter questionnaire detail here</p>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <div class="input-form">
+                                    <label for="exampleFormControlInput1" class="form-label">Type<span
+                                            style="color: #ff0000;">*</span></label>
+                                    <div class=" mb-3">
+
+                                        <ng-select [items]="cars" [multiple]="true" placeholder="Select type"
+                                            formControlName='type' bindLabel="type" bindValue="type">
+                                        </ng-select>
+                                        @if(devloperform.get('type')?.invalid &&
+                                        devloperform.get('type')?.touched){
+                                        @if(devloperform.get('type')?.errors?.['required']){
+                                        <mat-error>Type is
+                                            required</mat-error>
+                                        }
+                                        }
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="exampleFormControlInput1" class="form-label">Assesment Year<span
+                                                    style="color: #ff0000;">*</span></label>
+                                            <div class="mb-3">
+                                                <input type="date" class="form-control" formControlName='assignmentYear'
+                                                    [placeholder]="!storageService.isAdmin() ? 'Auto as register field' : ''"
+                                                    aria-label="Recipient's username" aria-describedby="basic-addon2">
+                                                @if(devloperform.get('assignmentYear')?.invalid &&
+                                                devloperform.get('assignmentYear')?.touched){
+                                                @if(devloperform.get('assignmentYear')?.errors?.['required']){
+                                                <mat-error>Assesment year is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="exampleFormControlInput1" class="form-label">Category<span
+                                                    style="color: #ff0000;">*</span></label>
+                                            <div class="mb-3">
+                                                <ng-select [items]="people" placeholder="Select category"
+                                                    formControlName='category' bindLabel="name" bindValue="name">
+                                                </ng-select>
+                                                @if(devloperform.get('category')?.invalid &&
+                                                devloperform.get('category')?.touched){
+                                                @if(devloperform.get('category')?.errors?.['required']){
+                                                <mat-error>Category is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Section</label>
+                                            <div class="mb-3">
+                                                <input type="text"  appMaxWordLength [maxWords]="200" formControlName='section' class="form-control "
+                                                    placeholder="Enter section">
+                                                @if(devloperform.get('section')?.invalid &&
+                                                devloperform.get('section')?.touched){
+                                                @if(devloperform.get('section')?.errors?.['required']){
+                                                <mat-error>Section is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Sub-Section</label>
+                                            <div class="mb-3">
+                                                <input type="text"  appMaxWordLength [maxWords]="200" class="form-control " formControlName='subSection'
+                                                    placeholder="Enter sub-section">
+                                                @if(devloperform.get('subSection')?.invalid &&
+                                                devloperform.get('subSection')?.touched){
+                                                @if(devloperform.get('subSection')?.errors?.['required']){
+                                                <mat-error>Sub-Section is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Question Oder No<span
+                                                    style="color: #ff0000;">*</span></label>
+                                            <div class="mb-3">
+
+
+                                                <select formControlName='questionOrderNo' class="form-control" name=""
+                                                    id="">
+                                                    <option selected value="">Select</option>
+                                                    @for (ONumber of questionOrderNumber; track ONumber){
+                                                    <option [value]="ONumber.name">{{ONumber.name}}</option>
+                                                    }
+                                                </select>
+                                                @if(devloperform.get('questionOrderNo')?.invalid &&
+                                                devloperform.get('questionOrderNo')?.touched){
+                                                @if(devloperform.get('questionOrderNo')?.errors?.['required']){
+                                                <mat-error>Question oder number is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Max Marks</label>
+                                            <div class="mb-3">
+                                                <input type="number" class="form-control " formControlName='maxMark'
+                                                    placeholder="Enter max marks">
+                                                @if(devloperform.get('maxMark')?.invalid &&
+                                                devloperform.get('maxMark')?.touched){
+                                                @if(devloperform.get('maxMark')?.errors?.['required']){
+                                                <mat-error>Max marks is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label for="exampleFormControlInput1" class="form-label">Question<span
+                                                    style="color: #ff0000;">*</span></label>
+                                            <div class=" mb-3">
+                                                <angular-editor formControlName='question'
+                                                    [config]="config"></angular-editor>
+                                                @if(devloperform.get('question')?.invalid &&
+                                                devloperform.get('question')?.touched){
+                                                @if(devloperform.get('question')?.errors?.['required']){
+                                                <mat-error>Question is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Description</label>
+                                            <div class="mb-3">
+                                                <textarea formControlName='description' class="form-control" cols="20"
+                                                    rows="4"></textarea>
+                                                @if(devloperform.get('description')?.invalid &&
+                                                devloperform.get('description')?.touched){
+                                                @if(devloperform.get('description')?.errors?.['required']){
+                                                <mat-error>Description is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Answer Type</label>
+                                            <div class="mb-3">
+                                                <ng-select formControlName='answerType' [items]="answartype"
+                                                    placeholder="Select type" bindLabel="name" bindValue="name">
+                                                </ng-select>
+                                                @if(devloperform.get('answerType')?.invalid &&
+                                                devloperform.get('answerType')?.touched){
+                                                @if(devloperform.get('answerType')?.errors?.['required']){
+                                                <mat-error>Answer type is
+                                                    required</mat-error>
+                                                }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="addbutton text-end">
+                                                <a class="btn btn-fill" (click)="addskill()">+ Add
+                                                    Answer</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div formArrayName="answer">
+
+                                        <div *ngFor="let skill of skills().controls; let i = index" [formGroupName]="i">
+                                            <div class="answerfield">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <label class="form-label">Answer Label</label>
+                                                        <div class="mb-3">
+                                                            <input type="text"  appMaxWordLength [maxWords]="200" formControlName="answerLabel"
+                                                                class="form-control " placeholder="Enter label">
+                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('answerLabel')?.invalid
+                                                            &&
+                                                            devloperform.get('answer')?.get(i.toString())?.get('answerLabel')?.touched){
+                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('answerLabel')?.errors?.['required']){
+                                                            <mat-error> Answer label is required</mat-error>
+                                                            }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Sort Order</label>
+                                                        <div class="mb-3">
+                                                            <input type="text"  appMaxWordLength [maxWords]="200" formControlName="sortOrder"
+                                                                class="form-control " placeholder="Enter order">
+                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('sortOrder')?.invalid
+                                                            &&
+                                                            devloperform.get('answer')?.get(i.toString())?.get('sortOrder')?.touched){
+                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('sortOrder')?.errors?.['required']){
+                                                            <mat-error> Sort order is required</mat-error>
+                                                            }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Score</label>
+                                                        <div class="mb-3">
+                                                            <input type="text"  appMaxWordLength [maxWords]="200" formControlName="score"
+                                                                class="form-control " placeholder="Enter score">
+                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('score')?.invalid
+                                                            &&
+                                                            devloperform.get('answer')?.get(i.toString())?.get('score')?.touched){
+                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('score')?.errors?.['required']){
+                                                            <mat-error> Score is required</mat-error>
+                                                            }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Sub Answer</label>
+                                                            <div class="mb-3">
+                                                                <mat-radio-group aria-label="Select an option"
+                                                                    class="redioflex" formControlName="subAnswer">
+                                                                    <mat-radio-button value="yes">Yes</mat-radio-button>
+                                                                    <mat-radio-button value="no">No</mat-radio-button>
+                                                                </mat-radio-group>
+                                                                @if(devloperform.get('answer')?.get(i.toString())?.get('subAnswer')?.invalid
+                                                                &&
+                                                                devloperform.get('answer')?.get(i.toString())?.get('subAnswer')?.touched){
+                                                                @if(devloperform.get('answer')?.get(i.toString())?.get('subAnswer')?.errors?.['required']){
+                                                                <mat-error> Sub answer is required</mat-error>
+                                                                }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="subanswerfield"
+                                                    *ngIf="devloperform.get('answer')?.get(i.toString())?.get('subAnswer')?.value=='yes'">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="addbutton text-end">
+                                                                <a class="btn btn-fill" (click)="addSubAnswer(i)">+ Add
+                                                                    Answer</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <label class="form-label">Sub Answer Type</label>
+                                                            <div class="mb-3">
+                                                                <ng-select [items]="answartype"
+                                                                    formControlName='subAnswerType'
+                                                                    placeholder="Select type" bindLabel="name"
+                                                                    bindValue="name">
+                                                                </ng-select>
+                                                                @if(devloperform.get('answer')?.get(i.toString())?.get('subAnswerType')?.invalid
+                                                                &&
+                                                                devloperform.get('answer')?.get(i.toString())?.get('subAnswerType')?.touched){
+                                                                @if(devloperform.get('answer')?.get(i.toString())?.get('subAnswerType')?.errors?.['required']){
+                                                                <mat-error> Sub answer type is required</mat-error>
+                                                                }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div formArrayName="subanswar">
+
+                                                        <div *ngFor="let subskill of subanswar(i).controls; let subIndex = index"
+                                                            [formGroupName]="subIndex">
+
+                                                            <div class="">
+                                                                <div class="row">
+                                                                    <div class="col-md-12">
+                                                                        <label class="form-label">Answer Label</label>
+                                                                        <div class="mb-3">
+                                                                            <input type="text"  appMaxWordLength [maxWords]="200"
+                                                                                formControlName="subAnswerLabel"
+                                                                                class="form-control "
+                                                                                placeholder="Enter label">
+                                                                            @if(devloperform.get('answer')?.get(i.toString())?.get('subanswar')?.get(subIndex.toString())?.get('subAnswerLabel')?.invalid
+                                                                            &&
+                                                                            devloperform.get('answer')?.get(i.toString())?.get('subanswar')?.get(subIndex.toString())?.get('subAnswerLabel')?.touched){
+                                                                            <mat-error> Answer label is
+                                                                                required</mat-error>
+                                                                            }
+
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="row">
+                                                                        <div class="col-md-5">
+                                                                            <label class="form-label">Score</label>
+                                                                            <div class="mb-3">
+                                                                                <input type="text"  appMaxWordLength [maxWords]="200"
+                                                                                    formControlName="subscore"
+                                                                                    class="form-control "
+                                                                                    placeholder="Enter score">
+                                                                                @if(devloperform.get('answer')?.get(i.toString())?.get('subanswar')?.get(subIndex.toString())?.get('subscore')?.invalid
+                                                                                &&
+                                                                                devloperform.get('answer')?.get(i.toString())?.get('subanswar')?.get(subIndex.toString())?.get('subscore')?.touched){
+                                                                                <mat-error> Score is
+                                                                                    required</mat-error>
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-5">
+                                                                            <label class="form-label">Grid label</label>
+                                                                            <div class="mb-3">
+                                                                                <input type="text"  appMaxWordLength [maxWords]="200"
+                                                                                    formControlName="gridLabel"
+                                                                                    class="form-control "
+                                                                                    placeholder="Enter label">
+                                                                                @if(devloperform.get('answer')?.get(i.toString())?.get('subanswar')?.get(subIndex.toString())?.get('gridLabel')?.invalid
+                                                                                &&
+                                                                                devloperform.get('answer')?.get(i.toString())?.get('subanswar')?.get(subIndex.toString())?.get('gridLabel')?.touched){
+                                                                                <mat-error> Score is
+                                                                                    required</mat-error>
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-2 text-end">
+                                                                            <label class="form-label">Remove</label>
+                                                                            <div
+                                                                                class="addbutton d-flex justify-content-end mb-3">
+                                                                                <a class="btn btn-danger d-flex "
+                                                                                    (click)="removeSubSkill(i, subIndex)">
+
+                                                                                    <i class='bx bx-minus'></i></a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="addbutton d-flex justify-content-end">
+                                                            <a class="btn btn-danger d-flex " routerLink="#"
+                                                                (click)="fieldremove(i)"><i class='bx bx-minus'></i></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <mat-divider class="mt-4"></mat-divider>
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

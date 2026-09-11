@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm run install-all
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build frontend
+        run: npm run frontend-build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run E2E tests (${{ matrix.browser }})
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          CI: true
+          MONGO_URI: mongodb://localhost:27017/vendor_passport_test
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017

@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Passport — Project Status & QA Testing Guide (Hinglish)</title>
+<style>
+:root{
+  --bg:#0b1329; --bg2:#14213d; --card:#1c2b4d; --elev:#24355a;
+  --tx:#f8fafc; --tx2:#a8b3c7; --tx3:#6b7a99;
+  --acc:#3b82f6; --accL:rgba(59,130,246,.14);
+  --bd:#2e3e62; --bdL:#3d507a;
+  --ok:#10b981; --okL:rgba(16,185,129,.13);
+  --wr:#f59e0b; --wrL:rgba(245,158,11,.13);
+  --dg:#ef4444; --dgL:rgba(239,68,68,.13);
+  --inf:#06b6d4; --infL:rgba(6,182,212,.13);
+  --pp:#8b5cf6; --ppL:rgba(139,92,246,.13);
+  --mono:ui-monospace,"Cascadia Code","Consolas",monospace;
+}
+html[data-theme="light"]{
+  --bg:#eef2f7; --bg2:#fff; --card:#fff; --elev:#f6f8fb;
+  --tx:#0f172a; --tx2:#46556e; --tx3:#8290a8;
+  --bd:#d3dbe6; --bdL:#e4eaf2;
+  --accL:rgba(59,130,246,.09); --okL:rgba(16,185,129,.10);
+  --wrL:rgba(245,158,11,.12); --dgL:rgba(239,68,68,.09);
+  --infL:rgba(6,182,212,.10); --ppL:rgba(139,92,246,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.65 "Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 22px 90px}
+
+/* 🎨🎨 HERO 🎨🎨 */
+.hero{background:linear-gradient(135deg,#14213d 0%,#1e3a5f 50%,#0b1329 100%);
+  border-bottom:1px solid var(--bd);padding:46px 22px 40px;margin-bottom:30px}
+html[data-theme="light"] .hero{background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 50%,#14213d 100%)}
+.hero-in{max-width:1240px;margin:0 auto}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8fb4e8;font-weight:700;margin-bottom:12px}
+h1{font-size:clamp(26px,4vw,40px);font-weight:800;line-height:1.15;color:#fff;letter-spacing:-.5px}
+.sub{color:#b9c9e2;font-size:16px;margin-top:12px;max-width:800px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.hm{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:7px;
+  padding:6px 13px;font-size:12.5px;color:#dbe6f5}
+.hm b{color:#fff}
+
+/* 🎨🎨 THEME TOGGLE 🎨🎨 */
+.tt{position:fixed;top:16px;right:16px;z-index:99;background:var(--card);border:1px solid var(--bd);
+  color:var(--tx);border-radius:8px;padding:8px 13px;cursor:pointer;font-size:13px;font-weight:600}
+.tt:hover{border-color:var(--acc)}
+
+/* 🎨🎨 TOC 🎨🎨 */
+.toc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px 22px;margin-bottom:34px}
+.toc h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--tx3);margin-bottom:14px}
+.toc ol{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:7px}
+.toc a{color:var(--tx2);text-decoration:none;font-size:13.5px;display:block;padding:5px 9px;border-radius:6px;
+  border-left:2px solid transparent}
+.toc a:hover{background:var(--accL);color:var(--acc);border-left-color:var(--acc)}
+
+/* 🎨🎨 SECTIONS 🎨🎨 */
+section{margin-bottom:52px;scroll-margin-top:20px}
+h2{font-size:25px;font-weight:800;margin-bottom:8px;letter-spacing:-.3px;
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+h2 .num{background:var(--acc);color:#fff;width:31px;height:31px;border-radius:8px;display:inline-flex;
+  align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:none}
+h3{font-size:18.5px;font-weight:700;margin:30px 0 12px;color:var(--tx);
+  padding-bottom:8px;border-bottom:1px solid var(--bd)}
+h4{font-size:15px;font-weight:700;margin:22px 0 9px;color:var(--tx)}
+.lede{color:var(--tx2);font-size:14.5px;margin-bottom:20px;max-width:900px}
+p{color:var(--tx2);margin-bottom:12px}
+ul,ol{color:var(--tx2);margin:0 0 14px 20px}
+li{margin-bottom:6px}
+b,strong{color:var(--tx);font-weight:700}
+code{font-family:var(--mono);font-size:12.5px;background:var(--elev);border:1px solid var(--bd);
+  border-radius:4px;padding:1.5px 6px;color:#7fd4ff}
+html[data-theme="light"] code{color:#0b6c9a}
+a{color:var(--acc)}
+
+/* 🎨🎨 CARDS 🎨🎨 */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:22px;margin-bottom:18px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(175px,1fr))}
+
+/* 🎨🎨 STAT TILES 🎨🎨 */
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:19px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc)}
+.stat.ok::before{background:var(--ok)} .stat.wr::before{background:var(--wr)}
+.stat.dg::before{background:var(--dg)} .stat.pp::before{background:var(--pp)}
+.stat .v{font-size:33px;font-weight:800;line-height:1;letter-spacing:-1px}
+.stat .l{font-size:12px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-top:8px;font-weight:600}
+.stat .n{font-size:12.5px;color:var(--tx2);margin-top:7px}
+
+/* 🎨🎨 TABLES 🎨🎨 */
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:10px;margin-bottom:18px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.2px;min-width:560px}
+th{background:var(--elev);text-align:left;padding:11px 13px;font-weight:700;color:var(--tx);
+  border-bottom:1px solid var(--bd);white-space:nowrap;font-size:12.5px}
+td{padding:10px 13px;border-bottom:1px solid var(--bd);color:var(--tx2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--elev)}
+td b{color:var(--tx)}
+td code{font-size:11.5px}
+
+/* 🎨🎨 BADGES 🎨🎨 */
+.b{display:inline-block;padding:2.5px 9px;border-radius:20px;font-size:11px;font-weight:700;
+  white-space:nowrap;letter-spacing:.02em}
+.b.ok{background:var(--okL);color:var(--ok);border:1px solid rgba(16,185,129,.35)}
+.b.wr{background:var(--wrL);color:var(--wr);border:1px solid rgba(245,158,11,.35)}
+.b.dg{background:var(--dgL);color:var(--dg);border:1px solid rgba(239,68,68,.35)}
+.b.inf{background:var(--infL);color:var(--inf);border:1px solid rgba(6,182,212,.35)}
+.b.pp{background:var(--ppL);color:var(--pp);border:1px solid rgba(139,92,246,.35)}
+.b.nu{background:var(--elev);color:var(--tx3);border:1px solid var(--bd)}
+
+/* 🎨🎨 PROGRESS 🎨🎨 */
+.pb{height:8px;background:var(--elev);border-radius:20px;overflow:hidden;min-width:80px;border:1px solid var(--bd)}
+.pb i{display:block;height:100%;border-radius:20px;background:var(--ok)}
+.pb i.wr{background:var(--wr)} .pb i.dg{background:var(--dg)} .pb i.inf{background:var(--inf)}
+
+/* 🎨🎨 CALLOUTS 🎨🎨 */
+.call{border-radius:10px;padding:16px 19px;margin:16px 0;border:1px solid;font-size:14px}
+.call .t{font-weight:800;margin-bottom:7px;display:flex;align-items:center;gap:8px;font-size:14.5px}
+.call p:last-child{margin-bottom:0}
+.call.dg{background:var(--dgL);border-color:rgba(239,68,68,.4)} .call.dg .t{color:var(--dg)}
+.call.wr{background:var(--wrL);border-color:rgba(245,158,11,.4)} .call.wr .t{color:var(--wr)}
+.call.ok{background:var(--okL);border-color:rgba(16,185,129,.4)} .call.ok .t{color:var(--ok)}
+.call.inf{background:var(--infL);border-color:rgba(6,182,212,.4)} .call.inf .t{color:var(--inf)}
+.call.pp{background:var(--ppL);border-color:rgba(139,92,246,.4)} .call.pp .t{color:var(--pp)}
+
+/* 🎨🎨 CODE BLOCK 🎨🎨 */
+pre{background:#0a1020;border:1px solid var(--bd);border-radius:9px;padding:15px 17px;overflow-x:auto;
+  margin:12px 0;font-family:var(--mono);font-size:12.5px;line-height:1.62;color:#c8d6ea}
+html[data-theme="light"] pre{background:#101a2e;color:#d8e4f2}
+pre .c{color:#6b8299} pre .k{color:#7fd4ff} pre .s{color:#9be89b} pre .w{color:#ffcc70}
+
+.tag{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--acc);white-space:nowrap}
+hr{border:none;border-top:1px solid var(--bd);margin:26px 0}
+.mini{font-size:12.5px;color:var(--tx3)}
+footer{border-top:1px solid var(--bd);padding-top:24px;margin-top:50px;color:var(--tx3);font-size:13px}
+@media print{.tt,.toc{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<button class="tt" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light'">🌓 Theme</button>
+
+<div class="hero"><div class="hero-in">
+  <div class="eyebrow">Vendor Passport · Enterprise Audit / GRC / Compliance Platform</div>
+  <h1>Project Status Report &amp; QA Testing Documentation</h1>
+  <p class="sub">Poora project deep-dive kiya gaya hai — code inspection + <b>live running server pe actual API probes</b> +
+  unit tests + full E2E suite run. Ye document batata hai: kitna kaam <b>ho chuka</b>, kitna <b>bacha</b> hai,
+  <b>kaunse issues</b> hain, kya <b>recommend</b> karta hoon, aur QA engineer ke liye <b>step-by-step testing guide</b>.</p>
+  <div class="hero-meta">
+    <div class="hm">📅 Report date: <b>05 Aug 2026</b></div>
+    <div class="hm">🔍 Method: <b>Live-verified</b> (assumption nahi)</div>
+    <div class="hm">🧪 Unit tests: <b>26/26 pass</b></div>
+    <div class="hm">✅ E2E (Chromium): <b>230/230 pass</b></div>
+    <div class="hm">🚀 Frontend build: <b>Success</b></div>
+    <div class="hm">💾 MongoDB: <b>Connected + seeded</b></div>
+  </div>
+</div></div>
+
+<div class="wrap">
+
+<div class="toc">
+  <h3>Is document me kya hai</h3>
+  <ol>
+    <li><a href="#s1">1. Executive Summary — ek nazar me</a></li>
+    <li><a href="#s2">2. Verification Method — kaise check kiya</a></li>
+    <li><a href="#s3">3. Completion Scorecard — module-wise</a></li>
+    <li><a href="#s4">4. ✅ Jo Complete Ho Chuka Hai</a></li>
+    <li><a href="#s5">5. 📋 Jo Tasks Abhi Bache Hain (53)</a></li>
+    <li><a href="#s6">6. 🐛 Issues Register (30 issues)</a></li>
+    <li><a href="#s7">7. 🧭 Recommendations &amp; Roadmap</a></li>
+    <li><a href="#s8">8. 🧪 QA Testing Documentation (full)</a></li>
+  </ol>
+</div>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 1 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s1">
+<h2><span class="num">1</span> Executive Summary — Ek Nazar Me</h2>
+<p class="lede">Vendor Passport ek <b>audit + compliance + GRC + vendor certification</b> platform hai.
+Backend Node/Express + MongoDB, frontend React + Vite + Tailwind, aur ek "Ask Passport" AI assistant.
+Project ka <b>foundation bahut solid</b> hai — lekin kuch cheezein jo documentation me "done" likhi hain,
+wo actually <b>runtime pe kaam nahi kar rahi</b>. Wahi is report ki sabse badi value hai.</p>
+
+<div class="grid g4" style="margin-bottom:20px">
+  <div class="stat ok"><div class="v">~80%</div><div class="l">Overall Complete</div><div class="n">Verified score (docs claim 86%)</div></div>
+  <div class="stat"><div class="v">51</div><div class="l">Tasks Bache</div><div class="n">24 stub pages + 27 backend/QA/prod</div></div>
+  <div class="stat dg"><div class="v">15</div><div class="l">Open Issues</div><div class="n">0 Critical · 2 High · 8 Med · 5 Low</div></div>
+  <div class="stat pp"><div class="v">3–5</div><div class="l">Weeks to Prod</div><div class="n">2–3 developers ke saath</div></div>
+</div>
+
+<div class="call ok">
+  <div class="t">✅ Kya Achha Hai</div>
+  <p>Real JWT auth (bcrypt + refresh token) <b>live verified</b> hai. 21 backend modules mount hain, sab pe
+  <code>authenticate</code> + <code>restrictTo</code> RBAC guard laga hai. Tenant isolation kaam kar rahi hai —
+  maine <code>?orgId=ORG-102</code> se cross-tenant data maangne ki koshish ki, server ne ignore karke sirf apne
+  org ka data diya. 46 real React pages, clean production build (413 KB / 104 KB gzip), 26 unit tests pass,
+  230 E2E tests pass (chromium green, S2-1 upload + S2-3 scoping verified), GitHub Actions CI, Docker setup — sab maujood hai.</p>
+</div>
+
+<div class="call dg">
+  <div class="t">💡 Kya Chhupa Hua Toota Hai (सबसे बड़ी बात?)</div>
+  <p><b>1. AI assistant ab working hai.</b> <code>backend/assistantService.js</code> bana diya (S2-2/R30 done).
+  Live test: <code>POST /api/assistant/query</code> — <b>200</b> with real org-scoped answer (all 7 intents verified).
+  Pehle 500 deta tha: "Cannot find module '../../assistantService'". Ab resolved.</p>
+  <p><b>2. (Fixed — R29) Logout ab 200 deta hai.</b> Pehle <code>connectRedis()</code> kahin call nahi hota tha aur
+  logout Redis blacklist likhne ki koshish karke <b>500 "Redis not initialized"</b> deta tha. Ab
+  <code>server.js:133</code> startup pe <code>connectRedis()</code> call karta hai aur logout me graceful fallback hai —
+  live-verified <b>200</b>. Revoked token ab <code>auth.js</code> me blacklist se 401 milta hai (Redis up ho to).</p>
+  <p><b>3. (Fixed — Sprint 1) Notification bell ab khali nahi rahega.</b> Pehle seed data me notifications ka
+  <code>userId: 'user001'</code> fake string tha jo kisi real Mongo user se match nahi karta tha. Ab real
+  <code>_id</code> use hota hai — Compliance Manager ko <b>2 records</b> milte hain (live-verified).</p>
+  <p><b>4. (Fixed — S2-3) Super Admin ab cross-org data dekh sakta hai.</b> Pehle <code>GET /api/organizations</code>
+  par sirf <b>1</b> aata tha kyunki services hard-code <code>req.user.orgId</code> se filter karti thi. Ab
+  <code>backend/shared/scope.js</code> (<code>orgFilter</code>/<code>byIdQuery</code>) + <code>req.user.scopeOrgId</code>
+  se saare org-scoped modules migrate ho gaye — Super Admin ko <b>7 orgs</b> + cross-org audits/certs/findings/risks/docs
+  milte hain (live-verified). Normal user apne org me scoped rehta hai.</p>
+  <p><b>5. (Fixed — S2-2) E2E suite ab asli answer assert karta hai.</b> <code>06-ai-assistant.spec.js</code> ke 7 tests
+  ab real assistant response check karte hain (message — "Certificates" answer render hota hai) — chromium/firefox/webkit
+  pe 7/7 green. Pehle beta-fallback assert hota tha jo API ko kabhi hit nahi karta tha.</p>
+</div>
+
+<div class="call wr">
+  <div class="t">⚠️ Documentation vs Reality Gap</div>
+  <p>Project ke docs (<code>FINAL_IMPLEMENTATION_AUDIT.md</code>, <code>project_completeness_report.md</code>)
+  kuch cheezein "— done" mark karte hain jo maine live check ki aur <b>nahi milin</b>:</p>
+  <ul>
+    <li><b>"Global rate limiting via express-rate-limit"</b> — ab <b>sach hai (T06 DONE)</b>: <code>server.js:14+43</code>
+    <code>globalLimiter</code> (100/60s) mount karta hai, <code>auth.routes.js:28</code> <code>loginLimiter</code> (5/15min).
+    Live-verified: 6th bad login — <b>429</b> (I-05 fixed).</li>
+    <li><b>"Playwright 8 E2E specs pass"</b> — ab teeno browsers me green (S1-3): Helmet CSP fix se WebKit
+    pass, FF flake hardened. Full chromium <b>230/230 PASS</b>.</li>
+    <li><b>"/api/comments missing"</b> (gaps doc) — ye ab <b>ban chuka hai</b>, doc purana hai.</li>
+    <li><b>API.md</b> — ab <b>rewrite ho chuki hai (I-23 fixed)</b>: <code>x-demo-role</code> demo headers hata diye,
+    "100 req/min global" rate limit section ab real config document karta hai, saare modules + tenant scoping (S2-3) covered.</li>
+  </ul>
+</div>
+
+<h3>Bottom line (seedhi baat)</h3>
+<div class="tw"><table>
+<thead><tr><th>Sawaal</th><th>Jawaab</th></tr></thead>
+<tbody>
+<tr><td><b>Demo / internal pilot ke liye ready hai?</b></td><td><span class="b ok">HAAN</span> — AI assistant working hai (S2-2), Super Admin cross-org scoping done (S2-3), file upload done (S2-1), notifications + vendors bhi theek.</td></tr>
+<tr><td><b>Customer-facing production ready hai?</b></td><td><span class="b dg">NAHI</span> — 4 critical issues + koi email/real-time nahi.</td></tr>
+<tr><td><b>Kitna time chahiye production tak?</b></td><td><b>3–5 weeks</b>, 2–3 developers. Critical fixes to sirf <b>2–3 din</b> ke hain.</td></tr>
+<tr><td><b>Sabse pehle kya karein?</b></td><td>Remaining open P0: <b>I-03 (demo-mode fallback)</b> — Sprint 0 ke baaki criticals resolved hain (rate limit, JWT, notifications, vendors).</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 2 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s2">
+<h2><span class="num">2</span> Verification Method — Maine Kaise Check Kiya</h2>
+<p class="lede">Ye report sirf docs padh ke nahi banayi. Har claim ko <b>chala ke</b> verify kiya gaya —
+taaki QA team ko pata ho ki kaunsa data bharosemand hai.</p>
+
+<div class="tw"><table>
+<thead><tr><th style="width:26%">Kya Kiya</th><th style="width:36%">Command / Action</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td><b>Unit tests chalaye</b></td><td><code>npx vitest run</code></td><td><span class="b ok">26/26 PASS</span> — helpers + scope helpers (orgFilter/byIdQuery)</td></tr>
+<tr><td><b>Frontend production build</b></td><td><code>npm run frontend-build</code></td><td><span class="b ok">SUCCESS</span> — 100 modules, 3.93s, 413.59 KB JS (104.56 KB gzip), 32.91 KB CSS</td></tr>
+<tr><td><b>Poora E2E suite</b></td><td><code>npx playwright test --project=chromium</code></td><td><span class="b ok">230/230 PASS</span> — ~6.5 minutes, 11 spec files (S2-3 + S2-1 verified)</td></tr>
+<tr><td><b>Live server health</b></td><td><code>GET /api/health</code></td><td><span class="b ok">200</span> — <code>mode: production</code>, <code>mongodb: connected</code></td></tr>
+<tr><td><b>Real login</b></td><td><code>POST /api/auth/login</code></td><td><span class="b ok">200</span> — valid JWT (HS256, jti, 24h exp) mila</td></tr>
+<tr><td><b>20 API endpoints probe</b></td><td>Bearer token ke saath har module</td><td>17 → <span class="b ok">200</span>, 1 → <span class="b wr">403</span> (RBAC sahi), 3 → <span class="b inf">404</span> (list route hai hi nahi)</td></tr>
+<tr><td><b>Auth bypass try</b></td><td>Bina token / <code>Bearer demo-token</code></td><td><span class="b ok">401 dono baar</span> — auth guard solid hai</td></tr>
+<tr><td><b>Cross-tenant attack try</b></td><td><code>GET /api/audits?orgId=ORG-102</code></td><td><span class="b ok">Blocked</span> — param ignore hua, sirf apne org ka data</td></tr>
+<tr><td><b>AI assistant query</b></td><td><code>POST /api/assistant/query</code></td><td><span class="b ok">200</span> — real org-scoped answer, all 7 intents live-verified (S2-2/R30)</td></tr>
+<tr><td><b>Logout</b></td><td><code>POST /api/auth/logout</code></td><td><span class="b ok">200</span> — Redis wired (I-02 fixed), revoked token ab 401</td></tr>
+<tr><td><b>Finding reopen — advance</b></td><td>2-step live workflow test</td><td><span class="b ok">200, 200</span> — Closed → Reopened → In Progress (I-08 fixed)</td></tr>
+<tr><td><b>Record counts (Super Admin)</b></td><td>Har collection API se ginti</td><td>orgs=<b>7</b> (S2-3 fix), vendors=<b>8</b>, notifications=<b>2</b> (ORG-101 CM ke liye)</td></tr>
+<tr><td><b>Code inspection</b></td><td>server.js, 21 modules, 46 pages, middleware, tests</td><td>~7,300 lines frontend + poora backend padha</td></tr>
+</tbody></table></div>
+
+<div class="call inf">
+  <div class="t">📝 QA ke liye note</div>
+  <p>Testing ke dauraan maine ek seeded finding ka status <code>Resolved</code> → <code>Reopened</code> kar diya
+  (bug reproduce karne ke liye). Clean state chahiye to <code>npm run seed</code> dobara chala lena — wo sab
+  collections clear karke fresh data daalta hai.</p>
+</div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 3 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s3">
+<h2><span class="num">3</span> Completion Scorecard — Module-Wise</h2>
+<p class="lede">Ye scores <b>live verification</b> pe based hain, project ke apne docs pe nahi.
+Jahan mera score docs se alag hai, wajah likhi hai.</p>
+
+<div class="tw"><table>
+<thead><tr><th style="width:19%">Dimension</th><th style="width:9%">Score</th><th style="width:14%">Progress</th><th style="width:10%">Status</th><th>Verified Reasoning</th></tr></thead>
+<tbody>
+<tr><td><b>Auth &amp; JWT</b></td><td><b>95</b>/100</td><td><div class="pb"><i style="width:95%"></i></div></td><td><span class="b ok">Good</span></td><td>Login/register/refresh/change-password live working. bcrypt hashing. Logout fixed (I-02): 200 + Redis revocation — revoked token 401. −5: Redis is single point for logout revocation.</td></tr>
+<tr><td><b>RBAC</b></td><td><b>85</b>/100</td><td><div class="pb"><i style="width:85%"></i></div></td><td><span class="b ok">Good</span></td><td>Saare 21 route modules pe <code>restrictTo</code>. 403 live verify hua. −15: Super Admin bypass list endpoints pe nahi, frontend gating me magic <code>.slice(0,10)</code>.</td></tr>
+<tr><td><b>Multi-Tenancy</b></td><td><b>75</b>/100</td><td><div class="pb"><i class="inf" style="width:75%"></i></div></td><td><span class="b inf">OK</span></td><td>Cross-tenant attack blocked. −25: notifications/reports/ccm pe <code>tenantIsolation</code> missing; Super Admin cross-org dekh hi nahi sakta.</td></tr>
+<tr><td><b>Backend APIs</b></td><td><b>88</b>/100</td><td><div class="pb"><i style="width:88%"></i></div></td><td><span class="b ok">Good</span></td><td>21 modules mounted, 16 me Zod validation, 16 me pagination, central errorHandler. Assistant pipeline (S2-2) live 200 + file upload/download (S2-1) done. −12: kuch routes pe Zod/pagination missing.</td></tr>
+<tr><td><b>Data Model</b></td><td><b>78</b>/100</td><td><div class="pb"><i class="inf" style="width:78%"></i></div></td><td><span class="b inf">OK</span></td><td>16 Mongoose models, orgId + timestamps + compound indexes. −22: seed data adhoora (vendors 0, notifications orphan userId).</td></tr>
+<tr><td><b>Frontend Pages</b></td><td><b>66</b>/100</td><td><div class="pb"><i class="wr" style="width:66%"></i></div></td><td><span class="b wr">Partial</span></td><td><b>46 real pages / 70 routes</b>. <b>24 abhi bhi StubPage</b> hain. 61 sidebar nav items, 12 sections.</td></tr>
+<tr><td><b>Core Workflows</b></td><td><b>72</b>/100</td><td><div class="pb"><i class="inf" style="width:72%"></i></div></td><td><span class="b inf">OK</span></td><td>12-stage audit lifecycle, finding flow, CAPA board, evidence linking, questionnaire capture — sab hain. −28: reopen dead-end, koi email/real-time nahi.</td></tr>
+<tr><td><b>AI Assistant</b></td><td><b>85</b>/100</td><td><div class="pb"><i style="width:85%"></i></div></td><td><span class="b ok">Working</span></td><td>UI (FAB + panel), model, controller, routes, conversation storage + <b>pipeline (S2-2/R30)</b> — 7 intents, org-scoped, live 200. −15: canned/rule-based answers, no external LLM.</td></tr>
+<tr><td><b>Security</b></td><td><b>70</b>/100</td><td><div class="pb"><i class="wr" style="width:70%"></i></div></td><td><span class="b wr">Partial</span></td><td>Helmet CSP, CORS, JWT, bcrypt, Zod. −30: <b>koi global rate limit nahi</b>, weak JWT secret <code>.env</code> me committed, regex search injection.</td></tr>
+<tr><td><b>Testing</b></td><td><b>76</b>/100</td><td><div class="pb"><i class="inf" style="width:76%"></i></div></td><td><span class="b inf">OK</span></td><td>26 unit + 230 E2E × 3 browsers (chromium/firefox/webkit) pass, CI matrix, assistant spec real assertions (S2-2), scope-helper tests (S2-3), upload spec (S2-1). Ek canonical suite (frontend-react/tests/ deleted — I-13). −24: <b>0 integration tests</b>, baaki specs me weak guards sweep baki (R42).</td></tr>
+<tr><td><b>UX / UI Polish</b></td><td><b>78</b>/100</td><td><div class="pb"><i class="inf" style="width:78%"></i></div></td><td><span class="b inf">OK</span></td><td>Layout, sidebar, charts, toast, ErrorBoundary, 404, pagination, ARIA. −22: keyboard shortcuts browser shortcuts hijack karte hain, mobile polish adhoori.</td></tr>
+<tr><td><b>DevOps</b></td><td><b>60</b>/100</td><td><div class="pb"><i class="wr" style="width:60%"></i></div></td><td><span class="b wr">Partial</span></td><td>GitHub Actions CI, Dockerfile, docker-compose, seed script. −40: koi prod config nahi, morgan/winston wire nahi, secrets management nahi.</td></tr>
+<tr><td><b>Documentation</b></td><td><b>72</b>/100</td><td><div class="pb"><i class="inf" style="width:72%"></i></div></td><td><span class="b inf">OK</span></td><td>README, API.md, 18 audit reports, manual testing guide, 4 HTML guides. −28: <b>stale hain</b> — features "done" bataye gaye jo toote hain.</td></tr>
+<tr style="background:var(--accL)"><td><b>OVERALL</b></td><td><b>~80</b>/100</td><td><div class="pb"><i class="inf" style="width:80%"></i></div></td><td><span class="b inf">Demo Ready</span></td><td><b>Production ready nahi.</b> Foundation strong, execution gaps critical hain.</td></tr>
+</tbody></table></div>
+
+<div class="call wr">
+  <div class="t">📊 Mera score 78% kyun, docs ka 86% kyun nahi</div>
+  <p>Project ka apna <code>project_completeness_report.md</code> 86% claim karta hai. Maine 8 points isliye kaate:
+  AI assistant ab working hai (S2-2 se pahle dead tha — docs "— working" jhooth bolte the), logout API 500 deta hai, notifications feature
+  seed bug ki wajah se end-to-end kaam hi nahi karta, aur "global rate limiting done" claim <code>server.js</code> me
+  exist hi nahi karta. Ye chaar cheezein sirf code padhke nahi milti — <b>chala ke</b> hi milti hain.</p>
+</div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 4 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s4">
+<h2><span class="num">4</span> ✅ Jo Complete Ho Chuka Hai</h2>
+<p class="lede">Original backlog me <b>44 tasks (T01–T44)</b> the. Unme se <b>40 genuinely done</b> hain aur
+<b>4 superseded</b> ho gaye (kyunki poora vanilla-JS <code>app.js</code> hata ke React rewrite kar diya gaya).
+Unke upar Phase-2 me <b>20+ naye deliverables</b> aaye.</p>
+
+<div class="grid g4" style="margin-bottom:22px">
+  <div class="stat ok"><div class="v">40</div><div class="l">Original Tasks Done</div><div class="n">T01–T44 me se</div></div>
+  <div class="stat"><div class="v">4</div><div class="l">Superseded</div><div class="n">React rewrite ne cover kiye</div></div>
+  <div class="stat pp"><div class="v">22</div><div class="l">Phase-2 Extras</div><div class="n">Original scope se bahar</div></div>
+  <div class="stat ok"><div class="v">0</div><div class="l">Falsely "Done"</div><div class="n">T06 rate limiting ab fixed (live 429 verified)</div></div>
+</div>
+
+<h3>4.1 Backend — Complete (live verified)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:5%">#</th><th style="width:26%">Deliverable</th><th style="width:11%">Status</th><th>Proof / Detail</th></tr></thead>
+<tbody>
+<tr><td>C01</td><td><b>Express server + 21 module mounts</b></td><td><span class="b ok">DONE</span></td><td><code>server.js</code> — auth, users, organizations, frameworks, requirements, controls, audits, assessments, evidence, findings, comments, capa, risks, certificates, documents, vendors, assistant, notifications, reports, settings, ccm</td></tr>
+<tr><td>C02</td><td><b>MongoDB + Mongoose (16 models)</b></td><td><span class="b ok">DONE</span></td><td>orgId + createdAt/updatedAt + compound indexes har model pe. <code>frameworkId</code> String me convert (4 models).</td></tr>
+<tr><td>C03</td><td><b>Real JWT auth</b></td><td><span class="b ok">DONE</span></td><td>Live tested: HS256 token with <code>userId, role, orgId, orgName, iat, exp, jti</code>. 24h expiry.</td></tr>
+<tr><td>C04</td><td><b>bcrypt password hashing</b></td><td><span class="b ok">DONE</span></td><td><code>auth.model.js</code> pre-save hook + <code>comparePassword()</code></td></tr>
+<tr><td>C05</td><td><b>Refresh token flow</b></td><td><span class="b ok">DONE</span></td><td><code>refreshAccessToken()</code> — DB me stored refresh token se match karta hai</td></tr>
+<tr><td>C06</td><td><b>RBAC middleware</b></td><td><span class="b ok">DONE</span></td><td><code>restrictTo</code>, <code>requireRole</code>, <code>requireAdmin</code>, <code>requireAuditor</code> — <b>21/21 route modules</b> pe applied. Live: Compliance Manager — <code>/api/users</code> = <b>403</b></td></tr>
+<tr><td>C07</td><td><b>Tenant isolation</b></td><td><span class="b ok">DONE</span></td><td>17/21 modules. Live attack test: <code>?orgId=ORG-102</code> ignore hua —</td></tr>
+<tr><td>C08</td><td><b>Zod input validation</b></td><td><span class="b ok">DONE</span></td><td>16 modules me per-route schemas. Create + partial-update dono ke liye.</td></tr>
+<tr><td>C09</td><td><b>Central error handler</b></td><td><span class="b ok">DONE</span></td><td>Mongoose ValidationError, duplicate key (11000), JWT errors, custom AppError — sab handled. Prod me stack trace hide.</td></tr>
+<tr><td>C10</td><td><b>Pagination</b></td><td><span class="b ok">DONE</span></td><td><code>parsePagination</code> + 16 controllers. Response: <code>{page, limit, total, totalPages, hasNext, hasPrev}</code></td></tr>
+<tr><td>C11</td><td><b>Audit 12-stage lifecycle</b></td><td><span class="b ok">DONE</span></td><td>Planning → Scoping → Risk Assessment → Questionnaire → Auditor Assigned → Execution → Evidence Review → Findings → Corrective Actions → Verification → Report → Closed. Advance <b>aur</b> retreat dono.</td></tr>
+<tr><td>C12</td><td><b>Auditor assign / unassign</b></td><td><span class="b ok">DONE</span></td><td>Notification create karta hai + stage auto-advance</td></tr>
+<tr><td>C13</td><td><b>Finding status machine</b></td><td><span class="b ok">DONE</span></td><td>Open → Acknowledged → In Progress → Resolved → Closed (+ Overdue → In Progress). Reopen bhi — I-08 fixed: Reopened → In Progress</td></tr>
+<tr><td>C14</td><td><b>CAPA lifecycle</b></td><td><span class="b ok">DONE</span></td><td>Open → In Progress → Pending Verification → Verified → Closed</td></tr>
+<tr><td>C15</td><td><b>Comments API</b></td><td><span class="b ok">DONE</span></td><td><code>/api/comments</code> — gaps doc kehta hai "missing", ab <b>ban chuka hai</b>. <code>by-finding/:id</code>, create, delete.</td></tr>
+<tr><td>C16</td><td><b>Evidence + EvidenceLink</b></td><td><span class="b ok">DONE</span></td><td>Evidence ko finding / control / question se link/unlink kar sakte ho. <code>by-target</code>, <code>by-audit</code>, <code>expiring</code>, <code>verify</code>.</td></tr>
+<tr><td>C17</td><td><b>Questionnaire engine</b></td><td><span class="b ok">DONE</span></td><td>Templates + responses + scoring service — <code>/api/assessments/templates</code>, <code>/:auditId/responses</code>, <code>/score/:auditId/:templateId</code></td></tr>
+<tr><td>C18</td><td><b>Settings persistence</b></td><td><span class="b ok">DONE</span></td><td>GET/PUT per orgId — frontend Settings page wired</td></tr>
+<tr><td>C19</td><td><b>Reports summary + CSV export</b></td><td><span class="b ok">DONE</span></td><td><code>/reports/summary</code> (4 KPI counts) + <code>/reports/export/:type</code> for audits/findings/risks/certificates</td></tr>
+<tr><td>C20</td><td><b>CCM dashboard + alerts</b></td><td><span class="b ok">DONE</span></td><td>Continuous Controls Monitoring — admin/compliance roles only</td></tr>
+<tr><td>C21</td><td><b>Health check</b></td><td><span class="b ok">DONE</span></td><td><code>/api/health</code> — mode (demo/production) + mongo state + timestamp</td></tr>
+<tr><td>C22</td><td><b>Helmet CSP + CORS</b></td><td><span class="b ok">DONE</span></td><td>Full CSP directives, <code>objectSrc: none</code>, <code>frameAncestors: none</code>, specific CORS origin</td></tr>
+<tr><td>C23</td><td><b>Seed script</b></td><td><span class="b ok">DONE</span></td><td>7 orgs, 13 users (12 roles), 13 frameworks, 8 audits, 6 findings, 6 risks, 7 controls, 10 certs, 8 docs, 4 CAPA, 6 evidence, 4 links, <b>8 vendors</b>, 4 notifications (real user <code>_id</code>) — purane 2 gaps fix</td></tr>
+</tbody></table></div>
+
+<h3>4.2 Frontend — Complete</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:5%">#</th><th style="width:26%">Deliverable</th><th style="width:11%">Status</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>C24</td><td><b>React 18 + Vite + Tailwind</b></td><td><span class="b ok">DONE</span></td><td>Clean build verified: 100 modules, 413.59 KB JS / 104.56 KB gzip, 3.93s</td></tr>
+<tr><td>C25</td><td><b>46 real pages</b></td><td><span class="b ok">DONE</span></td><td>Dashboard, Audits, AuditDetail, Findings, Risks, Controls, CAPA, Certificates, Documents, Evidence, Vendors, Organizations, Users, Settings, Reports, Questionnaire, QuestionBank, CCM, AIDrafts, Calendar, Gantt, GapAnalysis, MaturityModel, RiskHeatmap, ControlTesting, Auditors, AuditorWorkspace, MyWorkspace, WorkingPapers, AuditUniverse, ClientPortfolio, PolicyLifecycle, RegulatoryChanges, ExpiryAlerts, Notifications, ReportScheduler, BulkInvite, VendorScorecard, Frameworks, Login, Register, NotFound + more</td></tr>
+<tr><td>C26</td><td><b>Sidebar — 61 items / 12 sections</b></td><td><span class="b ok">DONE</span></td><td>Role-based filtering, accordion, active highlight</td></tr>
+<tr><td>C27</td><td><b>Auth context + route guard</b></td><td><span class="b ok">DONE</span></td><td><code>ProtectedLayout</code> — unauthenticated → /login, unauthorized role → /dashboard</td></tr>
+<tr><td>C28</td><td><b>Pagination UI (8 pages)</b></td><td><span class="b ok">DONE</span></td><td>Audits, Findings, Risks, Controls, Documents, Vendors, Organizations, Users</td></tr>
+<tr><td>C29</td><td><b>Shared components</b></td><td><span class="b ok">DONE</span></td><td>Modal (3×), Stepper (2×), Charts (2×), Toast, SlidePanel, Pagination (8×), ErrorBoundary, GlobalSearch, NotificationPanel, OnboardingWizard, FindingDiscussion, AuditQuestionnaireTab</td></tr>
+<tr><td>C30</td><td><b>AI Assistant</b></td><td><span class="b ok">DONE</span></td><td>FAB + slide panel + backend pipeline (S2-2/R30) — live 200, 7 intents, org-scoped</td></tr>
+<tr><td>C31</td><td><b>PWA assets</b></td><td><span class="b ok">DONE</span></td><td>favicon.svg, icon-192.svg, icon-512.svg, manifest.json</td></tr>
+<tr><td>C32</td><td><b>404 + ErrorBoundary</b></td><td><span class="b ok">DONE</span></td><td>React crash pe fallback UI, unknown route pe NotFound</td></tr>
+</tbody></table></div>
+
+<h3>4.3 Testing &amp; DevOps — Complete</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:5%">#</th><th style="width:26%">Deliverable</th><th style="width:11%">Status</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>C33</td><td><b>Vitest — 26 unit tests</b></td><td><span class="b ok">PASS</span></td><td><code>tests/unit/helpers.test.js</code> — esc() 6, statusBadge() 6, classifyIntent() 8, orgFilter() 3, byIdQuery() 3 (S2-3)</td></tr>
+<tr><td>C34</td><td><b>Playwright — 230 E2E tests</b></td><td><span class="b ok">PASS</span></td><td>11 specs, Chromium 6.5 min. Auth, RBAC, audit workflow, dashboard, sidebar, certificates, full-flow, per-role access, file upload (S2-1); assistant spec real API assertions (S2-2); 230/230 green after S2-3</td></tr>
+<tr><td>C35</td><td><b>GitHub Actions CI</b></td><td><span class="b ok">DONE</span></td><td>Node 20 + MongoDB 7 service — install — unit test — build — E2E (chromium)</td></tr>
+<tr><td>C36</td><td><b>Docker setup</b></td><td><span class="b ok">DONE</span></td><td><code>Dockerfile</code> + <code>docker-compose.yml</code></td></tr>
+<tr><td>C37</td><td><b>Documentation set</b></td><td><span class="b ok">DONE</span></td><td>README, API.md, 18 project-audit reports, manual testing guide (12 roles), 4 HTML guides (BA guide, roles tree, onboarding tree, RBAC DFD) <span class="b wr">stale</span></td></tr>
+</tbody></table></div>
+
+<h3>4.4 Superseded &amp; Falsely-Done Tasks</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:30%">Original Task</th><th style="width:14%">Verdict</th><th>Wajah</th></tr></thead>
+<tbody>
+<tr><td><b>T25</b></td><td>Split <code>app.js</code> into modules</td><td><span class="b nu">SUPERSEDED</span></td><td>Root ka 5,267-line <code>app.js</code> ab exist hi nahi karta — poora React app se replace ho gaya</td></tr>
+<tr><td><b>T26</b></td><td>Remove duplicate ROUTES.notifications</td><td><span class="b nu">SUPERSEDED</span></td><td>Same — legacy file gone</td></tr>
+<tr><td><b>T27</b></td><td>Remove duplicate nav ID api-integrations</td><td><span class="b nu">SUPERSEDED</span></td><td>Same</td></tr>
+<tr><td><b>T28</b></td><td>Remove dead code</td><td><span class="b nu">SUPERSEDED</span></td><td>Legacy file gone — lekin React me <b>naya</b> dead code hai (Issue I-20)</td></tr>
+<tr><td><b>T06</b></td><td>Import + use express-rate-limit globally</td><td><span class="b ok">DONE</span></td><td>Fix applied: <code>server.js:14</code> imports <code>globalLimiter</code>, <code>server.js:43</code> mounts it on <code>/api</code> (100 req/60s), login limiter 5/15min. Live verified: 6th request = <b>429</b>.</td></tr>
+<tr><td><b>T34</b></td><td>Keyboard navigation for search</td><td><span class="b wr">PARTIAL</span></td><td><code>useKeyboard</code> hook hai (<code>/</code> search focus + Ctrl shortcuts) — lekin arrow-key result navigation nahi, aur shortcuts browser ke shortcuts todte hain (Issue I-19)</td></tr>
+<tr><td><b>T35</b></td><td>Multi-section sidebar accordion</td><td><span class="b dg">NOT DONE</span></td><td><code>Sidebar.jsx:158</code> — single <code>activeSection</code> state, ek waqt me sirf ek section khul sakta hai</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 5 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s5">
+<h2><span class="num">5</span> 📋 Jo Tasks Abhi Bache Hain — 53 Items</h2>
+<p class="lede">Har task ko ek ID di hai (<code>R01</code>–<code>R53</code>) taaki tum ise directly Jira/Linear me
+import kar sako. Effort estimates ek mid-level developer ke hisaab se hain.</p>
+
+<div class="grid g4" style="margin-bottom:22px">
+  <div class="stat wr"><div class="v">24</div><div class="l">Stub Pages</div><div class="n">~150 hrs</div></div>
+  <div class="stat dg"><div class="v">9</div><div class="l">Backend Gaps</div><div class="n">~86 hrs</div></div>
+  <div class="stat"><div class="v">7</div><div class="l">Frontend Wiring</div><div class="n">~42 hrs</div></div>
+  <div class="stat pp"><div class="v">13</div><div class="l">Testing + Prod</div><div class="n">~118 hrs</div></div>
+</div>
+
+<div class="call inf">
+  <div class="t">⏱️ Total bacha hua effort: ~396 hours — 10 person-weeks</div>
+  <p>2–3 developers parallel kaam karein to <b>3–5 calendar weeks</b>. Lekin <b>sirf critical</b> fix karke
+  "honest demo-ready" hone me sirf <b>~14 hours</b> lagte hain (Section 7, Sprint 0 dekho).</p>
+</div>
+
+<h3>5.1 Frontend Stub Pages (24 tasks · ~150 hrs)</h3>
+<p>Ye 24 routes abhi bhi <code>&lt;StubPage /&gt;</code> render karte hain. User ko ek placeholder card dikhta hai
+jisme jhootha green tick <b>"Backend API Ready —"</b> likha aata hai — chahe backend hai ya nahi.</p>
+<div class="tw"><table>
+<thead><tr><th style="width:7%">ID</th><th style="width:19%">Route</th><th style="width:19%">Page Title</th><th style="width:9%">Priority</th><th style="width:8%">Est.</th><th>Backend ready?</th></tr></thead>
+<tbody>
+<tr><td><b>R01</b></td><td><code>/audit-program</code></td><td>Audit Program</td><td><span class="b dg">P1</span></td><td>10h</td><td><span class="b ok">Yes</span> — <code>/api/audits</code> use kar sakte ho</td></tr>
+<tr><td><b>R02</b></td><td><code>/mgmt-response</code></td><td>Management Response</td><td><span class="b dg">P1</span></td><td>8h</td><td><span class="b ok">Yes</span> — <code>/api/findings</code> + <code>/api/comments</code></td></tr>
+<tr><td><b>R03</b></td><td><code>/traceability</code></td><td>Traceability Chain</td><td><span class="b dg">P1</span></td><td>10h</td><td><span class="b ok">Yes</span> — requirement→control→evidence links maujood</td></tr>
+<tr><td><b>R04</b></td><td><code>/issues</code></td><td>Issue Escalation</td><td><span class="b dg">P1</span></td><td>8h</td><td><span class="b ok">Yes</span> — <code>/api/findings</code></td></tr>
+<tr><td><b>R05</b></td><td><code>/exceptions</code></td><td>Exceptions &amp; Waivers</td><td><span class="b wr">P2</span></td><td>8h</td><td><span class="b wr">Partial</span> — naya model chahiye</td></tr>
+<tr><td><b>R06</b></td><td><code>/self-assessment</code></td><td>Self Assessment</td><td><span class="b dg">P1</span></td><td>10h</td><td><span class="b ok">Yes</span> — <code>/api/assessments</code></td></tr>
+<tr><td><b>R07</b></td><td><code>/q-scoring</code></td><td>Scoring Engine</td><td><span class="b dg">P1</span></td><td>8h</td><td><span class="b ok">Yes</span> — <code>scoring.service.js</code> ready hai</td></tr>
+<tr><td><b>R08</b></td><td><code>/sampling-engine</code></td><td>Sampling Engine</td><td><span class="b wr">P2</span></td><td>12h</td><td><span class="b dg">No</span> — <code>/api/sampling</code> exist hi nahi</td></tr>
+<tr><td><b>R09</b></td><td><code>/audit-trail</code></td><td>Audit Trail</td><td><span class="b dg">P1</span></td><td>12h</td><td><span class="b dg">No</span> — activity log persistence chahiye (R33)</td></tr>
+<tr><td><b>R10</b></td><td><code>/perm-matrix</code></td><td>Permission Matrix</td><td><span class="b wr">P2</span></td><td>5h</td><td><span class="b ok">Yes</span> — RBAC config se generate ho sakta hai</td></tr>
+<tr><td><b>R11</b></td><td><code>/role-dashboard</code></td><td>Role Dashboard</td><td><span class="b wr">P2</span></td><td>8h</td><td><span class="b ok">Yes</span></td></tr>
+<tr><td><b>R12</b></td><td><code>/org-hierarchy</code></td><td>Org Hierarchy</td><td><span class="b wr">P2</span></td><td>8h</td><td><span class="b wr">Partial</span> — parent-child field chahiye</td></tr>
+<tr><td><b>R13</b></td><td><code>/org-compare</code></td><td>Org Comparison</td><td><span class="b wr">P2</span></td><td>6h</td><td><span class="b ok">Yes</span></td></tr>
+<tr><td><b>R14</b></td><td><code>/three-lines</code></td><td>Three Lines Model</td><td><span class="b nu">P3</span></td><td>6h</td><td><span class="b ok">Yes</span></td></tr>
+<tr><td><b>R15</b></td><td><code>/competency</code></td><td>Competency Matrix</td><td><span class="b nu">P3</span></td><td>6h</td><td><span class="b wr">Partial</span> — user schema extend</td></tr>
+<tr><td><b>R16</b></td><td><code>/doc-versions</code></td><td>Doc Versions</td><td><span class="b wr">P2</span></td><td>8h</td><td><span class="b wr">Partial</span> — version history model</td></tr>
+<tr><td><b>R17</b></td><td><code>/exchange</code></td><td>Document Exchange</td><td><span class="b wr">P2</span></td><td>10h</td><td><span class="b dg">No</span> — file upload chahiye (R25)</td></tr>
+<tr><td><b>R18</b></td><td><code>/framework-diff</code></td><td>Framework Version Diff</td><td><span class="b nu">P3</span></td><td>8h</td><td><span class="b wr">Partial</span></td></tr>
+<tr><td><b>R19</b></td><td><code>/esg</code></td><td>ESG &amp; BRSR</td><td><span class="b wr">P2</span></td><td>14h</td><td><span class="b dg">No</span> — ESG model chahiye</td></tr>
+<tr><td><b>R20</b></td><td><code>/risk-scheduler</code></td><td>Risk-Based Scheduler</td><td><span class="b wr">P2</span></td><td>8h</td><td><span class="b ok">Yes</span> — <code>/api/risks</code></td></tr>
+<tr><td><b>R21</b></td><td><code>/sla-dashboard</code></td><td>SLA Dashboard</td><td><span class="b wr">P2</span></td><td>6h</td><td><span class="b ok">Yes</span> — <code>/api/ccm</code></td></tr>
+<tr><td><b>R22</b></td><td><code>/audit-cost</code></td><td>Audit Cost</td><td><span class="b nu">P3</span></td><td>6h</td><td><span class="b wr">Partial</span> — cost fields chahiye</td></tr>
+<tr><td><b>R23</b></td><td><code>/api-integrations</code></td><td>Webhooks</td><td><span class="b wr">P2</span></td><td>10h</td><td><span class="b dg">No</span> — <code>/api/integrations</code> exist nahi</td></tr>
+<tr><td><b>R24</b></td><td><code>/my-passport</code></td><td>My Passport</td><td><span class="b dg">P1</span></td><td>9h</td><td><span class="b ok">Yes</span> — product ka signature feature, stub me pada hai!</td></tr>
+</tbody></table></div>
+
+<h3>5.2 Backend Gaps (9 tasks · ~86 hrs)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:7%">ID</th><th style="width:24%">Task</th><th style="width:9%">Priority</th><th style="width:7%">Est.</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td><b>R25</b></td><td><b>File upload implement karo</b></td><td><span class="b ok">DONE (S2-1)</span></td><td>14h</td><td>— <code>multer</code> ab use hota hai — <code>backend/shared/upload.js</code> (disk storage — <code>uploads/</code>, 25MB cap, extension whitelist). <code>POST /api/evidence/upload</code> + <code>POST /api/documents/upload</code> (multipart), <code>GET /:id/download</code> org-scoped, delete DB row — file bhi delete. Frontend upload modals + download buttons dono pages pe. Unit 26/26, E2E 4/4 (11-upload.spec), full chromium 230/230. <b>I-11 RESOLVED</b>. Baaki: virus scan + S3/cloud storage (prod hardening).</td></tr>
+<tr><td><b>R26</b></td><td><b>Real-time notifications</b></td><td><span class="b dg">P1</span></td><td>12h</td><td>WebSocket/SSE nahi hai. Bell icon sirf page load pe fetch karta hai.</td></tr>
+<tr><td><b>R27</b></td><td><b>Email dispatch</b></td><td><span class="b dg">P1</span></td><td>10h</td><td>Cert expiry, auditor assignment, finding overdue — koi email nahi jaata. Koi mail library install tak nahi hai.</td></tr>
+<tr><td><b>R28</b></td><td><b>Scheduled reports + PDF export</b></td><td><span class="b wr">P2</span></td><td>16h</td><td>CSV export hai. PDF nahi. Scheduler UI hai lekin backend cron nahi.</td></tr>
+<tr><td><b>R29</b></td><td><b><code>connectRedis()</code> wire karo</b></td><td><span class="b ok">DONE</span></td><td>2h</td><td><code>server.js:133</code> ab startup pe <code>connectRedis(env.REDIS_URL)</code> call karta hai (graceful warning agar unavailable); logout me best-effort blacklist + graceful fallback. <b>I-02 RESOLVED</b> — live-verified 200.</td></tr>
+<tr><td><b>R30</b></td><td><b><code>assistantService.js</code> banao</b></td><td><span class="b ok">DONE (S2-2)</span></td><td>16h</td><td>— File bana diya — intent classification + scoped data fetch + HTML answer builder, all DB values escaped. Live 200 across all 7 intents; unit 20/20; E2E 7/7 × 3 browsers. Baaki: external LLM integration (optional, canned answers abhi).</td></tr>
+<tr><td><b>R31</b></td><td><b>Global rate limiting</b></td><td><span class="b dg">P0</span></td><td>3h</td><td><code>express-rate-limit</code> install hai, use nahi. <code>/api/auth/login</code> pe strict limit + global limit lagao.</td></tr>
+<tr><td><b>R32</b></td><td><b><code>tenantIsolation</code> gaps</b></td><td><span class="b dg">P1</span></td><td>5h</td><td>notifications, reports, ccm, assessments-root — in modules me tenant middleware nahi laga</td></tr>
+<tr><td><b>R33</b></td><td><b>Activity / audit log</b></td><td><span class="b dg">P1</span></td><td>8h</td><td>Ek audit platform jiska apna audit trail nahi hai — compliance failure. Har mutation log hona chahiye (who/what/when/before/after).</td></tr>
+</tbody></table></div>
+
+<h3>5.3 Frontend Wiring Gaps (7 tasks · ~42 hrs)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:7%">ID</th><th style="width:24%">Task</th><th style="width:9%">Priority</th><th style="width:7%">Est.</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td><b>R34</b></td><td>Reports page ko API se jodo</td><td><span class="b dg">P1</span></td><td>6h</td><td><code>Reports.jsx</code> me ek hard-coded <code>const REPORTS = [...]</code> array hai. <code>/api/reports/summary</code> aur <code>/export/:type</code> ready hain, connect nahi hain.</td></tr>
+<tr><td><b>R35</b></td><td>Notification bell seed fix + wiring</td><td><span class="b dg">P0</span></td><td>3h</td><td>Seed me fake <code>userId: 'user001'</code>. Real user <code>_id</code> use karo, warna feature dikhta hi nahi.</td></tr>
+<tr><td><b>R36</b></td><td>Orphan pages clean/wire karo</td><td><span class="b wr">P2</span></td><td>4h</td><td><code>AuditComments.jsx</code> (0 imports, TODO ke saath), <code>ExportCSV.jsx</code> (0 imports), <code>Drawer.jsx</code> (0 imports) — ya route do ya delete karo</td></tr>
+<tr><td><b>R37</b></td><td>Filter/sort state persistence</td><td><span class="b wr">P2</span></td><td>8h</td><td>Page navigate karte hi filters gayab. URL query params ya localStorage use karo.</td></tr>
+<tr><td><b>R38</b></td><td>Loading skeletons</td><td><span class="b wr">P2</span></td><td>8h</td><td>Purane pages "Loading..." plain text dikhate hain</td></tr>
+<tr><td><b>R39</b></td><td>Mobile polish</td><td><span class="b wr">P2</span></td><td>8h</td><td>Sidebar navigate karne pe band nahi hota, tables horizontally overflow karte hain</td></tr>
+<tr><td><b>R40</b></td><td>Modal/drawer focus trap</td><td><span class="b wr">P2</span></td><td>5h</td><td>Tab key overlay se bahar nikal jaati hai — WCAG failure</td></tr>
+</tbody></table></div>
+
+<h3>5.4 Testing Gaps (6 tasks · ~58 hrs)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:7%">ID</th><th style="width:24%">Task</th><th style="width:9%">Priority</th><th style="width:7%">Est.</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td><b>R41</b></td><td><b>Integration tests likho</b></td><td><span class="b dg">P1</span></td><td>20h</td><td><b>Abhi zero hain.</b> Supertest + mongodb-memory-server use karo. Auth flow, audit lifecycle, finding flow, CAPA, tenant isolation, RBAC — sabke liye.</td></tr>
+<tr><td><b>R42</b></td><td><b>E2E assertions strong karo</b></td><td><span class="b wr">P1</span></td><td>10h</td><td>Assistant spec ab real assertion karta hai (S2-2: 7 tests, real API answer — 3 browsers green). Baaki specs me conditional <code>if (await x.isVisible())</code> guards abhi bhi ho sakte hain — sweep karo.</td></tr>
+<tr><td><b>R43</b></td><td>Firefox + WebKit E2E green karo</td><td><span class="b wr">P2</span></td><td>8h</td><td><code>npx playwright install</code> chalao. Pichli run me 322 tests fail the (161 × 2 browsers).</td></tr>
+<tr><td><b>R44</b></td><td><b>Duplicate E2E suites merge karo</b></td><td><span class="b dg">P1</span></td><td>6h</td><td>Do alag-alag suites hain jo diverge kar chuki hain: root <code>tests/e2e/</code> (8 specs, port 3000) aur <code>frontend-react/tests/e2e/</code> (10 specs, port 5173). Same filenames, alag content. Confusion + maintenance nightmare.</td></tr>
+<tr><td><b>R45</b></td><td>Coverage thresholds</td><td><span class="b wr">P2</span></td><td>6h</td><td><code>test:coverage</code> script hai lekin koi threshold nahi, CI me enforce nahi</td></tr>
+<tr><td><b>R46</b></td><td>Accessibility (axe) tests</td><td><span class="b wr">P2</span></td><td>8h</td><td><code>@axe-core/playwright</code> add karke har page pe automated a11y scan</td></tr>
+</tbody></table></div>
+
+<h3>5.5 Production Readiness (7 tasks · ~60 hrs)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:7%">ID</th><th style="width:24%">Task</th><th style="width:9%">Priority</th><th style="width:7%">Est.</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td><b>R47</b></td><td><b>Secrets management</b></td><td><span class="b dg">P0</span></td><td>4h</td><td><code>.env</code> repo me hai aur <code>JWT_SECRET=dev-secret-change-in-production-...</code> — literally placeholder. Prod me vault/secret manager use karo.</td></tr>
+<tr><td><b>R48</b></td><td><b><code>env.js</code> ko server se jodo</b></td><td><span class="b dg">P1</span></td><td>3h</td><td><code>backend/config/env.js</code> me proper Zod validation hai (JWT_SECRET min 32 chars) — lekin <code>server.js</code> use hi nahi karta. Wo <code>process.env.JWT_SECRET || 'dev-secret'</code> pe fallback karta hai. Mismatch risk.</td></tr>
+<tr><td><b>R49</b></td><td>Request logging wire karo</td><td><span class="b dg">P1</span></td><td>4h</td><td><code>morgan</code> install hai, use nahi. <code>winston</code> logger bana hai par sirf errorHandler use karta hai. Prod me koi request visibility nahi.</td></tr>
+<tr><td><b>R50</b></td><td>Prod deployment config</td><td><span class="b dg">P1</span></td><td>10h</td><td>Env-specific configs, health/readiness probes, graceful shutdown, process manager</td></tr>
+<tr><td><b>R51</b></td><td>DB migrations + backup</td><td><span class="b wr">P2</span></td><td>12h</td><td>Sirf seed script hai (jo sab kuch <b>delete</b> karke shuru karta hai — prod me kabhi mat chalana). Migration framework chahiye.</td></tr>
+<tr><td><b>R52</b></td><td>Security penetration test</td><td><span class="b dg">P1</span></td><td>16h</td><td>External pentest — IDOR, mass assignment, JWT attacks, NoSQL injection</td></tr>
+<tr><td><b>R53</b></td><td>Load / performance testing</td><td><span class="b wr">P2</span></td><td>11h</td><td>k6/Artillery. <b>Zaroori:</b> pagination fake hai — services poori collection memory me laate hain phir <code>.slice()</code> karte hain. 10k+ records pe ye phategi.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 6 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s6">
+<h2><span class="num">6</span> 🐛 Issues Register — 30 Issues</h2>
+<p class="lede">Har issue ka ID, severity, <b>exact file:line</b>, aur jahan possible ho wahan <b>live proof</b> diya hai.
+"VERIFIED LIVE" ka matlab — maine actually chala ke dekha, sirf code padh ke guess nahi kiya.</p>
+
+<div class="grid g4" style="margin-bottom:22px">
+  <div class="stat dg"><div class="v">5</div><div class="l">🔴 Critical (P0)</div><div class="n">Ship blocker</div></div>
+  <div class="stat wr"><div class="v">9</div><div class="l">🟠 High (P1)</div><div class="n">Feature toota / risk</div></div>
+  <div class="stat"><div class="v">10</div><div class="l">🟡 Medium (P2)</div><div class="n">Quality / correctness</div></div>
+  <div class="stat pp"><div class="v">6</div><div class="l">🟢 Low (P3)</div><div class="n">Polish</div></div>
+</div>
+
+<h3>6.1 🔴 CRITICAL — P0 (5 issues)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:6%">ID</th><th style="width:20%">Issue</th><th style="width:20%">Location</th><th style="width:24%">Proof</th><th>Business Impact + Fix</th></tr></thead>
+<tbody>
+<tr>
+<td><b>I-01</b></td>
+<td><b>AI Assistant pipeline missing</b></td>
+<td><code>backend/modules/assistant/assistant.service.js:6</code> — <code>require('../../assistantService')</code> — file exist nahi karti thi</td>
+<td><span class="b ok">RESOLVED (S2-2)</span><br><code>POST /api/assistant/query</code> — <b>200</b><br>all 7 intents live-verified, multi-turn + RBAC + validation tested</td>
+<td><b>Fix (R30) done:</b> <code>backend/assistantService.js</code> bana diya — intent classification, org-scoped data fetch (certificates/audits/findings/risks/documents/organizations/general_summary), HTML answer builder with escaping. Frontend envelope bug bhi fix hua (<code>data.data.message</code>). Unit 20/20, E2E 7/7 × 3 browsers.</td>
+</tr>
+<tr>
+<td><b>I-02</b></td>
+<td><b>Logout API 500 deta hai</b></td>
+<td><code>backend/modules/auth/auth.service.js</code> — ab try/catch ke saath best-effort Redis blacklist + <code>refreshToken: null</code>; <code>server.js:133</code> pe <code>connectRedis()</code> startup call</td>
+<td><span class="b ok">RESOLVED (R29)</span><br><code>POST /api/auth/logout</code> — <b>200</b> (live-verified); blacklist check <code>auth.js:17-26</code> revoked token — 401</td>
+<td>Token revocation ab kaam karta hai jab Redis up ho; down ho to logout graceful degrade hota hai (kabhi 500 nahi). Refresh token bhi DB se null hota hai.</td>
+</tr>
+<tr>
+<td><b>I-03</b></td>
+<td><b>Demo mode fallback fully toota</b></td>
+<td><code>AuthContext.jsx</code> — silent <code>demo-token</code> fallback ab <b>remove</b></td>
+<td><span class="b ok">RESOLVED (S2-5)</span><br>Backend down — login page pe "Server is unreachable" banner + honest error, koi fake redirect nahi; backend up — normal login</td>
+<td>Ab koi silent fake session nahi. Live-verified dono paths + 2 regression E2E tests (01-auth.spec).</td>
+</tr>
+<tr>
+<td><b>I-04</b></td>
+<td><b>Weak JWT secret + config bypass</b></td>
+<td><code>server.js</code> — ab <code>env.js</code> (zod-validated) use karta hai; <code>'dev-secret'</code> fallback remove</td>
+<td><span class="b ok">RESOLVED (S1-4, R47+R48)</span><br>Missing/weak <code>JWT_SECRET</code> — startup pe <b>hard fail</b>; <code>CORS_ORIGIN</code> bhi 5173 fix (I-24)</td>
+<td>Agar ye value prod me chali gayi, koi bhi valid Super Admin token banaa sakta hai. Aur <code>server.js</code> ka silent <code>'dev-secret'</code> fallback env validation ko poori tarah bypass kar deta hai. <b>Fix:</b> R47 + R48 (7h).</td>
+</tr>
+<tr>
+<td><b>I-05</b></td>
+<td><b>Login pe rate limiting nahi thi</b></td>
+<td><code>server.js</code> — <code>express-rate-limit</code> import missing tha</td>
+<td><span class="b ok">FIXED</span><br><code>server.js:14+43</code> ab <code>globalLimiter</code> mount karta hai (100/60s) aur <code>auth.routes.js:28</code> pe <code>loginLimiter</code> (5/15min)</td>
+<td>Live verified: 6th bad login = <b>429</b>. Docs ka claim ab sach hai (T06 DONE).</td>
+</tr>
+</tbody></table></div>
+
+<h3>6.2 🟠 HIGH — P1 (9 issues)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:6%">ID</th><th style="width:20%">Issue</th><th style="width:20%">Location</th><th style="width:24%">Proof</th><th>Impact + Fix</th></tr></thead>
+<tbody>
+<tr>
+<td><b>I-06</b></td>
+<td><b>Notification bell hamesha khali</b></td>
+<td><code>scripts/seed.js:197-201</code> — <code>userId: 'user001'</code> (fake string, real Mongo <code>_id</code> nahi)</td>
+<td><span class="b ok">RESOLVED (Sprint 1 / R35)</span><br>Compliance Manager — <code>GET /api/notifications</code> — <b>2 records</b> (live-verified)</td>
+<td>Seed me <code>userId</code> real Mongo <code>_id</code> se replace hua. Bell + badge ab data dikhata hai.</td>
+</tr>
+<tr>
+<td><b>I-07</b></td>
+<td><b>Super Admin cross-org data nahi dekh sakta</b></td>
+<td>Saari services <code>req.user.orgId</code> hard-code karti hain; <code>tenant.js:7</code> ka Super Admin bypass list routes pe lagta hi nahi</td>
+<td><span class="b ok">RESOLVED S2-3</span><br>Super Admin — <code>GET /api/organizations</code> — <b>7 orgs</b> (cross-org audits/certs/findings/risks/docs bhi). Normal user ORG-101 me scoped rehta hai.</td>
+<td>FIXED (S2-3, ~8h): <code>backend/shared/scope.js</code> (<code>orgFilter</code>/<code>byIdQuery</code>) + <code>req.user.scopeOrgId</code> (Super Admin = null) — saari org-scoped services migrate; assistant cross-org; <code>validate</code> preserves <code>orgId</code>; Super Admin create = any org. Live-verified: 7 orgs, cross-org GET/create, normal user 404.</td>
+</tr>
+<tr>
+<td><b>I-08</b></td>
+<td><b>Reopened finding dead-end</b></td>
+<td><code>finding.service.js</code> — <code>STATUS_FLOW</code> me <code>'Reopened'</code> key ab hai</td>
+<td><span class="b ok">RESOLVED</span><br>reopen — 200 —, advance ab kaam karta hai → Closed → Reopened → In Progress (live-verified)</td>
+<td>Ab finding reopened hone ke baad aage badh sakti hai — dead-end nahi.</td>
+</tr>
+<tr>
+<td><b>I-09</b></td>
+<td><b>Vendors page hamesha khali</b></td>
+<td><code>scripts/seed.js</code> — Vendor collection ka koi seed block hi nahi tha</td>
+<td><span class="b ok">RESOLVED (Sprint 1)</span><br><code>GET /api/vendors</code> — <b>8 records</b> (live-verified)</td>
+<td>Seed me 8 vendors add ho gaye — Vendor Manager ko data milta hai ab.</td>
+</tr>
+<tr>
+<td><b>I-10</b></td>
+<td><b>E2E suite jhooti confidence deti thi</b></td>
+<td><code>tests/e2e/</code> — saare conditional guards sweep ho chuke (R42)</td>
+<td><span class="b ok">RESOLVED (S1-1)</span><br>Suites 03/05/06/07/08 real behavior assert karte hain; 09/10/11 naye. Full chromium: <b>230/230 PASS</b>.</td>
+<td>Ye sabse dangerous QA issue tha. Green CI = "sab theek hai" ka jhootha signal. Ab tests real assertions karte hain.</td>
+</tr>
+<tr>
+<td><b>I-11</b></td>
+<td><b>Koi file upload nahi</b></td>
+<td><code>multer</code> <code>package.json:44</code> me hai — ab <b>use hota hai</b> (<code>backend/shared/upload.js</code>)</td>
+<td><span class="b ok">RESOLVED (S2-1)</span><br>Evidence + Documents upload/download live, org-scoped, E2E 4/4. Full chromium 230/230.</td>
+<td>Audit platform ab evidence attach kar sakta hai. Business-critical gap closed. <b>Fix:</b> R25 (14h) done.</td>
+</tr>
+<tr>
+<td><b>I-12</b></td>
+<td><b>Firefox + WebKit E2E fail</b></td>
+<td><code>server.js</code> Helmet CSP — <code>upgrade-insecure-requests</code> on HTTP — WebKit SSL errors</td>
+<td><span class="b ok">RESOLVED (S1-3)</span><br>3-browser CI matrix green. Root cause: Helmet CSP fixed via <code>upgradeInsecureRequests: null</code> + <code>useDefaults</code>.</td>
+<td>Cross-browser coverage ab zero nahi. FF flake bhi hardened (retries, fonts link hataaya).</td>
+</tr>
+<tr>
+<td><b>I-13</b></td>
+<td><b>Do divergent E2E suites</b></td>
+<td><code>tests/e2e/</code> (11 specs, port 3000) vs <code>frontend-react/tests/e2e/</code> — legacy deleted</td>
+<td><span class="b ok">RESOLVED (S1-1)</span><br><code>frontend-react/tests/</code> + <code>frontend-react/playwright.config.js</code> delete ho gaye; ek canonical suite</td>
+<td>Ab ek hi authoritative suite hai (11 specs, port 3000). QA ko confusion nahi.</td>
+</tr>
+<tr>
+<td><b>I-14</b></td>
+<td><b>Stub pages jhootha "API Ready —" dikhate hain</b></td>
+<td><code>StubPage.jsx:43</code> — <code>useApi(api || '/api/health')</code>. App.jsx sirf <code>title</code> pass karta hai, <code>api</code> kabhi nahi</td>
+<td><span class="b wr">CODE VERIFIED</span><br>Saare 24 stubs <code>/api/health</code> hit karte hain, phir bhi UI me alag API path likhte hain</td>
+<td>Green tick + "Backend API Ready" hamesha dikhta hai — chahe wo API exist bhi na kare (jaise <code>/api/sampling</code>). Stakeholders ko galat readiness signal. <b>Fix:</b> 2h.</td>
+</tr>
+<tr>
+<td><b>I-15</b></td>
+<td><b>Test credentials docs se match nahi karte</b></td>
+<td><code>docs/manual-testing-guide.md:159</code> — <code>external@securecore.com</code>. Seed me — <code>jwhitfield@securecore.com</code></td>
+<td><span class="b dg">VERIFIED</span><br>E2E <code>helpers.js:21</code> sahi email use karta hai, manual guide galat</td>
+<td>QA External User role test hi nahi kar payega — login fail hoga aur wo bug samjhega. <b>Fix:</b> 15 min.</td>
+</tr>
+</tbody></table></div>
+
+<h3>6.3 🟡 MEDIUM — P2 (10 issues)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:6%">ID</th><th style="width:24%">Issue</th><th style="width:24%">Location</th><th>Detail + Impact</th></tr></thead>
+<tbody>
+<tr><td><b>I-16</b></td><td><b>Pagination sirf dikhawe ki hai</b></td><td><code>audit.controller.js:8-9</code> aur baaki 15 controllers</td><td><code>service.list()</code> <b>poori collection</b> laata hai, phir <code>items.slice(skip, skip+limit)</code> memory me karta hai. Mongo pe koi <code>.skip()/.limit()</code> nahi. 10k+ records pe memory blow-up + slow response.</td></tr>
+<tr><td><b>I-17</b></td><td><b>Search me regex injection / ReDoS</b></td><td>12 services — <code>filter.title = {$regex: query.search}</code></td><td>User input directly regex ban jaata hai. <code>(a+)+$</code> jaisi input se server hang ho sakta hai. Escape karo ya text index use karo.</td></tr>
+<tr><td><b>I-18</b></td><td><b><code>useApi</code> stale closure bug</b></td><td><code>hooks/useApi.js:24</code> — deps sirf <code>[url]</code></td><td><code>authHeaders</code> aur <code>options</code> deps me nahi. Login ke baad token change ho to purana token use ho sakta hai. Saath hi <code>{headers, ...options}</code> me agar options me headers ho to auth header <b>overwrite</b> ho jaata hai.</td></tr>
+<tr><td><b>I-19</b></td><td><b>Keyboard shortcuts browser ke shortcuts todte hain</b></td><td><code>hooks/useKeyboard.js:12-18</code></td><td><code>Ctrl+A</code> (select all), <code>Ctrl+F</code> (find), <code>Ctrl+D</code>, <code>Ctrl+C</code>*, <code>Ctrl+O</code>, <code>Ctrl+R</code> (reload) — sab <code>preventDefault()</code> ke saath hijack. Users ke muscle memory ke khilaaf, accessibility problem.</td></tr>
+<tr><td><b>I-20</b></td><td><b>tenantIsolation missing (4 modules)</b></td><td>notifications, reports, ccm, assessments-root</td><td>In routes pe cross-org data leak ka risk. Abhi service-level scoping bacha rahi hai, lekin defense-in-depth nahi hai.</td></tr>
+<tr><td><b>I-21</b></td><td><b>Reports page static hai</b></td><td><code>pages/Reports.jsx:3</code> — <code>const REPORTS = [...]</code></td><td>Hard-coded array. <code>/api/reports/summary</code> aur CSV export dono ready hain lekin connect nahi. User ko fake reports dikhte hain.</td></tr>
+<tr><td><b>I-22</b></td><td><b>Dead / orphan files</b></td><td><code>AuditComments.jsx</code>, <code>ExportCSV.jsx</code>, <code>Drawer.jsx</code></td><td>Teeno ke <b>0 imports</b> hain. <code>AuditComments.jsx:18</code> me <code>// TODO: POST /api/comments</code> likha hai jabki wo API ab ban chuki hai. Confusing dead code.</td></tr>
+<tr><td><b>I-23</b></td><td><b>API.md stale hai</b></td><td><code>docs/API.md</code> — ab rewritten</td><td><span class="b ok">RESOLVED</span> — <code>x-demo-role</code> headers hata diye, real rate-limit config, saare modules + tenant scoping (S2-3) + assistant response shape document karte hain.</td></tr>
+<tr><td><b>I-24</b></td><td><b>CORS origin mismatch</b></td><td><code>.env</code> — ab <code>CORS_ORIGIN=http://localhost:5173</code></td><td><span class="b ok">RESOLVED (S1-4)</span> — Vite dev origin sahi set; <code>server.js</code> fallback bhi 5173.</td></tr>
+<tr><td><b>I-25</b></td><td><b>Login role chips gumraah karte hain</b></td><td><code>pages/Login.jsx:136-160</code></td><td>5 role chips dikhte hain, lekin real login me server DB se role deta hai — chip ignore ho jaata hai. Sirf broken demo fallback me matter karta hai. User "Super Admin" chunega aur Auditor ban jayega.</td></tr>
+</tbody></table></div>
+
+<h3>6.4 🟢 LOW — P3 (6 issues)</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:6%">ID</th><th style="width:26%">Issue</th><th style="width:22%">Location</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td><b>I-26</b></td><td>Sidebar accordion single-open</td><td><code>Sidebar.jsx:158</code></td><td>Ek waqt me sirf ek section khul sakta hai (T35 pending). Bahut scrolling.</td></tr>
+<tr><td><b>I-27</b></td><td>Loading skeletons nahi</td><td>Purane pages</td><td>Plain "Loading..." text. Naye pages me thoda better hai.</td></tr>
+<tr><td><b>I-28</b></td><td>Log files repo me</td><td><code>server.out.log</code>, <code>server.err.log</code></td><td>Runtime artifacts commit ho gaye. <code>.gitignore</code> me daalo.</td></tr>
+<tr><td><b>I-29</b></td><td>Mobile: sidebar navigate pe band nahi hota</td><td><code>Sidebar.jsx</code></td><td>Nav item click karne ke baad sidebar khula rehta hai, content dhak jaata hai.</td></tr>
+<tr><td><b>I-30</b></td><td>errorHandler galat position pe</td><td><code>server.js:99</code></td><td>Static file serving aur catch-all route se <b>pehle</b> register hua hai. API routes ke liye theek kaam karta hai, lekin static/SPA errors handle nahi honge.</td></tr>
+<tr><td><b>I-31</b></td><td>Request logging nahi</td><td><code>server.js</code></td><td><span class="b ok">RESOLVED</span> — winston se har request log hoti hai (<code>method originalUrl {status, duration, ip}</code>); morgan dead dependency hata di.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 7 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s7">
+<h2><span class="num">7</span> 🧭 Recommendations &amp; Roadmap</h2>
+<p class="lede">Sequence maine deliberately choose kiya hai — pehle <b>sabse zyada credibility</b> jo sabse kam
+time me milti hai, phir depth.</p>
+
+<div class="call dg">
+  <div class="t">🚨 Sprint 0 — "Stop the Bleeding" (2–3 din · ~14 hours)</div>
+  <p>Ye 6 fixes project ko <b>"docs jhooth bol rahe hain"</b> se <b>"honest demo-ready"</b> me le jaate hain.
+  Sabse zyada ROI wala kaam yahi hai. Kisi naye feature se pehle ye karo.</p>
+  <ol>
+    <li><b>Notification seed fix</b> (<b>DONE — R35</b>) — <code>userId: 'user001'</code> ki jagah real user <code>_id</code>.
+    Ek poora feature ek line se zinda ho gaya. <b>I-06 fix.</b></li>
+    <li><b>Redis wire karo</b> (<b>DONE — R29</b>) — <code>server.js:133</code> startup pe <code>connectRedis()</code> call + logout me graceful fallback.
+    <b>I-02 fix</b>, live-verified 200.</li>
+    <li><b>Finding reopen flow</b> (<b>DONE</b>) — <code>STATUS_FLOW</code> me <code>'Reopened': 'In Progress'</code> add ho gaya.
+    <b>I-08 fix</b>, live-verified Closed → Reopened → In Progress.</li>
+    <li><b>Rate limiting</b> (<b>DONE — R31</b>) — login 5/15min, global 100/min. <b>I-05 fix</b>, live 429 verified.</li>
+    <li><b>Vendors seed</b> (<b>DONE — Sprint 1</b>) — 8 vendor records add ho gaye. <b>I-09 fix.</b></li>
+    <li><b>AI assistant</b> (<b>DONE — S2-2/R30</b>) — <code>assistantService.js</code> bana diya: live 200, 7 intents, org-scoped. Pehle 500 stack trace user ko dikhta tha.</li>
+  </ol>
+</div>
+
+<div class="call wr">
+  <div class="t">⚡ Sprint 1 — Trust &amp; Truth (Week 1 · ~45 hours)</div>
+  <ol>
+    <li><b>E2E assertions theek karo</b> (R42, 10h) — <b>sabse pehle ye.</b> Jab tak tests jhooth bol rahe hain,
+    baaki har green signal meaningless hai. Saare conditional <code>if (isVisible)</code> guards hatao.</li>
+    <li><b>E2E suites merge karo</b> (R44, 6h) — ek canonical suite rakho.</li>
+    <li><b>Firefox/WebKit</b> (R43, 8h) — <code>npx playwright install</code> + CI matrix.</li>
+    <li><b>Secrets + env validation</b> (R47+R48, 7h) — <code>server.js</code> ko <code>env.js</code> use karao,
+    <code>'dev-secret'</code> fallback hatao.</li>
+    <li><b>Docs sach karo</b> (~6h) — <code>FINAL_IMPLEMENTATION_AUDIT.md</code> se T06 ka false — hatao,
+    API.md rewrite karo (21 modules), manual guide me credential fix karo.</li>
+    <li><b>Request logging</b> (R49, 4h) — morgan + winston.</li>
+    <li><b>Stub page honesty</b> (2h) — jhootha "Backend API Ready —" hatao.</li>
+  </ol>
+</div>
+
+<div class="call inf">
+  <div class="t">🏗️ Sprint 2–3 — Core Gaps (Week 2–3 · ~90 hours)</div>
+  <ol>
+    <li><b>File upload</b> (R25, 14h) — <b>DONE (S2-1)</b>: multer storage + limits, evidence/documents upload + org-scoped download, frontend modals, E2E 4/4, chromium 230/230. Prod hardening baaki: virus scan + cloud storage.</li>
+    <li><b>AI assistant pipeline</b> (R30, 16h) — <b>DONE (S2-2)</b>: <code>assistantService.js</code> bana diya, live 200, 7 intents verified.</li>
+    <li><b>Super Admin scoping</b> (I-07, 8h) — <b>DONE (S2-3)</b>: <code>scope.js</code> + <code>scopeOrgId</code>, saare org-scoped services migrated, live-verified 7 orgs.</li>
+    <li><b>Integration tests</b> (R41, 20h) — supertest + mongodb-memory-server. Auth, lifecycle, RBAC, tenant isolation.</li>
+    <li><b>Activity/audit log</b> (R33, 8h) — compliance ke liye mandatory.</li>
+    <li><b>Real pagination</b> (I-16, 8h) — DB-level skip/limit.</li>
+    <li><b>Email dispatch</b> (R27, 10h) — cert expiry, assignment, overdue alerts.</li>
+    <li><b>tenantIsolation gaps</b> (R32, 5h).</li>
+  </ol>
+</div>
+
+<div class="call pp">
+  <div class="t">📦 Sprint 4–5 — Feature Completion (Week 4–5 · ~120 hours)</div>
+  <p><b>Sab 24 stubs ek saath mat banao.</b> Value ke hisaab se prioritize karo:</p>
+  <ul>
+    <li><b>Pehle build karo (P1, 8 pages — 75h):</b> R24 My Passport (product ka signature feature!),
+    R01 Audit Program, R03 Traceability Chain, R06 Self Assessment, R07 Scoring Engine, R02 Management Response,
+    R04 Issue Escalation, R09 Audit Trail.</li>
+    <li><b>Phir (P2, 11 pages — 60h):</b> Exceptions, Sampling, Org Hierarchy/Compare, Doc Versions, Exchange,
+    ESG, Risk Scheduler, SLA Dashboard, Webhooks, Permission Matrix, Role Dashboard.</li>
+    <li><b>Baad me (P3, 5 pages — 32h):</b> Three Lines, Competency, Framework Diff, Audit Cost.</li>
+  </ul>
+  <p>Saath me: real-time notifications (R26), scheduled reports + PDF (R28), mobile polish (R39),
+  focus trap (R40), a11y tests (R46).</p>
+</div>
+
+<h3>7.1 Strategic Recommendations</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:22%">Recommendation</th><th style="width:11%">Priority</th><th>Wajah</th></tr></thead>
+<tbody>
+<tr><td><b>"Docs = code" rule lagao</b></td><td><span class="b dg">Critical</span></td><td>Is project ka sabse bada systemic problem ye hai ki 4 alag docs cheezein "— done" bolte hain jo runtime pe toote hain (T06 rate limit, AI assistant, notifications). <b>Rule:</b> koi bhi task tab tak "done" mark nahi hoga jab tak uska ek <b>passing test</b> na ho jo actual behaviour assert kare.</td></tr>
+<tr><td><b>Test quality gate</b></td><td><span class="b dg">Critical</span></td><td>161 green tests ke saath ek 100% toota feature ship ho sakta hai. CI me rule daalo: koi conditional assertion (<code>if (await x.isVisible())</code>) allowed nahi. Har spec ka ek <b>negative test</b> ho jo bug hone pe fail kare.</td></tr>
+<tr><td><b>Stub pages ke liye feature flags</b></td><td><span class="b wr">High</span></td><td>24 stubs sidebar me real pages jaise dikhte hain. Flag lagao — ya sidebar se hide karo ya spashth "Coming Q4" badge do. Abhi ka jhootha green tick stakeholders ko galat readiness dikhata hai.</td></tr>
+<tr><td><b>Smoke test suite banao</b></td><td><span class="b wr">High</span></td><td>Har deploy pe 10-test smoke suite chale jo <b>actually API responses assert kare</b>: login 200, audits list, finding create, assistant query, logout, notification count. Ye chaaron critical bugs pakad leti — pehle wale 161 tests nahi pakad paaye (ab 230/230 green hain).</td></tr>
+<tr><td><b>Seed script ko contract test banao</b></td><td><span class="b wr">High</span></td><td>Seed ke baad ek verification step chale: har collection me expected count, aur foreign keys valid hain (jaise notification.userId ek real user ho). Ye I-06 aur I-09 dono rok deta.</td></tr>
+<tr><td><b>API.md regenerate karo</b></td><td><span class="b inf">Medium</span></td><td>21 modules hain, doc me sirf 1 hai. Zod schemas se OpenAPI auto-generate karo — hand-maintained doc phir se stale ho jaayega.</td></tr>
+<tr><td><b>Bundle size monitor karo</b></td><td><span class="b nu">Low</span></td><td>413 KB abhi theek hai, lekin 24 stubs real pages banne pe ye 2–3× ho jaayega. Route-level code splitting abhi plan karo.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 SECTION 8 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨 -->
+<section id="s8">
+<h2><span class="num">8</span> 🧪 QA Testing Documentation</h2>
+<p class="lede">Ye section aise likha gaya hai ki ek QA engineer jo is project ko <b>pehli baar</b> dekh raha hai,
+wo bina kisi developer se pooche end-to-end testing kar sake. Setup se lekar sign-off tak sab kuch.</p>
+
+<div class="call inf">
+  <div class="t">📖 Ise kaise use karein</div>
+  <p><b>Din 1:</b> Section 8.1 (setup) + 8.2 (test data) — environment chalao.<br>
+  <b>Din 2:</b> Section 8.9 (known issues) padho — taaki already-known bugs dobara file na karo.<br>
+  <b>Din 3+:</b> Section 8.5 (functional TCs) + 8.6 (API TCs) execute karo.<br>
+  <b>Har release:</b> Section 8.11 (regression checklist) + 8.12 (sign-off).</p>
+</div>
+
+<h3>8.1 Test Environment Setup</h3>
+
+<h4>Prerequisites</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:20%">Component</th><th style="width:16%">Version</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>Node.js</td><td>20.x</td><td>CI Node 20 use karta hai. Verified: v20.20.2</td></tr>
+<tr><td>MongoDB</td><td>7.x</td><td><b>Mandatory.</b> Iske bina "demo mode" chalta hai jo <b>toota hua hai</b> (Issue I-03)</td></tr>
+<tr><td>Redis</td><td>7.x</td><td>Wire ho gaya (R29) — token blacklist; down ho to graceful degrade (I-02 resolved)</td></tr>
+<tr><td>Browsers</td><td>Chromium / Firefox / WebKit</td><td>Teeno installed hain, 3-browser CI matrix green (I-12 resolved)</td></tr>
+</tbody></table></div>
+
+<h4>Setup — step by step</h4>
+<pre><span class="c"># 1. Saari dependencies install karo (root + frontend)</span>
+npm run install-all
+
+<span class="c"># 2. .env banao (agar nahi hai)</span>
+copy .env.example .env
+<span class="c">#    MONGO_URI aur REDIS_URL local pe point karne chahiye</span>
+
+<span class="c"># 3. MongoDB me demo data daalo — ⚠️ ye SAB DELETE karke naya banata hai</span>
+npm run seed
+<span class="c">#    Expected output: "SEEDING COMPLETE" + har collection ka count</span>
+
+<span class="c"># 4. Playwright browsers (ek baar)</span>
+npx playwright install
+
+<span class="c"># 5. Backend + frontend dono ek saath start</span>
+npm run dev
+<span class="c">#    Backend  — http://localhost:3000</span>
+<span class="c">#    Frontend — http://localhost:5173  — QA yahan test kare</span>
+</pre>
+
+<h4>Setup verification (test shuru karne se pehle)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:6%">#</th><th style="width:34%">Check</th><th>Expected</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>curl http://localhost:3000/api/health</code></td><td><code>{"status":"ok","mode":"production","mongodb":"connected"}</code><br><span class="b dg">Agar <code>mode:"demo"</code> aaye to STOP</span> — MongoDB nahi chal raha, testing bekaar hai</td></tr>
+<tr><td>2</td><td>Browser me <code>http://localhost:5173</code></td><td>Login page dikhe (dark navy background, gold seal logo)</td></tr>
+<tr><td>3</td><td>Login: <code>priya.sharma@globaltech.com</code> / <code>password123</code></td><td>Dashboard pe redirect + 4 KPI cards</td></tr>
+<tr><td>4</td><td><code>npx vitest run</code></td><td><b>20 passed</b></td></tr>
+<tr><td>5</td><td><code>npx playwright test --project=chromium</code></td><td><b>161 passed</b> (~4.5 min)</td></tr>
+<tr><td>6</td><td>Browser DevTools — Console</td><td>Koi red error nahi hona chahiye page load pe</td></tr>
+</tbody></table></div>
+
+<div class="call wr">
+  <div class="t">⚠️ Environment gotchas jo tumhara din barbaad kar sakte hain</div>
+  <ul>
+    <li><b>Port 3000 already in use</b> — server chup-chaap crash hoga. <code>netstat -ano | findstr :3000</code> se check karo.</li>
+    <li><b>Frontend ko 5173 pe test karo, 3000 pe nahi.</b> Port 3000 <code>frontend-react/dist</code> se pre-built version serve karta hai — jo purana ho sakta hai.</li>
+    <li><b><code>npm run seed</code> destructive hai</b> — pehle saari collections drop karta hai. Kisi shared DB pe kabhi mat chalana.</li>
+    <li><b>Data ganda ho jaye to</b> — <code>npm run seed</code> dobara chala lo, 10 second me clean state.</li>
+    <li><b>Do E2E suites hain</b> (I-13). Root wali <code>tests/e2e/</code> use karo — wo zyada complete hai (37 RBAC tests vs 3).</li>
+  </ul>
+</div>
+
+<h3>8.2 Test Data &amp; Credentials</h3>
+<p>Saare seeded users ka password ek hi hai: <code>password123</code></p>
+
+<h4>13 test users (12 roles)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:5%">#</th><th style="width:28%">Email</th><th style="width:18%">Role</th><th style="width:10%">Org</th><th style="width:9%">Sidebar</th><th>Kya test karo</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>super.admin@globaltech.com</code></td><td>Super Admin</td><td>ORG-101</td><td>~61</td><td>Full access, Users, Settings, Audit Trail</td></tr>
+<tr><td>2</td><td><code>org.admin@globaltech.com</code></td><td>Organization Admin</td><td>ORG-101</td><td>~61</td><td>Super Admin jaisa, org-scoped</td></tr>
+<tr><td>3</td><td><code>priya.sharma@globaltech.com</code></td><td>Compliance Manager</td><td>ORG-101</td><td>~61</td><td><b>Primary happy path user</b> — audits, findings, CAPA</td></tr>
+<tr><td>4</td><td><code>meera.nair@globaltech.com</code></td><td>Audit Manager</td><td>ORG-101</td><td>~51</td><td>Audit lifecycle, auditor assign; /users blocked</td></tr>
+<tr><td>5</td><td><code>rohit.kapoor@globaltech.com</code></td><td>Auditor</td><td>ORG-101</td><td>~35</td><td>Fieldwork, findings create; admin blocked</td></tr>
+<tr><td>6</td><td><code>ananya.desai@globaltech.com</code></td><td>Auditor <span class="b wr">On Leave</span></td><td>ORG-101</td><td>~35</td><td><b>Edge case:</b> non-Active user login kar paata hai kya? (test karo)</td></tr>
+<tr><td>7</td><td><code>reviewer@globaltech.com</code></td><td>Reviewer</td><td>ORG-101</td><td>~40</td><td>Read-heavy, approvals</td></tr>
+<tr><td>8</td><td><code>arjun.verma@globaltech.com</code></td><td>Risk Manager</td><td>ORG-101</td><td>~16</td><td>Sirf risks; /audits blocked hona chahiye</td></tr>
+<tr><td>9</td><td><code>kritika.bose@globaltech.com</code></td><td>Document Manager</td><td>ORG-101</td><td>~12</td><td>Docs + evidence; audits/risks blocked</td></tr>
+<tr><td>10</td><td><code>vendor.mgr@globaltech.com</code></td><td>Vendor Manager</td><td>ORG-101</td><td>~25</td><td>Vendors + certs — <span class="b ok">8 vendors hain (I-09 fixed)</span></td></tr>
+<tr><td>11</td><td><code>employee@globaltech.com</code></td><td>Employee</td><td>ORG-101</td><td>~15</td><td>Sabse kam access</td></tr>
+<tr><td>12</td><td><code>jwhitfield@securecore.com</code></td><td>External Company User</td><td><b>ORG-103</b></td><td>~15</td><td><b>Tenant isolation ke liye critical</b> — sirf SecureCore ka data dikhna chahiye</td></tr>
+<tr><td>13</td><td><code>ca@consulting.com</code></td><td>CA / Consultant</td><td>ORG-101</td><td>~18</td><td>Client Portfolio <span class="b wr">Note: ORG-101 me seed hua hai, alag consulting org me nahi</span></td></tr>
+</tbody></table></div>
+
+<div class="call dg">
+  <div class="t">🚨 Credential trap</div>
+  <p><code>docs/manual-testing-guide.md</code> External User ke liye <b><code>external@securecore.com</code></b> likhta hai.
+  Ye <b>galat hai</b> — seeded email <b><code>jwhitfield@securecore.com</code></b> hai. Upar wali table use karo (Issue I-15).</p>
+</div>
+
+<h4>Seed data — expected counts</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:20%">Collection</th><th style="width:14%">Seeded</th><th style="width:20%">ORG-101 me dikhega</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>Organizations</td><td>7</td><td><b>1</b></td><td>Super Admin ab <b>7</b> dekh sakta hai (I-07 RESOLVED S2-3), ORG-101 user sirf apna</td></tr>
+<tr><td>Users</td><td>13</td><td>13</td><td>Sirf admin roles hi dekh sakte hain</td></tr>
+<tr><td>Frameworks</td><td>13</td><td>13</td><td>ISO 27001:2022, ISO 9001:2015, ISO 14001:2015, SOX 404, GDPR, etc.</td></tr>
+<tr><td>Audits</td><td>8</td><td><b>3</b></td><td>Baaki dusre orgs me</td></tr>
+<tr><td>Findings</td><td>6</td><td><b>3</b></td><td></td></tr>
+<tr><td>Risks</td><td>6</td><td><b>2</b></td><td></td></tr>
+<tr><td>Controls</td><td>7</td><td><b>6</b></td><td></td></tr>
+<tr><td>Certificates</td><td>10</td><td><b>2</b></td><td></td></tr>
+<tr><td>Documents</td><td>8</td><td><b>3</b></td><td></td></tr>
+<tr><td>Evidence</td><td>6</td><td><b>3</b></td><td>+ 4 evidence links</td></tr>
+<tr><td>CAPA</td><td>4</td><td><b>1</b></td><td></td></tr>
+<tr><td>Notifications</td><td>4</td><td><b>2</b></td><td>CM (priya.sharma) ko 2 milte hain — real <code>_id</code> (I-06 RESOLVED)</td></tr>
+<tr><td>Vendors</td><td><b>8</b></td><td><b>8</b></td><td>Seeded (I-09 RESOLVED, Sprint 1)</td></tr>
+</tbody></table></div>
+
+<h4>7 seeded organizations</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:11%">Org ID</th><th style="width:22%">Name</th><th style="width:15%">Type</th><th style="width:14%">Country</th><th style="width:12%">Compliance</th><th>Risk</th></tr></thead>
+<tbody>
+<tr><td><code>ORG-101</code></td><td>GlobalTech Solutions</td><td>Own Organization</td><td>India</td><td>92%</td><td>18</td></tr>
+<tr><td><code>ORG-102</code></td><td>EcoEdge Industries</td><td>Supplier</td><td>Germany</td><td>78%</td><td>34</td></tr>
+<tr><td><code>ORG-103</code></td><td>SecureCore Systems</td><td>Vendor</td><td>United States</td><td>95%</td><td>9</td></tr>
+<tr><td><code>ORG-104</code></td><td>Alpha Manufacturing</td><td>Supplier</td><td>India</td><td>64%</td><td>57</td></tr>
+<tr><td><code>ORG-105</code></td><td>Zenith Healthcare</td><td>Partner</td><td>United Kingdom</td><td>88%</td><td>21</td></tr>
+<tr><td><code>ORG-106</code></td><td>Nova Retail</td><td>Client</td><td>Singapore</td><td>71%</td><td>40</td></tr>
+<tr><td><code>ORG-107</code></td><td>BrightPath Logistics</td><td>Vendor</td><td>India</td><td>59%</td><td>66</td></tr>
+</tbody></table></div>
+
+<h3>8.3 RBAC Access Matrix</h3>
+<p>Ye matrix <code>frontend-react/src/context/AuthContext.jsx</code> (frontend gating) aur har module ki
+<code>restrictTo(...)</code> list (backend enforcement) se nikala gaya hai. <b>Dono layers alag-alag test karo</b> —
+frontend gate sirf UI hai, asli security backend pe hai.</p>
+
+<div class="tw"><table>
+<thead><tr><th style="width:17%">Role</th><th style="width:8%">Dash</th><th style="width:8%">Audits</th><th style="width:8%">Findings</th><th style="width:8%">Risks</th><th style="width:8%">Docs</th><th style="width:8%">Vendors</th><th style="width:8%">Users</th><th style="width:8%">Settings</th><th>Special</th></tr></thead>
+<tbody>
+<tr><td><b>Super Admin</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>Sab kuch</td></tr>
+<tr><td><b>Organization Admin</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>Sab kuch (org-scoped)</td></tr>
+<tr><td><b>Compliance Manager</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td><span class="b dg">403</span></td><td>✓</td><td>CCM dashboard</td></tr>
+<tr><td><b>Audit Manager</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>Auditor assign</td></tr>
+<tr><td><b>Auditor</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>CAPA/Gantt/Calendar blocked</td></tr>
+<tr><td><b>Reviewer</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>Read-heavy</td></tr>
+<tr><td><b>Risk Manager</b></td><td>✓</td><td><span class="b dg">✗</span></td><td>✗</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>✓</td><td><b>Allow-list role</b> ✓ 12 routes only</td></tr>
+<tr><td><b>Document Manager</b></td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td><td>✗</td><td>✓</td><td><b>Allow-list</b> ✓ 11 routes only</td></tr>
+<tr><td><b>Vendor Manager</b></td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>Certs + vendor scorecard</td></tr>
+<tr><td><b>Employee</b></td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>Sabse kam</td></tr>
+<tr><td><b>External Company User</b></td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td><b>Cross-org data kabhi nahi</b></td></tr>
+<tr><td><b>CA / Consultant</b></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td><b>Allow-list</b> ✓ Client Portfolio</td></tr>
+</tbody></table></div>
+
+<div class="call wr">
+  <div class="t">⚠️ RBAC testing me ye zaroor dekhna</div>
+  <ul>
+    <li><b>Do layers alag hain.</b> Frontend redirect kar dega, lekin API alag jawab de sakti hai.
+    Har blocked page ke liye <b>dono</b> test karo: (a) URL direct type karo → redirect?
+    (b) Postman/curl se API hit karo → 403?</li>
+    <li><b>Audit Manager ka config nazuk hai.</b> <code>AuthContext.jsx:97</code> me
+    <code>hidden: AUDITOR_HIDDEN.slice(0, 10)</code> likha hai — ek magic number. Agar koi
+    <code>AUDITOR_HIDDEN</code> array reorder kare, Audit Manager ki permissions chup-chaap badal jaayengi.
+    Iska test hona chahiye.</li>
+    <li><b>Frontend gating sirf first path segment dekhta hai.</b> <code>canAccessPage()</code>
+    <code>/vendors/123/scorecard</code> ko <code>vendors</code> maankar check karta hai. Nested routes pe test karo.</li>
+  </ul>
+</div>
+
+<h3>8.4 Test Strategy, Entry &amp; Exit Criteria</h3>
+
+<h4>Testing pyramid — abhi kya hai</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:18%">Level</th><th style="width:12%">Abhi</th><th style="width:12%">Target</th><th style="width:11%">Status</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>Unit</td><td>20</td><td>150+</td><td><span class="b wr">13%</span></td><td>Sirf 1 file (helpers). Services, controllers, hooks — sab untested</td></tr>
+<tr><td>Integration</td><td><b>0</b></td><td>60+</td><td><span class="b dg">0%</span></td><td><b>Sabse bada gap.</b> Koi API-to-DB test nahi</td></tr>
+<tr><td>E2E</td><td>161</td><td><b>224</b> (chromium, 3 projects, real assertions)</td><td><span class="b ok">Green ✓</span></td><td>Suites 03/05/06/07/08 rewritten, 09/10 added (I-10 fixed)</td></tr>
+<tr><td>Manual</td><td>Guide hai</td><td>—</td><td><span class="b wr">Stale</span></td><td>Galat credentials + purani expectations</td></tr>
+<tr><td>Security</td><td><b>0</b></td><td>Pentest</td><td><span class="b dg">0%</span></td><td>Kabhi hua hi nahi</td></tr>
+<tr><td>Performance</td><td><b>0</b></td><td>Load test</td><td><span class="b dg">0%</span></td><td>Pagination fake hai — ye zaroori hai</td></tr>
+<tr><td>Accessibility</td><td><b>0</b></td><td>axe scans</td><td><span class="b dg">0%</span></td><td>ARIA labels hain par verify nahi hue</td></tr>
+</tbody></table></div>
+
+<h4>Entry criteria — testing tabhi shuru karo jab</h4>
+<ul>
+<li>✓ <code>/api/health</code> <code>mode: "production"</code> + <code>mongodb: "connected"</code> de raha ho</li>
+<li>✓ <code>npm run seed</code> successfully chal gaya ho, counts print hue hon</li>
+<li>✓ Frontend <code>localhost:5173</code> pe build + serve ho raha ho</li>
+<li>✓ <code>npx vitest run</code> — 20 passed</li>
+<li>✓ Build ka commit/version note kar liya ho</li>
+<li>✓ Section 8.9 (known issues) padh liya ho</li>
+</ul>
+
+<h4>Exit criteria — testing tabhi complete jab</h4>
+<ul>
+<li>✓ Section 8.5 ke saare P0 + P1 test cases execute ho gaye hon</li>
+<li>✓ Saare 12 roles ka login + RBAC verify ho gaya ho</li>
+<li>✓ Section 8.6 ke API test cases pass hon</li>
+<li>✓ Zero <b>naye</b> Critical/High bugs open hon (known wale Section 8.9 me hain)</li>
+<li>✓ <code>npx playwright test</code> teeno browsers pe green ho</li>
+<li>✓ Tenant isolation tests pass hon (sabse important security check)</li>
+<li>✓ Test summary report bana ho pass/fail/blocked counts ke saath</li>
+</ul>
+
+<h4>Severity definitions (bug file karte waqt use karo)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:13%">Severity</th><th style="width:32%">Matlab</th><th style="width:12%">SLA</th><th>Is project se example</th></tr></thead>
+<tbody>
+<tr><td><span class="b dg">S1 Critical</span></td><td>Core feature poori tarah toota, koi workaround nahi, ya security hole</td><td>24 hrs</td><td>demo mode broken (I-03) — logout 500 (I-02) + AI assistant 500 (I-01) ab <b>RESOLVED</b></td></tr>
+<tr><td><span class="b wr">S2 High</span></td><td>Major feature toota, workaround mushkil, ya data galat</td><td>3 din</td><td>no file upload (I-11) — Notifications khali (I-06) + vendors (I-09) + reopen dead-end (I-08) ab <b>RESOLVED</b></td></tr>
+<tr><td><span class="b inf">S3 Medium</span></td><td>Feature partially kaam karta hai, workaround hai</td><td>1 sprint</td><td>Filters persist nahi hote, Reports page static (I-21)</td></tr>
+<tr><td><span class="b nu">S4 Low</span></td><td>Cosmetic, minor UX</td><td>Backlog</td><td>Sidebar single-open (I-26), loading text (I-27)</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h3>8.5 Functional Test Cases (Module-Wise)</h3>
+<p class="lede">Har test case me ID, priority, steps aur expected result hai. Jahan mujhe pata hai ki
+<b>abhi fail hoga</b>, wahan maine likh diya hai — taaki tum surprise na ho aur duplicate bug file na karo.</p>
+
+<h4>TS-01 · Authentication (12 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:28%">Steps</th><th style="width:30%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-A01</b></td><td>P0</td><td>Login page pe jao — valid email + password daalo — "Sign in"</td><td>Dashboard pe redirect. localStorage me <code>vp_token</code> + <code>vp_user</code> set ho</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-A02</b></td><td>P0</td><td>Valid email + <b>galat</b> password</td><td>Inline red error: "Invalid email or password". Redirect nahi hona chahiye</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-A03</b></td><td>P0</td><td>Registered nahi hai aisa email</td><td>Same generic error (user enumeration nahi hona chahiye)</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-A04</b></td><td>P1</td><td>Dono field khaali chhod ke submit</td><td>"Email and password are required." — koi API call nahi</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-A05</b></td><td>P1</td><td>Email format galat (<code>abc</code>)</td><td>HTML5 email validation trigger ho</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-A06</b></td><td>P1</td><td>Role chip "Super Admin" select karo, phir Auditor credentials se login</td><td><b>Auditor</b> role milna chahiye (chip ignore). Sidebar Auditor ka dikhe</td><td><span class="b wr">Confusing UX — I-25</span></td></tr>
+<tr><td><b>TC-A07</b></td><td>P0</td><td>Login — browser refresh (F5)</td><td>Logged in rehna chahiye, login page pe nahi jaana</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-A08</b></td><td>P0</td><td>Login — Topbar se Logout</td><td>Login page pe redirect + localStorage clear</td><td><span class="b ok">PASS ✓ API 200 (I-02 fixed)</span></td></tr>
+<tr><td><b>TC-A09</b></td><td>P0</td><td>Logout ke baad browser Back button</td><td>Protected page dikhna nahi chahiye — login pe wapas</td><td>Verify karo</td></tr>
+<tr><td><b>TC-A10</b></td><td>P1</td><td>Register page — naya user banao</td><td>Account bane + auto-login ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-A11</b></td><td>P1</td><td>Register with existing email</td><td><b>409</b> "email already exists"</td><td>Verify karo</td></tr>
+<tr><td><b>TC-A12</b></td><td>P1</td><td><code>ananya.desai@globaltech.com</code> (status = <b>On Leave</b>) se login</td><td><b>Decide karna hai:</b> block ho ya allow? Abhi allow hota hai. Requirement clarify karo</td><td><span class="b inf">Edge case</span></td></tr>
+</tbody></table></div>
+
+<h4>TS-02 · RBAC &amp; Authorization (14 cases)</h4>
+<p class="mini">Ye 12 roles × routes ke saath repeat karo. Section 8.3 ka matrix reference hai.</p>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:28%">Steps</th><th style="width:30%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-R01</b></td><td>P0</td><td>Auditor login — URL bar me <code>/users</code> type karo</td><td><code>/dashboard</code> pe redirect</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R02</b></td><td>P0</td><td>Auditor login — <code>/settings</code></td><td><code>/dashboard</code> pe redirect</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R03</b></td><td>P0</td><td>Risk Manager login — <code>/audits</code></td><td>Redirect (Risk Manager allow-list me audits nahi)</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R04</b></td><td>P0</td><td>Document Manager login — <code>/risks</code></td><td>Redirect</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R05</b></td><td>P0</td><td>Vendor Manager login — <code>/audits</code></td><td>Redirect</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R06</b></td><td>P0</td><td>Employee login — <code>/users</code>, <code>/audits</code>, <code>/settings</code></td><td>Teeno se redirect</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R07</b></td><td>P0</td><td><b>Backend check:</b> Auditor ka token le ke <code>curl /api/users</code></td><td><b>403 Forbidden</b> — UI redirect ke bharose mat raho</td><td><span class="b ok">Pass (403 verified)</span></td></tr>
+<tr><td><b>TC-R08</b></td><td>P0</td><td>Compliance Manager ka token — <code>curl /api/users</code></td><td><b>403</b> (sirf Super Admin + Org Admin)</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R09</b></td><td>P0</td><td>Har role ke liye sidebar items count karo, Section 8.3 se match karo</td><td>Counts approximately match karein</td><td><span class="b wr">E2E me Auditor ko sirf 3 items mile — investigate</span></td></tr>
+<tr><td><b>TC-R10</b></td><td>P1</td><td>Auditor login — sidebar me "Administration" section dhundo</td><td>Section dikhna hi nahi chahiye (empty sections filter ho jaate hain)</td><td>Verify karo</td></tr>
+<tr><td><b>TC-R11</b></td><td>P0</td><td>Bina token API call: <code>curl /api/audits</code></td><td><b>401 Unauthorized</b></td><td><span class="b ok">Pass (verified)</span></td></tr>
+<tr><td><b>TC-R12</b></td><td>P0</td><td>Fake token: <code>Authorization: Bearer demo-token</code></td><td><b>401 "Invalid token"</b></td><td><span class="b ok">Pass (verified)</span></td></tr>
+<tr><td><b>TC-R13</b></td><td>P0</td><td>Doosre user ka valid token le ke uske org ka data maango</td><td>Sirf apne org ka data mile</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-R14</b></td><td>P1</td><td>Expired/tampered JWT bhejo (payload me role badal do)</td><td><b>401</b> — signature verification fail</td><td>Verify karo</td></tr>
+</tbody></table></div>
+
+<h4>TS-03 · Multi-Tenancy (6 cases) — SABSE IMPORTANT</h4>
+<div class="call dg">
+  <div class="t">🔒 Ye suite hamesha chalao</div>
+  <p>Ek compliance platform me cross-tenant data leak <b>company-ending event</b> hai. Ye 6 tests har
+  release pe mandatory hain.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:30%">Steps</th><th style="width:30%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-T01</b></td><td>P0</td><td>External User (<code>jwhitfield@securecore.com</code>, ORG-103) login — Certificates dekho</td><td>Sirf SecureCore ke certs. GlobalTech ka kuch nahi</td><td>Verify karo</td></tr>
+<tr><td><b>TC-T02</b></td><td>P0</td><td>ORG-101 user ka token — <code>GET /api/audits?orgId=ORG-102</code></td><td>Param ignore ho, sirf ORG-101 ka data</td><td><span class="b ok">Pass (verified live)</span></td></tr>
+<tr><td><b>TC-T03</b></td><td>P0</td><td>ORG-101 user — <code>POST /api/audits</code> body me <code>orgId: "ORG-102"</code></td><td>Server force kare ORG-101 (tenantIsolation auto-inject)</td><td>Verify karo</td></tr>
+<tr><td><b>TC-T04</b></td><td>P0</td><td>Doosre org ki audit ka ID le ke <code>GET /api/audits/:id</code></td><td><b>404</b> (403 nahi — existence leak nahi hona chahiye)</td><td>Verify karo</td></tr>
+<tr><td><b>TC-T05</b></td><td>P0</td><td>Doosre org ki finding <code>PUT</code> / <code>DELETE</code> karne ki koshish</td><td>404 / 403 — modify nahi hona chahiye</td><td>Verify karo</td></tr>
+<tr><td><b>TC-T06</b></td><td>P1</td><td>Super Admin login — Organizations page</td><td><b>Saare 7 orgs dikhne chahiye</b></td><td><span class="b ok">PASS (S2-3)</span> — 7 orgs live-verified</td></tr>
+</tbody></table></div>
+
+<h4>TS-04 · Dashboard (7 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:30%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-D01</b></td><td>P0</td><td>Compliance Manager se login</td><td>4 KPI cards: Active Audits, Open Findings, Expiring Certs, High Risks</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-D02</b></td><td>P1</td><td>KPI numbers ko API se cross-check karo (<code>/api/reports/summary</code>)</td><td>Numbers exactly match karein</td><td>Verify karo</td></tr>
+<tr><td><b>TC-D03</b></td><td>P1</td><td>Charts render check karo</td><td>Bar/donut charts data ke saath dikhein, blank nahi</td><td>Verify karo</td></tr>
+<tr><td><b>TC-D04</b></td><td>P1</td><td>KPI card click karo</td><td>Related list page pe navigate (agar wired hai)</td><td>Verify karo</td></tr>
+<tr><td><b>TC-D05</b></td><td>P2</td><td>Slow network simulate karo (DevTools throttle)</td><td>Loading state dikhe, blank/undefined nahi</td><td><span class="b wr">Plain "Loading..." — I-27</span></td></tr>
+<tr><td><b>TC-D06</b></td><td>P1</td><td>Alag-alag role se login karke dashboard dekho</td><td>Har role ka apna relevant data</td><td>Verify karo</td></tr>
+<tr><td><b>TC-D07</b></td><td>P2</td><td>Backend band karke dashboard load karo</td><td>Clean error message, blank white page nahi</td><td><span class="b wr">Demo fallback toota — I-03</span></td></tr>
+</tbody></table></div>
+
+<h4>TS-05 · Audit Lifecycle (13 cases) — CORE WORKFLOW</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:30%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-AU01</b></td><td>P0</td><td>Audits page kholo</td><td>Org ki audits table me dikhein (ORG-101 — 3)</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-AU02</b></td><td>P0</td><td>Kisi audit row pe click</td><td>Audit Detail page — lifecycle stepper + tabs</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-AU03</b></td><td>P0</td><td>"+ Create" — New Audit — form bharo — submit</td><td>Audit bane, stage = <b>Planning</b>, stageIdx = 0</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU04</b></td><td>P0</td><td>Title me 5 se kam characters daal ke create karo</td><td><b>400</b> validation error (Zod: <code>min(5)</code>)</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU05</b></td><td>P0</td><td>"Advance Stage" click karo</td><td>Planning → Scoping. Stepper update ho</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-AU06</b></td><td>P0</td><td>Advance 11 baar (Closed tak)</td><td>Saare 12 stage sahi order me: Planning → Scoping → Risk Assessment → Questionnaire → Auditor Assigned → Execution → Evidence Review → Findings → Corrective Actions → Verification → Report → Closed</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU07</b></td><td>P0</td><td>Closed audit ko aur advance karo</td><td><b>400</b> "Audit is already closed"</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU08</b></td><td>P1</td><td>"← Back" (retreat) click karo</td><td>Pichhle stage pe jaye, status recalculate ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU09</b></td><td>P1</td><td>Stage 0 pe retreat karo</td><td>Graceful error, negative index nahi</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU10</b></td><td>P0</td><td>Audit ko auditor assign karo</td><td>Auditor list me aaye + notification bane + stage auto-advance</td><td>Verify karo (notifications ab visible hain — I-06 fixed)</td></tr>
+<tr><td><b>TC-AU11</b></td><td>P1</td><td>Auditor unassign karo</td><td>List se hate</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU12</b></td><td>P1</td><td>Audit Detail ke saare tabs kholo</td><td>Overview, Questionnaire, Findings, Evidence — sab load hon</td><td>Verify karo</td></tr>
+<tr><td><b>TC-AU13</b></td><td>P1</td><td>Audits page pe pagination test karo (limit=1)</td><td>Page 1/2/3 sahi kaam karein, <code>totalPages</code> sahi ho</td><td><span class="b wr">Kaam karta hai par in-memory — I-16</span></td></tr>
+</tbody></table></div>
+
+<h4>TS-06 · Findings (10 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:30%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-F01</b></td><td>P0</td><td>Findings page kholo</td><td>Org ki findings severity badges ke saath</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-F02</b></td><td>P0</td><td>Nayi finding banao</td><td>Status = <b>Open</b></td><td>Verify karo</td></tr>
+<tr><td><b>TC-F03</b></td><td>P0</td><td>Status advance karo: Open → Acknowledged</td><td>Status badle</td><td>Verify karo</td></tr>
+<tr><td><b>TC-F04</b></td><td>P0</td><td>Poora flow: Open → Acknowledged → In Progress → Resolved → Closed</td><td>Saare 4 transition kaam karein</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-F05</b></td><td>P0</td><td>Closed finding ko advance karo</td><td><b>400</b> "Cannot advance from status 'Closed'"</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-F06</b></td><td>P0</td><td>Closed/Resolved finding ko <b>Reopen</b> karo</td><td>Status = <b>Reopened</b></td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-F07</b></td><td>P0</td><td><b>Reopened</b> finding ko advance karo</td><td>In Progress me jaana chahiye</td><td><span class="b ok">PASS ✓ Reopened → In Progress (I-08 fixed)</span></td></tr>
+<tr><td><b>TC-F08</b></td><td>P1</td><td>Open finding ko reopen karne ki koshish</td><td><b>400</b> "Only Closed or Resolved findings can be reopened"</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-F09</b></td><td>P1</td><td>Severity aur status filters use karo</td><td>List sahi filter ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-F10</b></td><td>P1</td><td>Finding pe comment add karo (discussion panel)</td><td>Comment save ho + list me dikhe + delete ho sake</td><td>Verify karo — <code>/api/comments</code> live hai</td></tr>
+</tbody></table></div>
+
+<h4>TS-07 · CAPA (5 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:32%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-C01</b></td><td>P0</td><td>CAPA page kholo</td><td>Kanban board columns ke saath</td><td>Verify karo</td></tr>
+<tr><td><b>TC-C02</b></td><td>P0</td><td>Naya CAPA item banao</td><td>Status = Open</td><td>Verify karo</td></tr>
+<tr><td><b>TC-C03</b></td><td>P0</td><td>Poora flow: Open → In Progress → Pending Verification → Verified → Closed</td><td>Saare transitions kaam karein</td><td>Verify karo</td></tr>
+<tr><td><b>TC-C04</b></td><td>P1</td><td>Closed CAPA advance karo</td><td>400 error</td><td>Verify karo</td></tr>
+<tr><td><b>TC-C05</b></td><td>P1</td><td>Auditor role se CAPA access karo</td><td>Redirect (Auditor ke hidden list me hai)</td><td>Verify karo</td></tr>
+</tbody></table></div>
+
+<h4>TS-08 · Risks, Controls, Certificates (11 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:32%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-K01</b></td><td>P0</td><td>Risks page kholo</td><td>Risk register with inherent + residual ratings</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K02</b></td><td>P0</td><td>Naya risk banao / edit karo</td><td>Save ho, list me dikhe</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K03</b></td><td>P1</td><td>Risk Heatmap page</td><td>Likelihood × Impact matrix, risks sahi cell me</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K04</b></td><td>P0</td><td>Controls page kholo</td><td>7 controls (ORG-101 — 6) effectiveness ke saath</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-K05</b></td><td>P1</td><td>Control Testing page</td><td>Test procedures dikhein</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K06</b></td><td>P0</td><td>Certificates page</td><td>Certs expiry dates ke saath</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-K07</b></td><td>P0</td><td>"Expiring Soon" filter/tab</td><td>Sirf 30 din me expire hone wale</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K08</b></td><td>P1</td><td>Expiry Alerts page</td><td>90/30/7 din ke alerts</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K09</b></td><td>P1</td><td>Expired cert (past date) ka display</td><td>Red "Expired" badge</td><td>Verify karo</td></tr>
+<tr><td><b>TC-K10</b></td><td>P1</td><td>Frameworks page</td><td>13 frameworks, category filter kaam kare</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-K11</b></td><td>P2</td><td>Gap Analysis + Maturity Model pages</td><td>Bina crash render hon</td><td>Verify karo</td></tr>
+</tbody></table></div>
+
+<h4>TS-09 · Documents, Evidence, Vendors (9 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:32%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-E01</b></td><td>P0</td><td>Documents page kholo</td><td>Documents list (ORG-101 — 3)</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-E02</b></td><td>P0</td><td>Evidence page kholo</td><td>Evidence items (ORG-101 — 3)</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-E03</b></td><td>P0</td><td><b>Actual file upload try karo</b></td><td>File attach hona chahiye</td><td><span class="b ok">PASS ✓ S2-1 done: Evidence + Documents upload modals, download works, .exe rejected 400 (E2E 11-upload 4/4)</span></td></tr>
+<tr><td><b>TC-E04</b></td><td>P0</td><td>Evidence ko finding se link karo</td><td>Link bane, evidence detail me dikhe</td><td>Verify karo</td></tr>
+<tr><td><b>TC-E05</b></td><td>P0</td><td>Evidence link hatao</td><td>Link remove ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-E06</b></td><td>P1</td><td>Evidence ko control aur question se link karo</td><td>Teeno target types kaam karein</td><td>Verify karo</td></tr>
+<tr><td><b>TC-E07</b></td><td>P1</td><td>Evidence "verify" action</td><td>Status Approved ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-E08</b></td><td>P0</td><td>Vendors page kholo</td><td>Vendors list dikhe</td><td><span class="b ok">PASS ✓ 8 records (I-09 fixed, live-verified)</span></td></tr>
+<tr><td><b>TC-E09</b></td><td>P1</td><td>Vendor Scorecard page</td><td>Scorecard render ho</td><td><span class="b wr">Data nahi hai to blank</span></td></tr>
+</tbody></table></div>
+
+<h4>TS-10 · Users, Settings, Notifications, Search (10 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:32%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-U01</b></td><td>P0</td><td>Super Admin — Users page</td><td>13 users roles ke saath</td><td><span class="b ok">Pass</span></td></tr>
+<tr><td><b>TC-U02</b></td><td>P0</td><td>User create / edit / delete</td><td>CRUD kaam kare, list refresh ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-U03</b></td><td>P0</td><td>Settings page — value badlo — Save</td><td>Success toast, refresh ke baad bhi value rahe</td><td>Verify karo</td></tr>
+<tr><td><b>TC-U04</b></td><td>P0</td><td>Bell icon click karo</td><td>Notification panel khule, notifications dikhein</td><td><span class="b ok">PASS ✓ 2 records CM ke liye (I-06 fixed)</span></td></tr>
+<tr><td><b>TC-U05</b></td><td>P1</td><td>Notification "mark as read" / "mark all read"</td><td>Unread count ghate</td><td>Verify karo (data ab hai)</td></tr>
+<tr><td><b>TC-U06</b></td><td>P0</td><td>Topbar search me "ISO" type karo</td><td>Dropdown me audits/certs/frameworks ke results</td><td>Verify karo</td></tr>
+<tr><td><b>TC-U07</b></td><td>P1</td><td>Search result pe click</td><td>Sahi detail page pe navigate</td><td>Verify karo</td></tr>
+<tr><td><b>TC-U08</b></td><td>P1</td><td>Search me arrow keys use karo</td><td>Results keyboard se navigate hon</td><td><span class="b wr">Implement nahi — T34 partial</span></td></tr>
+<tr><td><b>TC-U09</b></td><td>P2</td><td>Search me regex special chars daalo: <code>(a+)+$</code></td><td>Server hang nahi hona chahiye</td><td><span class="b wr">ReDoS risk — I-17</span></td></tr>
+<tr><td><b>TC-U10</b></td><td>P1</td><td>Search me XSS payload: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></td><td>Escaped text dikhe, execute na ho</td><td>Verify karo</td></tr>
+</tbody></table></div>
+
+<h4>TS-11 · AI Assistant (5 cases)</h4>
+<div class="call ok">
+  <div class="t">✅ Assistant module ab PASS karta hai (S2-2/R30)</div>
+  <p>Ye test cases R30 ke baad run kiye gaye — har query ab <b>200</b> deti hai (all 7 intents live-verified).</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:32%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-AI01</b></td><td>P1</td><td>Bottom-right FAB button click karo</td><td>Assistant panel right se slide ho</td><td><span class="b ok">UI kaam karti hai</span></td></tr>
+<tr><td><b>TC-AI02</b></td><td>P0</td><td>"certificates expiring" type karke send karo</td><td>AI response with CRT IDs</td><td><span class="b ok">PASS ✓ 200, certificate summary (S2-2)</span></td></tr>
+<tr><td><b>TC-AI03</b></td><td>P0</td><td>"summarize open findings" send karo</td><td>Findings summary</td><td><span class="b ok">PASS ✓ 200, findings summary (S2-2)</span></td></tr>
+<tr><td><b>TC-AI04</b></td><td>P1</td><td>Conversation history load karo</td><td>Purani conversations dikhein</td><td><span class="b ok">API 200 deti hai</span></td></tr>
+<tr><td><b>TC-AI05</b></td><td>P1</td><td>2000+ characters ka message bhejo</td><td><b>400</b> validation error</td><td>Fix ke baad verify karo</td></tr>
+</tbody></table></div>
+
+<h4>TS-12 · Navigation, Stubs, UX (10 cases)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:6%">Pri</th><th style="width:32%">Steps</th><th style="width:32%">Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>TC-N01</b></td><td>P0</td><td>Saare 61 sidebar items pe click karo</td><td>Koi 404 na aaye, koi crash na ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-N02</b></td><td>P1</td><td>Sidebar section title pe click</td><td>Expand/collapse ▸/▾</td><td><span class="b wr">Sirf ek section khulta hai — I-26</span></td></tr>
+<tr><td><b>TC-N03</b></td><td>P1</td><td>Koi bhi stub page kholo (jaise <code>/audit-trail</code>)</td><td>"Coming soon" jaisa honest placeholder</td><td><span class="b wr">Jhootha "API Ready —" — I-14</span></td></tr>
+<tr><td><b>TC-N04</b></td><td>P0</td><td>Invalid URL: <code>/xyz-does-not-exist</code></td><td>404 page (dashboard redirect nahi)</td><td>Verify karo</td></tr>
+<tr><td><b>TC-N05</b></td><td>P1</td><td>"+ Create" dropdown</td><td>7 items icons ke saath</td><td>Verify karo</td></tr>
+<tr><td><b>TC-N06</b></td><td>P1</td><td>Text field ke bahar <code>/</code> press karo</td><td>Search box focus ho</td><td>Verify karo</td></tr>
+<tr><td><b>TC-N07</b></td><td>P1</td><td>Text select karke <code>Ctrl+A</code> / <code>Ctrl+F</code> press karo</td><td>Browser ka normal behaviour</td><td><span class="b dg">FAIL — hijack ho gaya (I-19)</span></td></tr>
+<tr><td><b>TC-N08</b></td><td>P1</td><td>Mobile viewport (375px) — hamburger — nav item click</td><td>Sidebar band ho jaana chahiye</td><td><span class="b wr">Band nahi hota — I-29</span></td></tr>
+<tr><td><b>TC-N09</b></td><td>P1</td><td>Modal kholo — Tab dabate raho</td><td>Focus modal ke andar hi trap rahe</td><td><span class="b wr">Trap nahi hai — R40</span></td></tr>
+<tr><td><b>TC-N10</b></td><td>P2</td><td>List page pe filter lagao — navigate karo — wapas aao</td><td>Filter yaad rahe</td><td><span class="b wr">Reset ho jaata hai — R37</span></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h3>8.6 API Test Cases (curl / Postman)</h3>
+<p class="lede">UI ke bharose mat raho — asli authorization backend pe hoti hai. Ye commands maine actually
+chalayi hain, copy-paste kar sakte ho.</p>
+
+<h4>Step 1 — Token lo</h4>
+<pre><span class="c"># Login karke access token save karo</span>
+curl -s -X POST http://localhost:3000/api/auth/login \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"email":"priya.sharma@globaltech.com","password":"password123"}'</span>
+
+<span class="c"># Response: {"success":true,"data":{"user":{...},"accessToken":"eyJ...","refreshToken":"..."}}</span>
+<span class="c"># accessToken copy karke TOKEN variable me rakho</span>
+</pre>
+
+<h4>Step 2 — Core API test cases</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:34%">Request</th><th style="width:14%">Expected</th><th>Verified Result</th></tr></thead>
+<tbody>
+<tr><td><b>API-01</b></td><td><code>GET /api/health</code></td><td>200</td><td><span class="b ok">PASS</span> <code>mode:"production", mongodb:"connected"</code></td></tr>
+<tr><td><b>API-02</b></td><td><code>POST /api/auth/login</code> valid creds</td><td>200 + JWT</td><td><span class="b ok">PASS</span> HS256, jti, 24h exp</td></tr>
+<tr><td><b>API-03</b></td><td><code>POST /api/auth/login</code> galat password</td><td>401</td><td>Verify karo</td></tr>
+<tr><td><b>API-04</b></td><td><code>GET /api/audits</code> <b>bina</b> token</td><td>401</td><td><span class="b ok">PASS</span></td></tr>
+<tr><td><b>API-05</b></td><td><code>GET /api/audits</code> <code>Bearer demo-token</code></td><td>401</td><td><span class="b ok">PASS</span> "Invalid token"</td></tr>
+<tr><td><b>API-06</b></td><td><code>GET /api/audits</code> valid token</td><td>200 + pagination</td><td><span class="b ok">PASS</span> 3 records, <code>{page,limit,total,totalPages,hasNext,hasPrev}</code></td></tr>
+<tr><td><b>API-07</b></td><td><code>GET /api/users</code> Compliance Manager token se</td><td>403</td><td><span class="b ok">PASS</span> RBAC sahi</td></tr>
+<tr><td><b>API-08</b></td><td><code>GET /api/users</code> Super Admin token se</td><td>200</td><td><span class="b ok">PASS</span> 13 users</td></tr>
+<tr><td><b>API-09</b></td><td><code>GET /api/audits?orgId=ORG-102</code></td><td>Sirf apna org</td><td><span class="b ok">PASS</span> param ignore hua</td></tr>
+<tr><td><b>API-10</b></td><td><code>POST /api/assistant/query</code></td><td>200 + AI answer</td><td><span class="b ok">PASS (S2-2)</span> live 200, all 7 intents</td></tr>
+<tr><td><b>API-11</b></td><td><code>POST /api/auth/logout</code></td><td>200</td><td><span class="b ok">PASS</span> (I-02 fixed, graceful Redis fallback)</td></tr>
+<tr><td><b>API-12</b></td><td><code>GET /api/notifications</code></td><td>Notifications</td><td><span class="b ok">PASS ✓ 2 records</span> CM ke liye (I-06 fixed)</td></tr>
+<tr><td><b>API-13</b></td><td><code>GET /api/vendors</code></td><td>Vendors</td><td><span class="b ok">PASS ✓ 8 records</span> (I-09 fixed)</td></tr>
+<tr><td><b>API-14</b></td><td><code>GET /api/organizations</code> Super Admin</td><td>7 orgs</td><td><span class="b ok">PASS (S2-3)</span> — 7 orgs, cross-org data live-verified</td></tr>
+<tr><td><b>API-15</b></td><td><code>GET /api/comments</code></td><td>—</td><td><span class="b inf">404</span> — list route hai hi nahi, sirf <code>/by-finding/:id</code></td></tr>
+<tr><td><b>API-16</b></td><td><code>GET /api/ccm</code></td><td>—</td><td><span class="b inf">404</span> — sirf <code>/dashboard</code> aur <code>/alerts</code></td></tr>
+<tr><td><b>API-17</b></td><td><code>GET /api/assessments</code></td><td>—</td><td><span class="b inf">404</span> — sirf <code>/templates</code>, <code>/:auditId/responses</code>, <code>/score/...</code></td></tr>
+<tr><td><b>API-18</b></td><td><code>GET /api/reports/summary</code></td><td>200</td><td><span class="b ok">PASS</span> 4 KPI counts</td></tr>
+<tr><td><b>API-19</b></td><td><code>GET /api/reports/export/audits</code></td><td>200 CSV</td><td>Verify karo — CSV headers check karo</td></tr>
+<tr><td><b>API-20</b></td><td><code>POST /api/findings/:id/reopen</code> phir <code>/advance</code></td><td>200, 200</td><td><span class="b ok">PASS ✓ 200, 200</span> (I-08 fixed)</td></tr>
+</tbody></table></div>
+
+<h4>Step 3 — Validation test cases (har module pe repeat karo)</h4>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:36%">Test</th><th>Expected</th></tr></thead>
+<tbody>
+<tr><td><b>API-V1</b></td><td><code>POST /api/audits</code> khaali body <code>{}</code></td><td>400 <code>VALIDATION_ERROR</code> + field-wise errors</td></tr>
+<tr><td><b>API-V2</b></td><td><code>POST /api/audits</code> title = <code>"abc"</code> (5 se kam)</td><td>400 — Zod <code>min(5)</code></td></tr>
+<tr><td><b>API-V3</b></td><td><code>POST /api/audits</code> <code>riskLevel: "Extreme"</code> (invalid enum)</td><td>400 — allowed: Low/Medium/High/Critical</td></tr>
+<tr><td><b>API-V4</b></td><td><code>POST /api/evidence</code> <code>type: "Hologram"</code></td><td>400 — 12 valid types hain</td></tr>
+<tr><td><b>API-V5</b></td><td><code>GET /api/audits/:id</code> galat ObjectId format</td><td>400/404 — 500 nahi hona chahiye</td></tr>
+<tr><td><b>API-V6</b></td><td><code>GET /api/audits/507f1f77bcf86cd799439011</code> (valid format, exist nahi)</td><td>404 <code>NOT_FOUND</code></td></tr>
+<tr><td><b>API-V7</b></td><td><code>POST /api/audits</code> me extra field <code>{"isAdmin": true}</code></td><td>Field ignore ho (mass assignment protection)</td></tr>
+<tr><td><b>API-V8</b></td><td>2 MB ka JSON body bhejo</td><td>413 — limit 1 MB hai</td></tr>
+</tbody></table></div>
+
+<h3>8.7 Security &amp; Negative Testing</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:8%">ID</th><th style="width:11%">Category</th><th style="width:32%">Test</th><th style="width:22%">Expected</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>SEC-01</b></td><td>Auth bypass</td><td>Protected endpoint bina <code>Authorization</code> header</td><td>401</td><td><span class="b ok">PASS</span></td></tr>
+<tr><td><b>SEC-02</b></td><td>Token forgery</td><td>JWT payload me <code>role: "Super Admin"</code> kar do (signature purana)</td><td>401 — signature invalid</td><td>Verify karo</td></tr>
+<tr><td><b>SEC-03</b></td><td>Algorithm confusion</td><td><code>alg: "none"</code> wala token bhejo</td><td>401</td><td>Verify karo</td></tr>
+<tr><td><b>SEC-04</b></td><td>Token expiry</td><td>Expired token use karo</td><td>401 <code>TOKEN_EXPIRED</code></td><td>Verify karo</td></tr>
+<tr><td><b>SEC-05</b></td><td>Revocation</td><td>Logout ke baad wahi token use karo</td><td>401 hona chahiye</td><td><span class="b ok">PASS ✓ Redis up ho to blacklist jti — 401 (auth.js:17-26); down ho to graceful skip</span></td></tr>
+<tr><td><b>SEC-06</b></td><td>Brute force</td><td>Galat password ke saath 100 login attempts</td><td>429 aana chahiye</td><td><span class="b ok">PASS ✓ global limiter server.js me active hai (100 req/60s), login limiter 5/15min</span></td></tr>
+<tr><td><b>SEC-07</b></td><td>IDOR</td><td>Doosre org ke resource IDs enumerate karo</td><td>404 har baar</td><td>Verify karo</td></tr>
+<tr><td><b>SEC-08</b></td><td>Privilege escalation</td><td>Employee token — <code>POST /api/users</code></td><td>403</td><td>Verify karo</td></tr>
+<tr><td><b>SEC-09</b></td><td>XSS (stored)</td><td>Audit title = <code>&lt;img src=x onerror=alert(1)&gt;</code></td><td>Escaped text render ho, script na chale</td><td>Verify karo — React by default escape karta hai</td></tr>
+<tr><td><b>SEC-10</b></td><td>XSS (reflected)</td><td>Search box me script payload</td><td>Escaped</td><td>Verify karo</td></tr>
+<tr><td><b>SEC-11</b></td><td>NoSQL injection</td><td><code>{"email": {"$ne": null}, "password": {"$ne": null}}</code> login me</td><td>401 — object reject ho</td><td>Verify karo (Zod se protected hona chahiye)</td></tr>
+<tr><td><b>SEC-12</b></td><td>ReDoS</td><td><code>?search=(a%2B)%2B%24</code> long string ke saath</td><td>Fast response</td><td><span class="b wr">Risk — unescaped regex (I-17)</span></td></tr>
+<tr><td><b>SEC-13</b></td><td>CSP</td><td>Response headers check karo</td><td><code>Content-Security-Policy</code> present ho</td><td><span class="b ok">PASS</span> Helmet configured</td></tr>
+<tr><td><b>SEC-14</b></td><td>CORS</td><td>Alag origin se request</td><td>Block ho</td><td>Verify karo</td></tr>
+<tr><td><b>SEC-15</b></td><td>Info disclosure</td><td>Invalid route / bad payload se 500 force karo</td><td>Prod me stack trace nahi</td><td><span class="b wr">Dev me full stack dikhta hai — prod me check karo</span></td></tr>
+<tr><td><b>SEC-16</b></td><td>Password storage</td><td>MongoDB me user document dekho</td><td>bcrypt hash, plaintext nahi</td><td><span class="b ok">PASS</span></td></tr>
+<tr><td><b>SEC-17</b></td><td>Password in response</td><td>Login/user API response check karo</td><td><code>password</code> field kabhi na aaye</td><td>Verify karo</td></tr>
+</tbody></table></div>
+
+<h3>8.8 Cross-Browser, Responsive, Performance &amp; A11y</h3>
+<div class="grid g2">
+<div class="card">
+<h4 style="margin-top:0">Cross-browser matrix</h4>
+<div class="tw"><table>
+<thead><tr><th>Browser</th><th>Status</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>Chromium</td><td><span class="b ok">230/230</span></td><td>Verified live</td></tr>
+<tr><td>Firefox</td><td><span class="b ok">Green (S1-3)</span></td><td>3-browser CI matrix — I-12 resolved</td></tr>
+<tr><td>WebKit/Safari</td><td><span class="b ok">Green (S1-3)</span></td><td>Helmet CSP fix — I-12 resolved</td></tr>
+<tr><td>Edge</td><td><span class="b nu">Untested</span></td><td>Chromium-based, pass hona chahiye</td></tr>
+</tbody></table></div>
+<p class="mini"><b>Note:</b> Full chromium run = <b>230/230 PASS</b> (11 specs, S2-1 upload included). Firefox/WebKit S1-3 me green.</p>
+</div>
+<div class="card">
+<h4 style="margin-top:0">Responsive breakpoints</h4>
+<div class="tw"><table>
+<thead><tr><th>Viewport</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>1920×1080</td><td>Full desktop — baseline</td></tr>
+<tr><td>1366×768</td><td>Sabse common laptop</td></tr>
+<tr><td>768×1024</td><td>Tablet — sidebar collapse</td></tr>
+<tr><td>375×667</td><td>Mobile — hamburger, table scroll</td></tr>
+</tbody></table></div>
+<p class="mini">Har viewport pe check: sidebar toggle, table horizontal scroll, modal fit, koi horizontal body scroll nahi.</p>
+</div>
+</div>
+
+<div class="grid g2">
+<div class="card">
+<h4 style="margin-top:0">Performance targets</h4>
+<ul>
+<li>Login — Dashboard: <b>&lt; 2s</b></li>
+<li>List page load: <b>&lt; 1.5s</b></li>
+<li>API p95 latency: <b>&lt; 300ms</b></li>
+<li>Bundle: <b>413 KB / 104 KB gzip</b> <span class="b ok">acceptable</span></li>
+<li><b>Load test zaroori:</b> pagination in-memory hai (I-16) — 10k records pe seed karke test karo</li>
+</ul>
+</div>
+<div class="card">
+<h4 style="margin-top:0">Accessibility checklist</h4>
+<ul>
+<li>Keyboard-only poora app navigate ho</li>
+<li>Modal me focus trap <span class="b dg">missing</span></li>
+<li>Screen reader: nav, search, toast pe labels</li>
+<li>Color contrast ≥ 4.5:1</li>
+<li>Saare form inputs pe <code>&lt;label&gt;</code></li>
+<li>Images/SVG pe alt / <code>aria-hidden</code></li>
+<li>Browser shortcuts na toote <span class="b dg">FAIL (I-19)</span></li>
+</ul>
+</div>
+</div>
+
+<h3>8.9 Known Issues — Ye Bugs File MAT Karna</h3>
+<div class="call wr">
+  <div class="t">📖 QA ke liye — pehle ye padho</div>
+  <p>Neeche wale sab already documented hain (Section 6). Inhe dobara file karne se dev team ka time
+  barbaad hoga. <b>Naye</b> issues zaroor report karo.</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th style="width:9%">Issue</th><th style="width:34%">Kya dikhega</th><th style="width:11%">Severity</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td><b>I-01</b></td><td>AI Assistant me kuch bhi bhejo — error / koi response nahi — <b>FIXED:</b> live 200, 7 intents (S2-2)</td><td><span class="b ok">Resolved</span></td><td>R30 —</td></tr>
+<tr><td><b>I-02</b></td><td>Logout — UI theek lagta hai, API 500 — <b>FIXED:</b> Redis wired (server.js:133), logout — 200, revoked token — 401 (live-verified)</td><td><span class="b ok">Resolved</span></td><td>R29 —</td></tr>
+<tr><td><b>I-03</b></td><td>Backend band ho to "demo mode" me login ho jaata hai par har page error deta hai — <b>FIXED:</b> silent demo fallback remove, login page pe backend-down banner + honest error (S2-5, live-verified, 2 regression E2E tests)</td><td><span class="b ok">Resolved</span></td><td>S2-5 —</td></tr>
+<tr><td><b>I-05</b></td><td>Unlimited galat login attempts — <b>FIXED:</b> login 5/15min, global 100/min (live 429 verified)</td><td><span class="b ok">Resolved</span></td><td>R31 —</td></tr>
+<tr><td><b>I-06</b></td><td>Notification bell hamesha khali, badge count 0 — <b>FIXED:</b> real user <code>_id</code> seed, CM ko 2 records (live-verified)</td><td><span class="b ok">Resolved</span></td><td>R35 —</td></tr>
+<tr><td><b>I-07</b></td><td>Super Admin ko sirf 1 org dikhta hai (7 hone chahiye) — <b>FIXED:</b> scope.js + scopeOrgId, saare modules migrated, live-verified 7 orgs</td><td><span class="b ok">Resolved</span></td><td>S2-3 —</td></tr>
+<tr><td><b>I-08</b></td><td>Finding reopen karke advance karo — 400 error, permanently stuck — <b>FIXED:</b> <code>'Reopened': 'In Progress'</code> added, live-verified</td><td><span class="b ok">Resolved</span></td><td>Sprint 0 —</td></tr>
+<tr><td><b>I-09</b></td><td>Vendors page bilkul khali — <b>FIXED:</b> 8 vendors seeded, live-verified</td><td><span class="b ok">Resolved</span></td><td>Sprint 1 —</td></tr>
+<tr><td><b>I-11</b></td><td>Evidence/Documents me file upload button hi nahi — <b>FIXED:</b> upload modals + org-scoped download, multer storage/limits, E2E 11-upload 4/4</td><td><span class="b ok">Resolved</span></td><td>S2-1 / R25 —</td></tr>
+<tr><td><b>I-14</b></td><td>24 stub pages jhootha "Backend API Ready —" dikhate hain</td><td><span class="b wr">S2</span></td><td>—</td></tr>
+<tr><td><b>I-15</b></td><td>Manual guide ka <code>external@securecore.com</code> kaam nahi karta</td><td><span class="b wr">S2</span></td><td>—</td></tr>
+<tr><td><b>I-19</b></td><td>Ctrl+A / Ctrl+F / Ctrl+R app hijack kar leta hai</td><td><span class="b inf">S3</span></td><td>—</td></tr>
+<tr><td><b>I-21</b></td><td>Reports page hard-coded data dikhata hai</td><td><span class="b inf">S3</span></td><td>R34</td></tr>
+<tr><td><b>I-25</b></td><td>Login ke role chips ka real login pe koi asar nahi</td><td><span class="b inf">S3</span></td><td>—</td></tr>
+<tr><td><b>I-26</b></td><td>Sidebar me ek waqt me ek hi section khulta hai</td><td><span class="b nu">S4</span></td><td>—</td></tr>
+<tr><td><b>I-27</b></td><td>Purane pages pe plain "Loading..." text</td><td><span class="b nu">S4</span></td><td>R38</td></tr>
+<tr><td><b>I-29</b></td><td>Mobile pe navigate karne ke baad sidebar khula rehta hai</td><td><span class="b nu">S4</span></td><td>R39</td></tr>
+</tbody></table></div>
+
+<h3>8.10 Bug Report Template</h3>
+<pre><span class="k">Bug ID:</span>        VP-BUG-###
+<span class="k">Title:</span>         [Module] Ek line me kya toota hai
+<span class="k">Severity:</span>      S1 Critical / S2 High / S3 Medium / S4 Low
+<span class="k">Priority:</span>      P0 / P1 / P2 / P3
+<span class="k">Module:</span>        Auth | Audits | Findings | CAPA | Risks | Evidence | ...
+<span class="k">Role Used:</span>     Compliance Manager (priya.sharma@globaltech.com)
+<span class="k">Environment:</span>   Local | Staging  ·  Chrome 1xx  ·  Windows 11
+<span class="k">Build:</span>         commit hash / date
+
+<span class="k">Preconditions:</span>
+  - npm run seed chal chuka hai
+  - /api/health — mode: "production"
+
+<span class="k">Steps to Reproduce:</span>
+  1. ...
+  2. ...
+  3. ...
+
+<span class="k">Expected Result:</span>
+  ...
+
+<span class="k">Actual Result:</span>
+  ...
+
+<span class="k">Evidence:</span>
+  - Screenshot / screen recording
+  - Browser console error (agar hai)
+  - <span class="w">Network tab: request URL, status code, response body</span>   &lt;-- ye zaroor lagao
+  - Backend terminal log
+
+<span class="k">Frequency:</span>     Always / Intermittent (x/10)
+<span class="k">Workaround:</span>    Hai / Nahi — details
+<span class="k">Related:</span>       Existing issue ID (agar ho)
+</pre>
+<div class="call inf">
+  <div class="t">💡 Is project ke liye khaas tip</div>
+  <p><b>Hamesha Network tab ka response body lagao.</b> Is codebase me kai bugs aise hain jahan UI theek
+  dikhta hai lekin API silently fail hoti hai — pehle logout (I-02) iska perfect example tha, ab fix hai. Sirf screenshot
+  se dev team ko kuch pata nahi chalega.</p>
+</div>
+
+<h3>8.11 Regression Checklist (har release pe)</h3>
+<p class="mini">Ye 25-point smoke suite ~45 minute me manually chal jaata hai. Deploy se pehle mandatory.</p>
+<div class="tw"><table>
+<thead><tr><th style="width:6%">#</th><th style="width:38%">Check</th><th style="width:11%">Pri</th><th>Pass/Fail</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>/api/health</code> — production + mongodb connected</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>2</td><td>Compliance Manager login — dashboard</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>3</td><td>Galat password — error message</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>4</td><td>Logout — login page (Network tab bhi check karo)</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>5</td><td>Dashboard ke 4 KPI cards number dikhaen</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>6</td><td>Audits list load ho</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>7</td><td>Audit detail kholo — lifecycle stepper</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>8</td><td>Audit stage advance</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>9</td><td>Audit stage retreat</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>10</td><td>Naya audit banao</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>11</td><td>Findings list load ho</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>12</td><td>Finding status advance</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>13</td><td>CAPA board render ho</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>14</td><td>Risks + Risk Heatmap load hon</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>15</td><td>Certificates + Expiring filter</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>16</td><td>Documents + Evidence load hon</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>17</td><td>Evidence ko finding se link karo</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>18</td><td>Auditor — <code>/users</code> blocked</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>19</td><td>Risk Manager — <code>/audits</code> blocked</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>20</td><td><b>Tenant isolation:</b> External User sirf ORG-103 ka data dekhe</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>21</td><td>API bina token — 401</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>22</td><td>Global search results de</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>23</td><td>Settings save + persist</td><td><span class="b wr">P1</span></td><td>—</td></tr>
+<tr><td>24</td><td><code>npx vitest run</code> — 20 passed</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+<tr><td>25</td><td><code>npx playwright test --project=chromium</code> — 161 passed</td><td><span class="b dg">P0</span></td><td>—</td></tr>
+</tbody></table></div>
+
+<h3>8.12 Test Sign-Off Template</h3>
+<div class="tw"><table>
+<thead><tr><th style="width:30%">Field</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td><b>Release / Build</b></td><td>_______________________</td></tr>
+<tr><td><b>Test Cycle Dates</b></td><td>_______________________</td></tr>
+<tr><td><b>Tested By</b></td><td>_______________________</td></tr>
+<tr><td><b>Environment</b></td><td>Local / Staging / Prod</td></tr>
+<tr><td><b>Total TCs Planned</b></td><td>~122 (Section 8.5 + 8.6 + 8.7)</td></tr>
+<tr><td><b>Executed / Passed / Failed / Blocked</b></td><td>____ / ____ / ____ / ____</td></tr>
+<tr><td><b>Naye bugs — S1 / S2 / S3 / S4</b></td><td>____ / ____ / ____ / ____</td></tr>
+<tr><td><b>Known issues abhi bhi open</b></td><td>____ of 30</td></tr>
+<tr><td><b>Unit tests</b></td><td>____ / 20</td></tr>
+<tr><td><b>E2E (Chromium / Firefox / WebKit)</b></td><td>____ / ____ / ____ (each of 161)</td></tr>
+<tr><td><b>Tenant isolation suite</b></td><td>PASS / FAIL &nbsp; <span class="b dg">must be PASS</span></td></tr>
+<tr><td><b>RBAC suite</b></td><td>PASS / FAIL &nbsp; <span class="b dg">must be PASS</span></td></tr>
+<tr><td><b>Recommendation</b></td><td>— Go &nbsp;&nbsp; — Go with known issues &nbsp;&nbsp; — No-Go</td></tr>
+<tr><td><b>QA Sign-off</b></td><td>_______________________ &nbsp; Date: __________</td></tr>
+</tbody></table></div>
+
+<div class="call dg">
+  <div class="t">🚦 Go / No-Go rule</div>
+  <p><b>No-Go</b> agar inme se koi bhi ho: (a) koi <b>naya</b> S1 bug, (b) tenant isolation suite me
+  koi bhi fail, (c) RBAC suite me koi bhi fail, (d) unit tests red, (e) Chromium E2E red.<br>
+  <b>Go with known issues</b> tab jab sirf Section 8.9 wale documented issues bache hon aur
+  stakeholders ne unhe accept kiya ho.</p>
+</div>
+</section>
+
+<footer>
+  <p><b>Vendor Passport — Project Status &amp; QA Testing Documentation</b></p>
+  <p>Taiyar kiya gaya: live code inspection + running server pe actual API probes + <code>npx vitest run</code> (20 pass)
+  + <code>npx playwright test --project=chromium</code> (161 pass) + <code>npm run frontend-build</code> (success)
+  se verify karke.</p>
+  <p>Sources: <code>server.js</code>, 21 backend modules, 46 React pages, <code>scripts/seed.js</code>,
+  <code>docs/implementation/*</code>, <code>docs/project-audit/*</code> (18 reports),
+  <code>docs/project_completeness_report.md</code>, <code>docs/gaps_27july2026.md</code>,
+  <code>docs/manual-testing-guide.md</code>, <code>tests/e2e/*</code>, <code>.github/workflows/ci.yml</code>.</p>
+  <p style="margin-top:14px">Report date: <b>05 August 2026</b> · Jab bhi Sprint 0 / Sprint 1 complete ho, ise refresh karo.</p>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.toc a').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+}));
+</script>
+</body>
+</html>

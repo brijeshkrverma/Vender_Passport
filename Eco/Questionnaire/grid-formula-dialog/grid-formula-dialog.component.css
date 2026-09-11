@@ -1,0 +1,376 @@
+/* ===========================================================================
+   GRID FORMULA BUILDER — popup
+   Grid bayen taraf, builder dayen taraf. Admin ki nazar grid pe rehti hai
+   aur formula uske saath-saath banta dikhta hai.
+   =========================================================================== */
+
+.gfd { display: flex; flex-direction: column; max-height: 86vh; }
+
+/* ---- header ---- */
+.gfd-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 18px 22px 12px;
+}
+.gfd-head h3 { margin: 0; font-size: 18px; font-weight: 600; color: #2b2f42; }
+.gfd-head p { margin: 4px 0 0; font-size: 13px; color: #6b7186; }
+.gfd-x {
+  border: none; background: transparent; font-size: 26px; line-height: 1;
+  color: #8a90a3; cursor: pointer;
+}
+.gfd-x:hover { color: #2b2f42; }
+
+/* ---- steps ---- */
+.gfd-steps {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 22px; background: #f6f7fb; border-top: 1px solid #eceef4;
+  border-bottom: 1px solid #eceef4; font-size: 12px; color: #8a90a3;
+}
+.gfd-step { padding: 3px 10px; border-radius: 12px; }
+.gfd-step.on { background: #e6f0ff; color: #2563c9; font-weight: 600; }
+.gfd-arrow { color: #c4c8d4; }
+
+/* ---- body ---- */
+.gfd-body { display: flex; gap: 20px; padding: 18px 22px; overflow: auto; flex: 1; }
+.gfd-gridwrap { flex: 1; min-width: 0; overflow-x: auto; }
+.gfd-side { width: 300px; flex-shrink: 0; }
+
+/* ---- grid ---- */
+.gfd-grid { border-collapse: separate; border-spacing: 4px; }
+.gfd-grid td {
+  min-width: 92px; padding: 7px 9px;
+  border: 1px solid #e3e6ef; border-radius: 6px; background: #fff;
+  vertical-align: top; position: relative; transition: all .12s ease;
+}
+.gfd-clickable { cursor: pointer; }
+.gfd-clickable:hover { border-color: #9dbdf5; background: #f7faff; }
+
+.gfd-ref { display: block; font-size: 10px; color: #a8adbd; letter-spacing: .3px; }
+.gfd-val { display: block; font-size: 13px; color: #2b2f42; margin-top: 2px; word-break: break-word; }
+
+.gfd-label { background: #f6f7fb; }
+.gfd-label .gfd-val { color: #6b7186; font-size: 12px; }
+
+.gfd-target { border-color: #2563c9; background: #eef4ff; box-shadow: 0 0 0 2px #d4e2fb; }
+.gfd-used { border-color: #6aab6f; background: #f2f9f2; }
+.gfd-computed { border-color: #e0b658; background: #fdf8ec; }
+
+.gfd-fx {
+  position: absolute; top: 4px; right: 6px;
+  font-size: 10px; font-weight: 700; font-style: italic; color: #b8860b;
+}
+
+.gfd-legend { margin-top: 12px; font-size: 11px; color: #8a90a3; display: flex; align-items: center; gap: 6px; }
+.lg { width: 11px; height: 11px; border-radius: 3px; display: inline-block; margin-left: 12px; }
+.lg-target { background: #eef4ff; border: 1px solid #2563c9; }
+.lg-used { background: #f2f9f2; border: 1px solid #6aab6f; }
+.lg-computed { background: #fdf8ec; border: 1px solid #e0b658; }
+
+/* ---- current formula ---- */
+.gfd-current {
+  padding: 12px 14px; border-radius: 8px;
+  background: #2b2f42; color: #fff; margin-bottom: 14px;
+}
+.gfd-current-label { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: #9aa0b8; }
+.gfd-current-text {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 15px; margin-top: 4px; word-break: break-word; min-height: 20px;
+}
+.gfd-current-hint { font-size: 11px; color: #9aa0b8; margin-top: 6px; }
+.gfd-caret { animation: gfd-blink 1s step-end infinite; }
+@keyframes gfd-blink { 50% { opacity: 0; } }
+
+.gfd-current-empty {
+  background: #f6f7fb; color: #6b7186; font-size: 13px; line-height: 1.5;
+}
+
+/* ---- calculator ---- */
+.gfd-calc { display: flex; flex-direction: column; gap: 6px; }
+.gfd-calc-off { opacity: .45; }
+.gfd-calc-row { display: flex; gap: 6px; }
+.gfd-btn {
+  flex: 1; padding: 9px 0; font-size: 15px; font-weight: 600;
+  border: 1px solid #dfe3ee; border-radius: 6px; background: #fff;
+  color: #2b2f42; cursor: pointer; transition: all .12s ease;
+}
+.gfd-btn:hover:not(:disabled) { background: #f0f4ff; border-color: #9dbdf5; }
+.gfd-btn:disabled { opacity: .4; cursor: not-allowed; }
+.gfd-btn-op { font-size: 17px; color: #2563c9; }
+.gfd-btn-wide { font-size: 12px; font-weight: 500; }
+
+/* ---- save ---- */
+.gfd-save {
+  width: 100%; margin-top: 12px; padding: 11px 0;
+  background: #2563c9; color: #fff; border: none; border-radius: 6px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.gfd-save:hover:not(:disabled) { background: #1f55ad; }
+.gfd-save:disabled { background: #c4c8d4; cursor: not-allowed; }
+
+/* ---- errors ---- */
+.gfd-err {
+  margin-top: 10px; padding: 9px 12px; border-radius: 6px;
+  background: #fdf4f4; border: 1px solid #f3c9c9;
+  font-size: 12px; color: #a52626;
+}
+.gfd-err-flat { margin: 0 0 10px; }
+
+/* ---- formula list ---- */
+.gfd-list { margin-top: 18px; }
+.gfd-list-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+  color: #8a90a3; margin-bottom: 6px;
+}
+.gfd-list-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; margin-bottom: 5px;
+  background: #fdf8ec; border: 1px solid #f0e2c2; border-radius: 6px;
+}
+.gfd-list-item code { font-size: 12px; color: #7a5c12; background: transparent; }
+.gfd-del { border: none; background: transparent; color: #b93636; cursor: pointer; font-size: 15px; }
+.gfd-del:hover { color: #8c1f1f; }
+
+/* ---- preview ---- */
+.gfd-preview { border-top: 1px solid #eceef4; }
+.gfd-preview-toggle {
+  width: 100%; text-align: left; padding: 12px 22px;
+  border: none; background: #f6f7fb; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: #2f6b34;
+  display: flex; align-items: center; gap: 8px;
+}
+.gfd-preview-toggle:hover { background: #f0f2f8; }
+.gfd-preview-body { padding: 14px 22px 18px; overflow-x: auto; }
+.gfd-hint { font-size: 12px; color: #8a90a3; margin-bottom: 10px; }
+
+.gfd-grid-preview td { min-width: 100px; }
+.gfd-grid-preview input {
+  width: 100%; margin-top: 2px; padding: 4px 6px;
+  border: 1px solid #dfe3ee; border-radius: 4px; font-size: 13px;
+}
+.gfd-val-auto { font-weight: 700; color: #b8860b; }
+
+.gfd-warn { font-size: 12px; color: #9a6b1f; display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+
+/* ---- footer ---- */
+.gfd-foot { padding: 14px 22px; border-top: 1px solid #eceef4; background: #fcfcfe; }
+.gfd-foot-btns { display: flex; justify-content: flex-end; gap: 10px; }
+.gfd-cancel {
+  padding: 9px 20px; border: 1px solid #dfe3ee; border-radius: 6px;
+  background: #fff; color: #6b7186; font-size: 14px; cursor: pointer;
+}
+.gfd-done {
+  padding: 9px 26px; border: none; border-radius: 6px;
+  background: #2f6b34; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.gfd-done:hover:not(:disabled) { background: #255a2a; }
+.gfd-done:disabled { background: #c4c8d4; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .gfd-body { flex-direction: column; }
+  .gfd-side { width: 100%; }
+}
+
+/* ---- cells jo "Add Calc" se chune nahi gaye ---- */
+.gfd-inactive { background: #fafbfd; opacity: .62; }
+.gfd-inactive .gfd-val { color: #98a0b3; }
+
+/* ---- chune hue cells button ban jaate hain ---- */
+.gfd-cellbtn {
+  display: block; width: 100%; text-align: left;
+  border: none; background: transparent; padding: 0; cursor: pointer; font: inherit;
+}
+.gfd-cellbtn:hover .gfd-val { color: #2563c9; }
+
+/* ---- ek bhi cell chuna nahi gaya ---- */
+.gfd-empty {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 16px 22px 0; padding: 12px 14px;
+  background: #fdf8ec; border: 1px solid #f0e2c2; border-radius: 6px;
+  font-size: 13px; color: #7a5c12; line-height: 1.55;
+}
+.gfd-empty i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.gfd-empty code {
+  padding: 1px 6px; border-radius: 3px;
+  background: #fff; border: 1px solid #e8d9b0; color: #8a6614;
+}
+
+/* ---- grid ke bahar wale sub-answer inputs ---- */
+.gfd-subs {
+  margin-top: 16px; padding: 12px 14px;
+  border: 1px solid #dfe3ee; border-radius: 8px; background: #fbfcff;
+}
+.gfd-subs-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: #6b7186; margin-bottom: 8px;
+}
+.gfd-subs-hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: #9aa0b8; }
+
+.gfd-subs-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.gfd-subbtn {
+  display: flex; align-items: center; gap: 8px; max-width: 280px;
+  padding: 8px 12px; text-align: left;
+  border: 1px solid #cfd9ea; border-radius: 6px; background: #fff;
+  cursor: pointer; transition: all .12s ease;
+}
+.gfd-subbtn:hover:not(:disabled) { border-color: #2563c9; background: #f2f7ff; }
+.gfd-subbtn:disabled { opacity: .45; cursor: not-allowed; }
+.gfd-subbtn-used { border-color: #6aab6f; background: #f2f9f2; }
+
+.gfd-subref {
+  flex-shrink: 0; padding: 2px 7px; border-radius: 4px;
+  background: #eef2fa; color: #2563c9;
+  font-size: 11px; font-weight: 700; font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.gfd-sublabel {
+  font-size: 12px; color: #2b2f42; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* preview me sub inputs */
+.gfd-subs-preview { margin-bottom: 14px; }
+.gfd-sub-plabel {
+  display: block; font-size: 11px; color: #6b7186;
+  margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---- cross-question target ---- */
+.gfd-cross {
+  margin-bottom: 14px; padding: 12px 14px;
+  border: 1px solid #e0d4f0; border-radius: 8px; background: #fbf9fe;
+}
+.gfd-cross-select {
+  margin-top: 6px; font-size: 13px;
+  border: 1px solid #d6c9ea; border-radius: 5px; padding: 7px 9px; width: 100%;
+}
+.gfd-cross .srb-hint { display: block; margin-top: 6px; font-size: 12px; color: #6b4f96; }
+
+/* ============================================================
+   ASSESSOR VALIDATION (trend) — tab 2
+   ============================================================ */
+
+/* tabs */
+.gfd-tabs{display:flex;gap:8px;padding:0 0 14px;border-bottom:1px solid #e4e7ea;margin-bottom:16px}
+.gfd-tab{flex:1;display:flex;gap:10px;align-items:center;text-align:left;padding:11px 13px;
+  border:1px solid #e4e7ea;border-radius:9px;background:#fff;cursor:pointer;font:inherit;
+  color:#2b3038;transition:border-color .12s,background .12s}
+.gfd-tab:hover{border-color:#c9ced5;background:#fbfcfd}
+.gfd-tab.on{border-color:#1f6f4a;background:#eef6f2;box-shadow:inset 0 0 0 1px #1f6f4a}
+.gfd-tab i{font-size:1.25rem;color:#1f6f4a;flex:0 0 auto}
+.gfd-tab span{display:flex;flex-direction:column;line-height:1.3;flex:1}
+.gfd-tab small{color:#6a727d;font-size:.76rem}
+.gfd-tabcount{flex:0 0 auto;font-size:.7rem;font-weight:700;background:#1f6f4a;color:#fff;
+  border-radius:999px;padding:2px 8px}
+
+/* empty state */
+.gfd-tstart{text-align:center;padding:34px 26px;border:1px dashed #cfd5dc;border-radius:11px;
+  background:#fbfcfd}
+.gfd-tstart>i{font-size:2.1rem;color:#1f6f4a}
+.gfd-tstart h4{margin:9px 0 8px;font-size:1.02rem}
+.gfd-tstart p{max-width:560px;margin:0 auto 9px;color:#5c636e;font-size:.88rem;line-height:1.55}
+.gfd-tstart-warn{display:inline-flex;gap:7px;align-items:flex-start;text-align:left;max-width:520px;
+  margin:12px auto 0;padding:9px 12px;border-radius:8px;background:#fdf4e5;border:1px solid #efdcb6;
+  color:#7c4a08;font-size:.83rem}
+.gfd-tstart-btn{margin-top:16px;border:0;background:#1f6f4a;color:#fff;font:inherit;font-weight:650;
+  padding:9px 18px;border-radius:8px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+.gfd-tstart-btn:hover:not(:disabled){background:#1a5c3d}
+.gfd-tstart-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* numbered sections */
+.gfd-tsec{display:flex;gap:13px;padding:16px 0;border-bottom:1px solid #eef1f4}
+.gfd-tsec:last-of-type{border-bottom:0}
+.gfd-tnum{flex:0 0 auto;width:25px;height:25px;border-radius:50%;background:#1f6f4a;color:#fff;
+  font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.gfd-tbody{flex:1;min-width:0}
+.gfd-tbody h4{margin:0 0 5px;font-size:.95rem}
+.gfd-thint{margin:0 0 10px;color:#6a727d;font-size:.84rem;line-height:1.5}
+
+/* row / column pickers */
+.gfd-tpick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.gfd-trow{border:1px solid #e4e7ea;background:#fff;border-radius:7px;padding:6px 11px;
+  font:inherit;font-size:.85rem;cursor:pointer;color:#2b3038}
+.gfd-trow:hover{border-color:#c9ced5}
+.gfd-trow.on{border-color:#1f6f4a;background:#eef6f2;font-weight:650;color:#1f6f4a}
+.gfd-tcols{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gfd-tcolslbl{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:#8b929c;margin-right:2px}
+.gfd-tcol{border:1px solid #e4e7ea;background:#fff;border-radius:999px;padding:4px 12px;
+  font:inherit;font-size:.8rem;cursor:pointer;color:#2b3038}
+.gfd-tcol:hover{border-color:#c9ced5}
+.gfd-tcol.on{border-color:#1d4ed8;background:#eaf0fe;color:#1d4ed8;font-weight:650}
+.gfd-tsel{width:100%;max-width:560px;padding:7px 10px;border:1px solid #e4e7ea;border-radius:7px;
+  font:inherit;background:#fff;margin-bottom:11px}
+
+/* the formula, in words */
+.gfd-tformula{background:#f6f8fa;border:1px solid #e4e7ea;border-radius:8px;padding:11px 13px;
+  font-size:.86rem;line-height:1.7}
+.gfd-tformula .k{display:inline-block;min-width:150px;font-weight:650;color:#1f6f4a}
+
+/* live preview */
+.gfd-tlive{margin-top:12px;border:1px solid #cedcfb;background:#f7faff;border-radius:9px;padding:12px}
+.gfd-tlive-h{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#1d4ed8;margin-bottom:8px}
+.gfd-tlive-t{width:100%;border-collapse:collapse;font-size:.84rem}
+.gfd-tlive-t th,.gfd-tlive-t td{border:1px solid #dde5f5;padding:5px 8px;text-align:right}
+.gfd-tlive-t th:first-child,.gfd-tlive-t td:first-child{text-align:left;color:#5c636e}
+.gfd-tlive-t th{background:#eef3fd;font-size:.75rem;color:#5c636e;font-weight:650}
+.gfd-tlive-i td{font-weight:700;background:#eef3fd}
+.gfd-tresult{margin-top:10px;font-size:.9rem}
+.gfd-tsel-opt{color:#1f6f4a}
+.gfd-tnone{color:#94570a}
+.gfd-tskip{margin-top:10px;display:flex;gap:7px;align-items:flex-start;font-size:.84rem;
+  color:#7c4a08;background:#fdf4e5;border:1px solid #efdcb6;border-radius:7px;padding:8px 11px}
+.gfd-twarn{margin-top:7px;display:flex;gap:6px;align-items:flex-start;font-size:.81rem;color:#7c4a08}
+
+/* bands */
+.gfd-bands{width:100%;border-collapse:collapse;font-size:.85rem;margin-bottom:9px}
+.gfd-bands th,.gfd-bands td{border:1px solid #e4e7ea;padding:6px 8px;text-align:left}
+.gfd-bands th{background:#f6f8fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;
+  color:#6a727d;font-weight:650}
+.gfd-bands input,.gfd-bands select{width:100%;border:1px solid #e4e7ea;border-radius:6px;
+  padding:5px 7px;font:inherit;font-size:.85rem;background:#fff}
+.gfd-bands input:focus,.gfd-bands select:focus{outline:0;border-color:#1d4ed8;
+  box-shadow:0 0 0 3px #eaf0fe}
+.gfd-brange{display:block;margin-top:3px;color:#8b929c;font-size:.72rem}
+.gfd-bdel{border:0;background:none;color:#a02020;cursor:pointer;font-size:1rem;padding:2px 5px}
+.gfd-badd{border:1px solid #e4e7ea;background:#fff;border-radius:7px;padding:5px 11px;font:inherit;
+  font-size:.83rem;cursor:pointer;display:inline-flex;gap:5px;align-items:center}
+.gfd-badd:hover{border-color:#c9ced5;background:#fbfcfd}
+.gfd-berr{margin-top:10px;background:#fdecec;border:1px solid #f2cbcb;border-radius:8px;
+  padding:9px 12px;font-size:.83rem;color:#8e1c1c}
+.gfd-berr div{display:flex;gap:6px;align-items:flex-start;margin-bottom:3px}
+.gfd-bok{margin-top:10px;display:flex;gap:6px;align-items:center;font-size:.83rem;color:#1f6f4a;
+  background:#eef6f2;border:1px solid #c6e1d4;border-radius:8px;padding:8px 12px}
+
+/* override + errors + remove */
+.gfd-tovr{display:flex;gap:9px;align-items:center;cursor:pointer;font-size:.88rem;margin-bottom:7px}
+.gfd-tovr input{width:16px;height:16px;cursor:pointer}
+.gfd-terr{margin:14px 0 0;background:#fdecec;border:1px solid #f2cbcb;border-radius:8px;
+  padding:10px 13px;font-size:.84rem;color:#8e1c1c}
+.gfd-terr div{display:flex;gap:6px;align-items:flex-start;margin-bottom:3px}
+.gfd-tremove{margin-top:16px;border:1px solid #f0cccc;background:#fff;color:#a02020;border-radius:7px;
+  padding:7px 13px;font:inherit;font-size:.84rem;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.gfd-tremove:hover{background:#fdecec}
+
+@media(max-width:720px){
+  .gfd-tabs{flex-direction:column}
+  .gfd-tsec{gap:9px}
+  .gfd-bands{font-size:.79rem}
+  .gfd-bands th,.gfd-bands td{padding:4px 5px}
+}
+
+/* trend: "kya kya chahiye" checklist */
+.gfd-check{max-width:620px;margin:16px auto 0;text-align:left}
+.gfd-check-row{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;margin-bottom:8px;
+  border:1px solid #f2cbcb;background:#fdf2f2;border-radius:9px}
+.gfd-check-row.done{border-color:#c6e1d4;background:#eef6f2}
+.gfd-check-row i{font-size:1.15rem;color:#a02020;flex:0 0 auto;margin-top:1px}
+.gfd-check-row.done i{color:#1f6f4a}
+.gfd-check-row b{display:block;font-size:.87rem;margin-bottom:2px}
+.gfd-check-ok{font-size:.82rem;color:#1f6f4a;line-height:1.5}
+.gfd-check-no{font-size:.82rem;color:#7a2020;line-height:1.55}
+.gfd-tstart-blocked{margin:9px 0 0;font-size:.79rem;color:#8b929c}
+
+/* option kis row pe dikhe */
+.gfd-ttarget{margin-top:12px;padding:10px 12px;border:1px solid #e4e7ea;border-radius:8px;background:#fbfcfd}
+.gfd-ttarget>label{display:flex;gap:8px;align-items:center;cursor:pointer;font-size:.86rem}
+.gfd-ttarget>label input{width:15px;height:15px;cursor:pointer}

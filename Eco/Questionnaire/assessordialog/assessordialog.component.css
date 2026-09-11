@@ -1,0 +1,29 @@
+.btn-fill {
+  color: #fff;
+  font-family: Roboto;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  border-radius: 6px;
+  border: 1px solid #78b856;
+  background: #78b856;
+  transition: 0.5s;
+  margin-block: 15px;
+  margin-inline-end: 15px;
+}
+.icon {
+  font-size: 20px;
+  color: red;
+  cursor: pointer;
+}
+.option-type{
+  height: 43px !important;
+  margin-top: 15px;
+  width: 112px !important;
+
+}
+.is-option-filled{
+  background-color: rgb(89, 0, 255) !important;
+  color: white !important;
+}

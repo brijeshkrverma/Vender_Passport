@@ -1,0 +1,484 @@
+<div class="gfd">
+
+  <div class="gfd-head">
+    <div>
+      <h3>{{ mode === 'trend' ? 'Assessor validation — trend rule' : 'Grid formula' }}</h3>
+      <p *ngIf="mode === 'cell'">A cell value is calculated automatically from other cells. The applicant cannot edit it.</p>
+      <p *ngIf="mode === 'trend'">A rule reads the figures and selects the assessor's option by itself, instead of the assessor judging it by hand.</p>
+    </div>
+    <button class="gfd-x" (click)="cancel()" title="Close"><i class='bx bx-x'></i></button>
+  </div>
+
+  <!-- Do alag kaam, isliye do tabs -->
+  <div class="gfd-tabs">
+    <button type="button" class="gfd-tab" [class.on]="mode === 'cell'" (click)="setMode('cell')">
+      <i class='bx bx-table'></i>
+      <span><b>Fill a cell</b><small>Calculate a value inside this grid</small></span>
+      <span class="gfd-tabcount" *ngIf="formulas.length">{{ formulas.length }}</span>
+    </button>
+    <button type="button" class="gfd-tab" [class.on]="mode === 'trend'" (click)="setMode('trend')">
+      <i class='bx bx-trending-up'></i>
+      <span><b>Assessor validation</b><small>Pick the assessor's option from a trend</small></span>
+      <span class="gfd-tabcount" *ngIf="trend">on</span>
+    </button>
+  </div>
+
+  <!-- ============ TAB 1 : cell bharna (purana kaam) ============ -->
+  <div *ngIf="mode === 'cell'">
+
+  <!-- kya karna hai — step by step -->
+  <div class="gfd-steps" [class.gfd-steps-active]="building">
+    <span class="gfd-step" [class.on]="!building">1. Click the cell that should be calculated</span>
+    <span class="gfd-arrow">→</span>
+    <span class="gfd-step" [class.on]="building">2. Build the formula by clicking cells and operators</span>
+    <span class="gfd-arrow">→</span>
+    <span class="gfd-step">3. Save</span>
+  </div>
+
+  <!-- ek bhi cell "Add Calc" se chuna nahi gaya -->
+  <div class="gfd-empty" *ngIf="!calcCellCount">
+    <i class='bx bx-info-circle'></i>
+    <div>
+      <strong>Select cells first.</strong>
+      In the grid, open the type dropdown of any cell you want to use and choose
+      <code>+ Add Calc</code> . The target cell must be selected too.
+      Only those cells are clickable here.
+    </div>
+  </div>
+
+  <div class="gfd-body">
+
+    <!-- ---------------- grid ---------------- -->
+    <div class="gfd-gridwrap">
+      <table class="gfd-grid">
+        <tr *ngFor="let r of rows">
+          <td *ngFor="let c of cols"
+              [class.gfd-label]="isLabelCell(r, c)"
+              [class.gfd-inactive]="!isCalcCell(r, c)"
+              [class.gfd-target]="isTarget(r, c)"
+              [class.gfd-computed]="isComputed(r, c)"
+              [class.gfd-used]="isUsed(r, c)">
+
+            <!-- "Add Calc" se chune hue cells button ban jaate hain -->
+            <button *ngIf="isCalcCell(r, c)" type="button" class="gfd-cellbtn"
+                    (click)="onCellClick(r, c)">
+              <span class="gfd-ref">{{ label(r, c) }}</span>
+              <span class="gfd-val">{{ cellValue(r, c) || '—' }}</span>
+              <span class="gfd-fx" *ngIf="isComputed(r, c)" title="This cell has a formula">fx</span>
+            </button>
+
+            <!-- baaki cells sirf dikhane ke liye -->
+            <ng-container *ngIf="!isCalcCell(r, c)">
+              <span class="gfd-ref">{{ label(r, c) }}</span>
+              <span class="gfd-val">{{ cellValue(r, c) || '—' }}</span>
+            </ng-container>
+          </td>
+        </tr>
+      </table>
+      <p class="gfd-legend">
+        <span class="lg lg-target"></span> target
+        <span class="lg lg-used"></span> used in formula
+        <span class="lg lg-computed"></span> already has a formula
+      </p>
+
+      <!-- Grid ke BAHAR wale inputs — jaise "Consent to operate (KL)" checkbox
+           jispe click karne se number input khulta hai. Inhe bhi formula me
+           daala ja sakta hai. -->
+      <div class="gfd-subs" *ngIf="subs.length">
+        <div class="gfd-subs-title">
+          Inputs outside the grid
+          <span class="gfd-subs-hint">— these can also be used in a formula</span>
+        </div>
+        <div class="gfd-subs-list">
+          <button *ngFor="let s of subs" type="button"
+                  class="gfd-subbtn"
+                  [class.gfd-subbtn-used]="isSubUsed(s.index)"
+                  [disabled]="!building || !expectsValue"
+                  (click)="onSubClick(s.index)"
+                  [title]="s.label">
+            <span class="gfd-subref">{{ subRef(s.index) }}</span>
+            <span class="gfd-sublabel">{{ s.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------------- right panel ---------------- -->
+    <div class="gfd-side">
+
+      <!-- ban raha formula -->
+      <div class="gfd-current" *ngIf="building">
+        <div class="gfd-current-label">Building</div>
+        <div class="gfd-current-text">
+          {{ currentText }}<span class="gfd-caret" *ngIf="expectsValue">_</span>
+        </div>
+        <div class="gfd-current-hint">
+          {{ expectsValue ? 'Now pick a cell or a number' : 'Now pick an operator' }}
+        </div>
+      </div>
+      <div class="gfd-current gfd-current-empty" *ngIf="!building">
+        Click a cell in the grid — that cell will be calculated.
+      </div>
+
+      <!-- Nateeja kisi AUR question me bhejna ho -->
+      <div class="gfd-cross" *ngIf="crossTargets.length">
+        <div class="gfd-subs-title">
+          Or send the result to another question
+          <span class="gfd-subs-hint">— instead of this grid</span>
+        </div>
+        <select class="form-control gfd-cross-select"
+                [value]="targetQuestion ? targetQuestion.questionId + '|' + targetQuestion.subIndex : ''"
+                (change)="pickCrossTarget(crossTargets[$any($event.target).selectedIndex - 1])">
+          <option value="">— no, keep it in this grid —</option>
+          <option *ngFor="let t of crossTargets" [value]="t.questionId + '|' + t.subIndex">{{ t.label }}</option>
+        </select>
+        <small class="srb-hint" *ngIf="targetQuestion">
+          Result goes to: <strong>{{ crossTargetLabel }}</strong>
+        </small>
+      </div>
+
+      <!-- calculator -->
+      <div class="gfd-calc" [class.gfd-calc-off]="!building">
+        <div class="gfd-calc-row">
+          <button *ngFor="let op of ['+', '-', '*', '/']"
+                  class="gfd-btn gfd-btn-op"
+                  [disabled]="!building || expectsValue"
+                  (click)="addOp(op)">{{ op }}</button>
+        </div>
+        <div class="gfd-calc-row">
+          <button class="gfd-btn" [disabled]="!building" (click)="addOp('(')">(</button>
+          <button class="gfd-btn" [disabled]="!building" (click)="addOp(')')">)</button>
+          <button class="gfd-btn" [disabled]="!building || !expectsValue" (click)="addNumber('100')">100</button>
+          <button class="gfd-btn" [disabled]="!building || !expectsValue" (click)="addNumber('1')">1</button>
+        </div>
+        <div class="gfd-calc-row">
+          <button class="gfd-btn gfd-btn-wide" [disabled]="!building || !expr.length" (click)="backspace()">
+            <i class='bx bx-arrow-back'></i> Back
+          </button>
+          <button class="gfd-btn gfd-btn-wide" [disabled]="!building" (click)="cancelBuilding()">Discard</button>
+        </div>
+      </div>
+
+      <div class="gfd-err" *ngIf="currentErrors.length">
+        <div *ngFor="let e of currentErrors">{{ e }}</div>
+      </div>
+
+      <button class="gfd-save"
+              [disabled]="!building || !expr.length || currentErrors.length"
+              (click)="saveFormula()">
+        Save formula
+      </button>
+
+      <!-- bane hue formulas -->
+      <div class="gfd-list" *ngIf="formulas.length">
+        <div class="gfd-list-title">Applied formulas ({{ formulas.length }})</div>
+        <div class="gfd-list-item" *ngFor="let f of formulas; let i = index">
+          <code>{{ text(f) }}</code>
+          <button class="gfd-del" (click)="removeFormula(i)" title="Remove"><i class='bx bx-trash'></i></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ---------------- preview ---------------- -->
+  <div class="gfd-preview" *ngIf="formulas.length">
+    <button class="gfd-preview-toggle" (click)="togglePreview()">
+      <i class='bx' [ngClass]="showPreview ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
+      Test it — enter sample values
+    </button>
+
+    <div *ngIf="showPreview" class="gfd-preview-body">
+      <p class="gfd-hint">Cells driven by a formula update automatically.</p>
+
+      <div class="gfd-subs-preview" *ngIf="subs.length">
+        <div class="gfd-subs-title">Inputs outside the grid</div>
+        <div class="row">
+          <div class="col-md-4" *ngFor="let s of subs">
+            <label class="gfd-sub-plabel">{{ subRef(s.index) }} · {{ s.label }}</label>
+            <input type="number" class="form-control"
+                   [value]="previewSubValue(s.index)"
+                   (input)="onPreviewSubInput(s.index, $event)"
+                   placeholder="0">
+          </div>
+        </div>
+      </div>
+      <table class="gfd-grid gfd-grid-preview">
+        <tr *ngFor="let r of rows">
+          <td *ngFor="let c of cols" [class.gfd-label]="isLabelCell(r, c)" [class.gfd-computed]="isComputed(r, c)">
+            <span class="gfd-ref">{{ label(r, c) }}</span>
+            <input *ngIf="!isLabelCell(r, c) && !isComputed(r, c)" type="number"
+                   [value]="previewValue(r, c)" (input)="onPreviewInput(r, c, $event)">
+            <span *ngIf="isComputed(r, c)" class="gfd-val gfd-val-auto">{{ previewValue(r, c) || '—' }}</span>
+            <span *ngIf="isLabelCell(r, c)" class="gfd-val">{{ cellValue(r, c) || '—' }}</span>
+          </td>
+        </tr>
+      </table>
+      <div class="gfd-warn" *ngFor="let w of previewWarnings">
+        <i class='bx bx-error'></i> {{ w }}
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /tab 1 -->
+
+  <!-- ============ TAB 2 : assessor validation (trend) ============ -->
+  <div class="gfd-trend" *ngIf="mode === 'trend'">
+
+    <!-- rule abhi bana hi nahi -->
+    <div class="gfd-tstart" *ngIf="!trend">
+      <i class='bx bx-trending-up'></i>
+      <h4>Let a rule choose the assessor's option</h4>
+      <p>
+        Today an assessor reads three years of figures, works out the intensity per year, compares
+        the first year with the last, and decides whether the trend went up, stayed flat or came
+        down. That judgement is written into the program.
+      </p>
+      <p>Build it here instead — and change it later without a developer.</p>
+      <!-- Do cheezein chahiye. Dono ki halat saaf dikhao — sirf button
+           disable kar dena admin ko atka deta hai. -->
+      <div class="gfd-check">
+        <div class="gfd-check-row" [class.done]="gridSources.length">
+          <i class='bx' [ngClass]="gridSources.length ? 'bx-check-circle' : 'bx-x-circle'"></i>
+          <div>
+            <b>Something to divide by</b>
+            <span *ngIf="gridSources.length" class="gfd-check-ok">
+              {{ gridSources.length }} grid<span *ngIf="gridSources.length > 1">s</span> found —
+              “{{ gridSources[0].label }}” will be used unless you change it.
+            </span>
+            <span *ngIf="!gridSources.length" class="gfd-check-no">
+              Intensity is “per unit of business”, so the rule needs revenue or production for the
+              same years — and that has to live in another question's grid.
+              <br><br>
+              <b>Why nothing was found:</b> {{ gridSourceDiagnosis }}
+            </span>
+          </div>
+        </div>
+        <div class="gfd-check-row" [class.done]="assessorOptions.length">
+          <i class='bx' [ngClass]="assessorOptions.length ? 'bx-check-circle' : 'bx-x-circle'"></i>
+          <div>
+            <b>Assessor options to choose between</b>
+            <span *ngIf="assessorOptions.length" class="gfd-check-ok">
+              {{ assessorOptions.length }} option<span *ngIf="assessorOptions.length > 1">s</span>:
+              {{ assessorOptions.join(' · ') }}
+            </span>
+            <span *ngIf="!assessorOptions.length" class="gfd-check-no">
+              This sub-answer has none yet. Close this popup, press <b>Assessor Option</b> on this
+              sub-answer and add them — for example “Decreasing trend”, “Flat trend”,
+              “Increasing trend” with their marks. The rule picks one of them; without them there
+              is nothing to pick.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <button class="gfd-tstart-btn" [disabled]="!gridSources.length || !assessorOptions.length"
+              (click)="startTrend()">
+        <i class='bx bx-plus'></i> Build the trend rule
+      </button>
+      <p class="gfd-tstart-blocked" *ngIf="!gridSources.length || !assessorOptions.length">
+        Both ticks above are needed before the rule can be built.
+      </p>
+    </div>
+
+    <div *ngIf="trend">
+
+      <!-- 1. numerator -->
+      <div class="gfd-tsec">
+        <div class="gfd-tnum">1</div>
+        <div class="gfd-tbody">
+          <h4>Which row is being measured?</h4>
+          <p class="gfd-thint">Click the row in this grid — usually the emissions or consumption
+            figure. Then tick the year columns to compare.</p>
+          <div class="gfd-tpick">
+            <button type="button" class="gfd-trow" *ngFor="let r of rows"
+                    [class.on]="trend.numerator.row === r" (click)="pickNumeratorRow(r)">
+              {{ rowLabel(r) }}
+            </button>
+          </div>
+          <div class="gfd-tcols">
+            <span class="gfd-tcolslbl">Years</span>
+            <button type="button" class="gfd-tcol" *ngFor="let c of cols"
+                    [class.on]="isNumeratorCol(c)" (click)="toggleNumeratorCol(c)">
+              {{ colLabel(c) }}
+            </button>
+          </div>
+
+          <div class="gfd-ttarget">
+            <label>
+              <input type="checkbox" [checked]="trend.targetRow !== null && trend.targetRow !== undefined"
+                     (change)="toggleSeparateTarget($any($event.target).checked)">
+              <span>Show the assessor's option on a <b>different</b> row</span>
+            </label>
+            <p class="gfd-thint" style="margin:5px 0 0">
+              By default the option appears on the same row that was measured. Tick this only if it
+              belongs somewhere else — for example a summary row at the top.
+            </p>
+            <div class="gfd-tpick" style="margin-top:8px"
+                 *ngIf="trend.targetRow !== null && trend.targetRow !== undefined">
+              <button type="button" class="gfd-trow" *ngFor="let r of rows"
+                      [class.on]="trend.targetRow === r" (click)="trend.targetRow = r">
+                {{ rowLabel(r) }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. denominator -->
+      <div class="gfd-tsec">
+        <div class="gfd-tnum">2</div>
+        <div class="gfd-tbody">
+          <h4>Divided by what?</h4>
+          <p class="gfd-thint">Intensity means "per unit of business" — emissions divided by
+            revenue, for the same years. That figure lives in another question.</p>
+          <select class="gfd-tsel" (change)="onDenSourceChange(gridSources[$any($event.target).selectedIndex])">
+            <option *ngFor="let g of gridSources"
+                    [selected]="denSource && denSource.key === g.key">{{ g.label }}</option>
+          </select>
+          <div *ngIf="denSource">
+            <div class="gfd-tpick">
+              <button type="button" class="gfd-trow" *ngFor="let r of denSource.rowIdx"
+                      [class.on]="trend.denominator.row === r" (click)="pickDenominatorRow(r)">
+                {{ denRowLabel(r) }}
+              </button>
+            </div>
+            <div class="gfd-tcols">
+              <span class="gfd-tcolslbl">Years</span>
+              <button type="button" class="gfd-tcol" *ngFor="let c of denSource.colIdx"
+                      [class.on]="isDenominatorCol(c)" (click)="toggleDenominatorCol(c)">
+                {{ denColLabel(c) }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. what the rule works out -->
+      <div class="gfd-tsec">
+        <div class="gfd-tnum">3</div>
+        <div class="gfd-tbody">
+          <h4>What the rule works out</h4>
+          <div class="gfd-tformula">
+            <div><span class="k">intensity (each year)</span> = {{ rowLabel(trend.numerator.row) }}
+              ÷ {{ denRowLabel(trend.denominator.row) }}</div>
+            <div><span class="k">change</span> = (last year − first year) ÷ first year × 100</div>
+          </div>
+
+          <div class="gfd-tlive" *ngIf="trendPreview">
+            <div class="gfd-tlive-h">With the figures entered right now</div>
+            <table class="gfd-tlive-t">
+              <tr>
+                <th></th>
+                <th *ngFor="let it of trendPreview.intensities; let i = index">{{ colLabel(it.col) }}</th>
+              </tr>
+              <tr>
+                <td>{{ rowLabel(trend.numerator.row) }}</td>
+                <td *ngFor="let it of trendPreview.intensities">{{ fmt(it.numerator) }}</td>
+              </tr>
+              <tr>
+                <td>{{ denRowLabel(trend.denominator.row) }}</td>
+                <td *ngFor="let it of trendPreview.intensities">{{ fmt(it.denominator) }}</td>
+              </tr>
+              <tr class="gfd-tlive-i">
+                <td>intensity</td>
+                <td *ngFor="let it of trendPreview.intensities">{{ fmt(it.value) }}</td>
+              </tr>
+            </table>
+
+            <div class="gfd-tresult" *ngIf="!trendPreview.skipped">
+              change = <b>{{ fmt(trendPreview.pctChange) }}%</b>
+              <span *ngIf="trendPreview.option"> → selects
+                <b class="gfd-tsel-opt">{{ trendPreview.option }}</b>
+                → {{ trendPreview.marks }} marks</span>
+              <span *ngIf="!trendPreview.option" class="gfd-tnone"> → no band matches this yet</span>
+            </div>
+            <div class="gfd-tskip" *ngIf="trendPreview.skipped">
+              <i class='bx bx-info-circle'></i>
+              The rule is skipped — it will not award marks until the data is there.
+            </div>
+            <div class="gfd-twarn" *ngFor="let w of trendPreview.warnings">
+              <i class='bx bx-error'></i> {{ w }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. bands -->
+      <div class="gfd-tsec">
+        <div class="gfd-tnum">4</div>
+        <div class="gfd-tbody">
+          <h4>Which result selects which option</h4>
+          <p class="gfd-thint">Leave a box empty for "no limit". The lower edge is included, the
+            upper edge is not — so the bands meet exactly, with nothing falling between them.</p>
+
+          <table class="gfd-bands">
+            <tr>
+              <th>From %</th><th>To %</th><th>Selects this assessor option</th><th>Marks</th><th></th>
+            </tr>
+            <tr *ngFor="let b of trend.bands; let i = index">
+              <td><input type="number" [value]="b.from === null ? '' : b.from" placeholder="−∞"
+                    (input)="setBandField(i, 'from', $any($event.target).value)"></td>
+              <td><input type="number" [value]="b.to === null ? '' : b.to" placeholder="+∞"
+                    (input)="setBandField(i, 'to', $any($event.target).value)"></td>
+              <td>
+                <select [value]="b.option"
+                        (change)="setBandField(i, 'option', $any($event.target).value)">
+                  <option value="">— choose —</option>
+                  <option *ngFor="let o of assessorOptions" [value]="o">{{ o }}</option>
+                </select>
+                <small class="gfd-brange">{{ bandRangeText(b) }}</small>
+              </td>
+              <td><input type="number" [value]="b.marks"
+                    (input)="setBandField(i, 'marks', $any($event.target).value)"></td>
+              <td><button class="gfd-bdel" (click)="removeBand(i)" title="Remove"><i class='bx bx-trash'></i></button></td>
+            </tr>
+          </table>
+          <button class="gfd-badd" (click)="addBand()"><i class='bx bx-plus'></i> Add band</button>
+
+          <div class="gfd-berr" *ngIf="bandErrors.length">
+            <div *ngFor="let e of bandErrors"><i class='bx bx-error'></i> {{ e }}</div>
+          </div>
+          <div class="gfd-bok" *ngIf="!bandErrors.length && trend.bands.length">
+            <i class='bx bx-check'></i> Every possible result falls into exactly one band.
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. override -->
+      <div class="gfd-tsec">
+        <div class="gfd-tnum">5</div>
+        <div class="gfd-tbody">
+          <h4>Can the assessor disagree?</h4>
+          <label class="gfd-tovr">
+            <input type="checkbox" [checked]="trend.allowOverride"
+                   (change)="trend.allowOverride = $any($event.target).checked">
+            <span>Allow the assessor to override the option this rule selects</span>
+          </label>
+          <p class="gfd-thint">When it is allowed, an overridden choice is recorded separately from
+            a normal one, so a reviewer can tell them apart.</p>
+        </div>
+      </div>
+
+      <div class="gfd-terr" *ngIf="trendErrors.length">
+        <div *ngFor="let e of trendErrors"><i class='bx bx-error'></i> {{ e }}</div>
+      </div>
+
+      <button class="gfd-tremove" (click)="removeTrend()">
+        <i class='bx bx-trash'></i> Remove this rule — let the assessor decide by hand
+      </button>
+    </div>
+  </div><!-- /tab 2 -->
+
+  <div class="gfd-foot">
+    <div class="gfd-err gfd-err-flat" *ngIf="allErrors.length || trendErrors.length">
+      <div *ngFor="let e of allErrors">{{ e }}</div>
+      <div *ngFor="let e of trendErrors">{{ e }}</div>
+    </div>
+    <div class="gfd-foot-btns">
+      <button class="gfd-cancel" (click)="cancel()">Cancel</button>
+      <button class="gfd-done" [disabled]="allErrors.length || trendErrors.length" (click)="done()">Done</button>
+    </div>
+  </div>
+
+</div>

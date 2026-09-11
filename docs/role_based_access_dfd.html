@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Passport — Role Based Access DFD (Data Flow Diagram)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-secondary: #12192c;
+            --bg-card: #1a233d;
+            --bg-elevated: #263354;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: rgba(59, 130, 246, 0.12);
+            --accent-glow: rgba(59, 130, 246, 0.35);
+            --border-color: #222d4a;
+            --border-light: #32426c;
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.12);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.12);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.12);
+            --purple: #8b5cf6;
+            --purple-light: rgba(139, 92, 246, 0.12);
+            --cyan: #06b6d4;
+            --cyan-light: rgba(6, 182, 212, 0.12);
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --shadow-lg: 0 16px 36px rgba(0,0,0,0.4);
+        }
+        .light-theme {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-elevated: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #cbd5e1;
+            --border-light: #e2e8f0;
+            --accent-light: rgba(59, 130, 246, 0.08);
+            --success-light: rgba(16, 185, 129, 0.08);
+            --warning-light: rgba(245, 158, 11, 0.08);
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --purple-light: rgba(139, 92, 246, 0.08);
+            --cyan-light: rgba(6, 182, 212, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); line-height: 1.6; padding: 0; margin: 0; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 700; }
+        header { background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-title { font-size: 1.4rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .theme-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 30px; }
+        .hero { background: linear-gradient(135deg, rgba(18, 25, 44, 0.95) 0%, rgba(26, 35, 61, 0.9) 100%), var(--gradient-primary); background-blend-mode: overlay; border: 1px solid var(--border-color); border-radius: 20px; padding: 36px 40px; margin-bottom: 36px; box-shadow: var(--shadow-lg); text-align: center; }
+        .hero h1 { font-size: 2.3rem; margin-bottom: 10px; }
+        .hero p { color: var(--text-secondary); font-size: 1.02rem; max-width: 900px; margin: 0 auto 20px; }
+        .badge-pill { display: inline-block; background: var(--purple-light); color: var(--purple); border: 1px solid rgba(139, 92, 246, 0.3); padding: 6px 14px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+        .section-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 20px; padding: 28px 32px; margin-bottom: 32px; box-shadow: var(--shadow-lg); }
+        .section-title { font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .section-desc { color: var(--text-secondary); margin-bottom: 20px; font-size: 0.95rem; }
+        .mermaid { display: flex; justify-content: center; overflow-x: auto; }
+        .table-container { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; overflow-x: auto; margin-bottom: 32px; box-shadow: var(--shadow-lg); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: rgba(0, 0, 0, 0.2); color: var(--text-primary); padding: 14px 16px; font-weight: 600; font-size: 0.82rem; border-bottom: 1px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.04em; }
+        td { padding: 12px 16px; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); font-size: 0.88rem; vertical-align: middle; text-align: center; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.02); color: var(--text-primary); }
+        .role-col { text-align: left; font-weight: 700; color: var(--text-primary); }
+        .allow { background: var(--success-light); color: var(--success); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+        .restrict { background: var(--danger-light); color: var(--danger); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+        .own { background: var(--accent-light); color: var(--accent); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+        .na { background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); }
+        .note-box { background: var(--accent-light); border-left: 4px solid var(--accent); padding: 16px 20px; border-radius: 0 12px 12px 0; margin-bottom: 24px; color: var(--text-secondary); font-size: 0.92rem; }
+        .note-box strong { color: var(--text-primary); }
+        pre { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 20px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; color: #38bdf8; margin-bottom: 20px; }
+        code { font-family: 'Courier New', Courier, monospace; background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: #f472b6; }
+        footer { margin-top: 60px; text-align: center; color: var(--text-muted); font-size: 0.88rem; padding-top: 20px; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area">
+        <svg width="32" height="32" viewBox="0 0 32 32">
+            <rect x="4" y="4" width="24" height="24" rx="6" fill="#3b82f6" />
+            <path d="M12 16 L20 16 M16 12 L16 20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+        </svg>
+        <div class="logo-title">Vendor Passport</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">
+        <span>🌓</span>
+        <span>थीम बदलें</span>
+    </button>
+</header>
+
+<div class="container">
+
+    <div class="hero">
+        <span class="badge-pill">Role Based Access Control — Data Flow Diagram</span>
+        <h1>🔐 RBAC DFD और रोल हायरार्की</h1>
+        <p>
+            यह दस्तावेज़ Vendor Passport में <strong>कौन-सा role किस role के under है</strong> और
+            <strong>उसे क्या-क्या access है</strong> — यह Data Flow Diagram (DFD), hierarchy tree और access matrix के ज़रिए दिखाता है।
+            Business Analysts, Developers और QA teams सभी के लिए useful।
+        </p>
+    </div>
+
+    <div class="note-box">
+        <strong>💡 Legend:</strong><br>
+        <span class="allow">Allow</span> = पूर्ण एक्सेस &nbsp;|&nbsp;
+        <span class="own">Own Org</span> = केवल अपनी कंपनी (Tenant) का डेटा &nbsp;|&nbsp;
+        <span class="restrict">Restricted</span> = पेज/डेटा ब्लॉक &nbsp;|&nbsp;
+        <span class="na">N/A</span> = लागू नहीं
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">🌳 1. रोल हायरार्की ट्री (Role Hierarchy)</div>
+        <div class="section-desc">
+            नीचे दिया गया tree यह दर्शाता है कि Vendor Passport में प्रत्येक role किसके under काम करता है।
+            <strong>Solid arrow</strong> = direct reporting / management, <strong>dashed arrow</strong> = external / consultant relationship।
+        </div>
+        <div class="mermaid">
+graph TD
+    SA[👑 Super Admin<br/>Full System Control]
+    OA[🏢 Organization Admin<br/>Org-level Admin]
+    CM[🛡️ Compliance Manager<br/>Audit Program Lead]
+    AM[📋 Audit Manager<br/>Audit Execution Mgr]
+    AU[🔎 Auditor<br/>Fieldwork]
+    RV[✍️ Reviewer<br/>Independent QA]
+    RM[⚡ Risk Manager<br/>Risk Governance]
+    DM[📁 Document Manager<br/>Doc & Evidence]
+    VM[🏪 Vendor Manager<br/>Supplier Relations]
+    EX[🌐 External Company User<br/>Vendor Employee]
+    EM[👤 Employee<br/>Internal Staff]
+    CA[📊 CA / Consultant<br/>Multi-Client]
+
+    SA --> OA
+    OA --> CM
+    OA --> AM
+    OA --> RM
+    OA --> DM
+    OA --> VM
+    OA --> EM
+    CM --> AU
+    CM --> RV
+    AM --> AU
+    VM --> EX
+    CA -.-> OA
+    CA -.-> CM
+    CA -.-> AM
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">🔄 2. RBAC डेटा फ्लो डायग्राम (DFD)</div>
+        <div class="section-desc">
+            जब कोई user login करता है या कोई page/API call करता है, तो नीचे दिए गए flow से RBAC decide होता है।
+            <strong>Scope</strong> हमेशा server side से derive होता है — client orgId trust नहीं किया जाता।
+        </div>
+        <div class="mermaid">
+sequenceDiagram
+    participant U as User (Browser)
+    participant LF as Login Form / URL
+    participant AC as AuthContext (React)
+    participant API as Express API
+    participant JWT as JWT Verify
+    participant RBAC as RBAC Middleware
+    participant DB as MongoDB (Tenant Scoped)
+    participant PG as Protected Page / Data
+
+    U->>LF: Email + Password submit
+    LF->>API: POST /api/auth/login
+    API->>DB: Verify credentials
+    DB-->>API: User {userId, role, orgId}
+    API->>JWT: Sign token with role+orgId
+    JWT-->>API: Bearer Token
+    API-->>LF: token + user
+    LF->>AC: Store user & token
+    U->>AC: Navigate to /audits
+    AC->>AC: canAccessPage(role, '/audits')
+    alt Access Allowed
+        AC-->>PG: Render page
+        PG->>API: GET /api/audits (Bearer token)
+        API->>JWT: Verify token
+        JWT-->>API: decoded {role, orgId}
+        API->>RBAC: requireRole(...)
+        RBAC-->>API: Allowed
+        API->>DB: find({orgId})
+        DB-->>API: Org-scoped data
+        API-->>PG: JSON response
+    else Access Denied
+        AC-->>U: Redirect to /dashboard
+    end
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">🧭 3. रोल-वाइज़ पेज एक्सेस मैट्रिक्स</div>
+        <div class="section-desc">
+            यह matrix बताती है कि हर role को प्रमुख frontend pages का क्या access है।
+            <code>/users</code>, <code>/settings</code>, <code>/audit-trail</code> आदि admin-only हैं।
+        </div>
+        <div class="legend">
+            <div class="legend-item"><span class="allow">Allow</span> पूर्ण access</div>
+            <div class="legend-item"><span class="own">Own Org</span> केवल अपनी org</div>
+            <div class="legend-item"><span class="restrict">Restricted</span> ब्लॉक</div>
+            <div class="legend-item"><span class="na">N/A</span> नहीं बनाया गया</div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="role-col">Role</th>
+                        <th>Dashboard</th>
+                        <th>Users</th>
+                        <th>Settings</th>
+                        <th>Audits</th>
+                        <th>Findings</th>
+                        <th>CAPA</th>
+                        <th>Risks</th>
+                        <th>Controls</th>
+                        <th>Certificates</th>
+                        <th>Documents</th>
+                        <th>Evidence</th>
+                        <th>Vendors</th>
+                        <th>Reports</th>
+                        <th>Client Portfolio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="role-col">👑 Super Admin</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">🏢 Organization Admin</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">🛡️ Compliance Manager</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">📋 Audit Manager</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">🔎 Auditor</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">✍️ Reviewer</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">⚡ Risk Manager</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">📁 Document Manager</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">🏪 Vendor Manager</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">👤 Employee</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">🌐 External User</td>
+                        <td><span class="own">Own Org</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="own">Own Org</span></td>
+                        <td><span class="own">Own Org</span></td>
+                        <td><span class="own">Own Org</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-col">📊 CA / Consultant</td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="restrict">Restricted</span></td>
+                        <td><span class="allow">Allow</span></td>
+                        <td><span class="allow">Allow</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">🛡️ 4. RBAC गार्ड का Code Snippet</div>
+        <div class="section-desc">
+            नीचे <code>frontend-react/src/context/AuthContext.jsx</code> का वह हिस्सा है जो navigation visibility और page access guard control करता है।
+        </div>
+        <pre>const ADMIN_ONLY = ['users','settings','audit-cost','sla-dashboard','report-scheduler','api-integrations','audit-trail','perm-matrix'];
+const AUDITOR_HIDDEN = [...ADMIN_ONLY,'risk-scheduler','sampling-engine','maturity-model','gap-analysis','traceability','issues','exceptions','client-portfolio','org-compare','org-hierarchy','vendor-scorecard','vendor-onboard','esg','capa','gantt','calendar','role-dashboard','q-scoring','audit-program'];
+const VENDOR_HIDDEN = [...ADMIN_ONLY,'risks','risk-heatmap','findings','mgmt-response','audits','audit-detail','audit-universe','auditor-workspace','working-papers','questionnaire','question-bank','controls','control-testing','gap-analysis','regulatory-changes','maturity-model','self-assessment','ccm-dashboard'];
+
+const ROLE_ROUTES = {
+  'Super Admin': { allowedAll: true },
+  'Organization Admin': { allowedAll: true },
+  'Compliance Manager': { allowedAll: true },
+  'Audit Manager': { hidden: AUDITOR_HIDDEN.slice(0, 10) },
+  'Auditor': { hidden: AUDITOR_HIDDEN },
+  'Reviewer': { hidden: [...ADMIN_ONLY, 'users'] },
+  'Risk Manager': { allowed: ['risks','risk-heatmap','dashboard','risk-scheduler','reports','organizations','certificates','documents','evidence','my-workspace','notifications','settings'] },
+  'Document Manager': { allowed: ['documents','evidence','exchange','doc-versions','policy-lifecycle','certificates','dashboard','my-workspace','notifications','settings','reports'] },
+  'Vendor Manager': { hidden: VENDOR_HIDDEN },
+  'Employee': { hidden: [...ADMIN_ONLY,...AUDITOR_HIDDEN,'questionnaire-bank','audits','findings','risks','controls'] },
+  'External Company User': { hidden: [...ADMIN_ONLY,...AUDITOR_HIDDEN,'questionnaire-bank','audits','findings','risks','controls'] },
+  'CA / Consultant': { allowed: ['dashboard','client-portfolio','organizations','audits','findings','risks','certificates','documents','evidence','reports','calendar','my-workspace','notifications','settings','capa','exchange','framework-taxonomy','regulatory-changes'] },
+};
+
+export function canAccessPage(role, path) {
+  const id = path.replace(/^\//, '').split('/')[0];
+  return isNavVisibleForRole(role, id);
+}</pre>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">📊 5. Backend RBAC Middleware</div>
+        <div class="section-desc">
+            Express backend में <code>requireRole</code> middleware API routes पर second layer of defence है।
+        </div>
+        <pre>function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) return next(new ForbiddenError('Authentication required'));
+    if (!roles.includes(req.user.role)) {
+      return next(new ForbiddenError(`Role '${req.user.role}' does not have access`));
+    }
+    next();
+  };
+}
+
+function requireAdmin(req, res, next) {
+  requireRole('Super Admin', 'Organization Admin')(req, res, next);
+}
+
+function requireAuditor(req, res, next) {
+  requireRole('Super Admin','Organization Admin','Audit Manager','Auditor','CA / Consultant')(req, res, next);
+}</pre>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">🗝️ 6. Login Credentials Summary</div>
+        <div class="section-desc">
+            सभी demo accounts का password <code>password123</code> है। Production में JWT token और HTTPS के माध्यम से login होता है।
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Role</th><th>Email</th><th>Org</th><th>Access Pattern</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="role-col">Super Admin</td><td><code>super.admin@globaltech.com</code></td><td>ORG-101</td><td><span class="allow">All Access</span></td></tr>
+                    <tr><td class="role-col">Organization Admin</td><td><code>org.admin@globaltech.com</code></td><td>ORG-101</td><td><span class="allow">All Access</span></td></tr>
+                    <tr><td class="role-col">Compliance Manager</td><td><code>priya.sharma@globaltech.com</code></td><td>ORG-101</td><td><span class="allow">All except Users/Settings</span></td></tr>
+                    <tr><td class="role-col">Audit Manager</td><td><code>meera.nair@globaltech.com</code></td><td>ORG-101</td><td><span class="allow">Most pages</span></td></tr>
+                    <tr><td class="role-col">Auditor</td><td><code>rohit.kapoor@globaltech.com</code></td><td>ORG-101</td><td><span class="own">Execution focused</span></td></tr>
+                    <tr><td class="role-col">Reviewer</td><td><code>reviewer@globaltech.com</code></td><td>ORG-101</td><td><span class="allow">Broad except Admin</span></td></tr>
+                    <tr><td class="role-col">Risk Manager</td><td><code>arjun.verma@globaltech.com</code></td><td>ORG-101</td><td><span class="own">Risk pages only</span></td></tr>
+                    <tr><td class="role-col">Document Manager</td><td><code>kritika.bose@globaltech.com</code></td><td>ORG-101</td><td><span class="own">Doc pages only</span></td></tr>
+                    <tr><td class="role-col">Vendor Manager</td><td><code>vendor.mgr@globaltech.com</code></td><td>ORG-101</td><td><span class="own">Vendor pages only</span></td></tr>
+                    <tr><td class="role-col">Employee</td><td><code>employee@globaltech.com</code></td><td>ORG-101</td><td><span class="restrict">Limited</span></td></tr>
+                    <tr><td class="role-col">External User</td><td><code>external@securecore.com</code></td><td>ORG-103</td><td><span class="own">Tenant only</span></td></tr>
+                    <tr><td class="role-col">CA / Consultant</td><td><code>ca@consulting.com</code></td><td>Multi-client</td><td><span class="allow">Client portfolio</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Vendor Passport. सर्वाधिकार सुरक्षित। Role Based Access Control DFD, hierarchy और access matrix।</p>
+    </footer>
+
+</div>
+
+<script>
+    function getMermaidTheme() {
+        return document.body.classList.contains('light-theme') ? 'default' : 'dark';
+    }
+
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: getMermaidTheme(),
+        securityLevel: 'loose',
+        flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+        sequence: { useMaxWidth: true, mirrorActors: false }
+    });
+
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-theme');
+        mermaid.initialize({ theme: 'default' });
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        if (body.classList.contains('light-theme')) {
+            body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+            location.reload();
+        } else {
+            body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+            location.reload();
+        }
+    }
+</script>
+</body>
+</html>
