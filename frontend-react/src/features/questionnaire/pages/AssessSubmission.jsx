@@ -132,6 +132,33 @@ export default function AssessSubmission() {
     }
   }
 
+  /**
+   * The final sign-off, once an assessor has finished.
+   *
+   * Separate from "Complete assessment" and deliberately not available to the
+   * person who did it — the server refuses that, this only keeps the button
+   * from being offered. `Approved` and `adminApprovedAt` were in the model from
+   * the beginning with nothing able to set them.
+   */
+  async function approve() {
+    const ok = await confirm({
+      title: 'Approve this assessment?',
+      message: 'The score becomes final.',
+      detail: 'You cannot approve an assessment you carried out yourself.',
+    });
+    if (!ok) return;
+
+    setBusy(true);
+    try {
+      setSubmission(await submissionApi.approve(id, { headers: authHeaders }));
+      toast('Approved', 'The score is now final.', 'success');
+    } catch (e) {
+      toast('Could not approve', e.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function sendBack() {
     const ok = await confirm({
       title: 'Return this to the applicant?',
@@ -267,6 +294,39 @@ export default function AssessSubmission() {
           ))}
         </div>
       </div>
+
+      {/*
+        * Assessed but not yet approved: the assessor's work is done and the
+        * screen is read-only, but the score is not final until someone else
+        * signs it off.
+        */}
+      {readOnly && submission?.status === 'Assessed' && (
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[#e0e5ea] bg-white/95 backdrop-blur">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 py-3">
+            <span className="text-[12px] text-[#7c7d7e]">
+              Assessment complete. The score is final once it is approved.
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={sendBack}
+                disabled={busy}
+                className="rounded-[6px] border border-[#d3dae1] bg-white px-5 py-[9px] text-[13px] font-semibold text-[#41474d] hover:bg-[#f3f5f7] disabled:opacity-50"
+              >
+                Return to applicant
+              </button>
+              <button
+                type="button"
+                onClick={approve}
+                disabled={busy}
+                className="rounded-[6px] bg-[#1f7a4d] px-6 py-[9px] text-[13px] font-semibold uppercase tracking-wide text-white hover:bg-[#186139] disabled:opacity-50"
+              >
+                Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!readOnly && entries.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[#e0e5ea] bg-white/95 backdrop-blur">

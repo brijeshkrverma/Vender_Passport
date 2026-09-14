@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import GlobalSearch from './GlobalSearch';
 import NotificationPanel from './NotificationPanel';
-import CreateAudit from '../pages/CreateAudit';
 import { useConfirm } from './ConfirmDialog';
 
 
@@ -11,7 +10,10 @@ import { useConfirm } from './ConfirmDialog';
 // (see hooks/useCreateFromUrl.js). Without it these entries only dropped the
 // user on a list page and left them to find the button.
 const CREATE_ITEMS = [
-  { label: 'New Audit', icon: 'audit', action: 'auditModal' },
+  // Was a modal opened here instead of a navigation, which is why the Audits
+  // page itself had no way to create one. Now it is the same pattern as the
+  // rest: land on the list, and the list opens its own wizard.
+  { label: 'New Audit', icon: 'audit', action: 'navigate', path: '/audits?new=1' },
   { label: 'New Finding', icon: 'finding', action: 'navigate', path: '/findings?new=1' },
   { label: 'New CAPA', icon: 'finding', action: 'navigate', path: '/capa?new=1' },
   { label: 'New Risk', icon: 'risk', action: 'navigate', path: '/risks?new=1' },
@@ -28,7 +30,6 @@ export default function Topbar({ title, onAssistantToggle, onHamburgerClick }) {
   const navigate = useNavigate();
   const [notifsOpen, setNotifsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
-  const [createAuditOpen, setCreateAuditOpen] = useState(false);
   const createRef = useRef(null);
   const userRef = useRef(null);
   const [userOpen, setUserOpen] = useState(false);
@@ -158,8 +159,7 @@ export default function Topbar({ title, onAssistantToggle, onHamburgerClick }) {
                     className="quick-create-item"
                     onClick={() => {
                       setCreateOpen(false);
-                      if (item.action === 'auditModal') setCreateAuditOpen(true);
-                      else navigate(item.path);
+                      navigate(item.path);
                     }}
                     style={{
                       width: '100%', textAlign: 'left', padding: '9px 14px',
@@ -259,7 +259,6 @@ export default function Topbar({ title, onAssistantToggle, onHamburgerClick }) {
 
         <NotificationPanel open={notifsOpen} onClose={() => setNotifsOpen(false)} notifications={notifications} setNotifications={setNotifications} />
       </div>
-      <CreateAudit open={createAuditOpen} onClose={() => setCreateAuditOpen(false)} />
     </header>
   );
 }

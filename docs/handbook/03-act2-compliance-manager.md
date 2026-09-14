@@ -26,21 +26,17 @@ Isko bhi menu me **sab kuch** dikhta hai (`allowedAll: true`).
 
 # 🅰️ Hissa 1 — Audit banao
 
-## ▶️ Kaam 1 — Audits page kholo aur ek cheez dhundo
+## ▶️ Kaam 1 — Audits page kholo
 
 Sidebar → **Audits**
 
-**👀 Dikhega:** audits ki table, upar filter pills (All / Planning / In Progress / Closed).
+**👀 Dikhega:** audits ki table, upar filter pills (All / Planning / In Progress / Closed), aur upar dayein **"+ New Audit"** button.
 
-**▶️ Ab "+ New Audit" ya "Create" button dhundo is page par.**
-
-**👀 Nahi milega.**
-
-> **⚠️ Yeh sabse aam confusion hai.** Audits page par create button hai hi nahi ([Audits.jsx](../../frontend-react/src/pages/Audits.jsx) — sirf table hai).
+> **🔧 Yeh button pehle nahi tha.** Jab yeh handbook likhi gayi thi, Audits page par create karne ka koi tareeka hi nahi tha — audit sirf topbar ke "+ Create" se banta tha. Matlab jis page par log audit shuru karne jaate hain, wahi ek page tha jahan se shuru nahi hota tha.
 >
-> **Audit banane ka button kahin aur hai:**
+> **Ab theek kar diya gaya hai** ([Audits.jsx](../../frontend-react/src/pages/Audits.jsx)). Dono jagah se ban sakta hai.
 
-## ▶️ Kaam 2 — Asli create button: upar dayein "+ Create"
+## ▶️ Kaam 2 — Doosra raasta: upar dayein "+ Create"
 
 Topbar me (upar dayein taraf) **"+ Create"** dabao.
 
@@ -48,7 +44,7 @@ Topbar me (upar dayein taraf) **"+ Create"** dabao.
 
 | Option | Kya karta hai |
 |---|---|
-| **New Audit** | Ek 6-step wizard modal kholta hai |
+| **New Audit** | `/audits?new=1` — wizard khud khul jaata hai |
 | New Finding | `/findings?new=1` par le jaata hai — wahan dialog khud khul jaata hai |
 | New CAPA | `/capa?new=1` |
 | New Risk | `/risks?new=1` |
@@ -60,7 +56,7 @@ Topbar me (upar dayein taraf) **"+ Create"** dabao.
 
 > **💡 Woh `?new=1` kya hai?** Woh page kholte hi uska "create" dialog apne-aap khol deta hai ([useCreateFromUrl.js](../../frontend-react/src/hooks/useCreateFromUrl.js)). Pehle yeh menu sirf list page par chhod deta tha aur user button dhoondta rehta tha — comment me likha hai.
 >
-> **Yaad rakho: is app me "banane" ka kaam hamesha upar "+ Create" se shuru hota hai, list page se nahi.**
+> **Ab saare 9 items ek hi tareeke se kaam karte hain:** list page par le jao, aur list page apna wizard khol de. Pehle "New Audit" akela alag tha — woh topbar me hi apna modal kholta tha, isiliye Audits page par button banaya hi nahi gaya.
 
 ## ▶️ Kaam 3 — Audit wizard bharo
 
@@ -105,15 +101,29 @@ Usme sirf yeh log dikhte hain: **Auditor, Audit Manager, CA / Consultant** — a
 
 # 🅱️ Hissa 2 — Questionnaire likho (project ka dil)
 
-> **⚠️ Pehle yeh jaan lo:** `npm run seed` **koi questionnaire nahi banata**. Woh sirf audits, findings, risks, vendors waghairah banata hai.
+> **🔧 Yahan bhi ek sudhaar hua hai.** Pehle `npm run seed` **koi questionnaire nahi banata tha** — to Act 5 tak pahunchne ke liye aapko 20 minute sawaal likhne padte the.
 >
-> Matlab abhi aapka question list **khaali** hoga. Yeh normal hai. **Act 5 me vendor ko bharne ke liye sawaal chahiye — woh aapko abhi banane hain.**
+> **Ab seed 5 published sawaal banata hai** ([seed.js](../../scripts/seed.js) section 14):
+>
+> | Section | Sawaal | Type | Marks |
+> |---|---|---|---|
+> | Environment | ISO 14001 certificate hai? | RadioButton | 10 |
+> | Environment | Emission-reduction measures | CheckBox | 15 |
+> | Governance | Code of conduct board-approved? | RadioButton | 10 |
+> | Governance | Risk register kitni baar review hota hai? | RadioButton | 10 |
+> | Social | Grievance mechanism batao | Text | 5 |
+>
+> **Total 50 marks.** Sab **Published** hain aur **abhi ke financial year** me hain — matlab Act 5 seedha chal jayega.
+>
+> Agar aapne handbook shuru karne ke baad `npm run seed` nahi chalaya, to ab chala lo (⚠️ database khali karke naya data daalega).
 
 ## ▶️ Kaam 4 — Question list kholo
 
 Sidebar → **Questions** (`/questionnaire-list`)
 
-**👀 Dikhega:** khaali table + upar filters (Financial Year, Type, Category, Search).
+**👀 Dikhega:** 5 seeded sawaal, sab `Published` badge ke saath + upar filters (Financial Year, Type, Category, Search).
+
+**Neeche khud ek naya sawaal banayenge, taaki authoring ka poora flow dikhe.**
 
 ## ▶️ Kaam 5 — Pehla sawaal banao
 
@@ -131,7 +141,11 @@ Kam se kam yeh bharo:
 
 Save karo.
 
-> **⚠️ Financial Year ka dhyan rakho.** Answer screen apne-aap **abhi ka saal** chunta hai ([AnswerQuestionnaire.jsx:69-74](../../frontend-react/src/features/questionnaire/pages/AnswerQuestionnaire.jsx)). Agar aapne sawaal `2028` me banaya aur vendor `2026` par khada hai, to usko **khaali questionnaire** dikhega — aur koi error nahi aayega. Yeh atakne ki sabse aam wajah hai.
+> **⚠️ Financial Year ka dhyan rakho.** Answer screen apne-aap **abhi ka saal** chunta hai ([AnswerQuestionnaire.jsx](../../frontend-react/src/features/questionnaire/pages/AnswerQuestionnaire.jsx)). Agar aapne sawaal `2028` me banaya aur vendor `2026` par khada hai, to usko us saal ke sawaal nahi dikhenge.
+>
+> **🔧 Pehle yeh chupchaap fail hota tha** — bas *"No questions in this section"* likha aata tha, aur atakne ki yahi sabse badi wajah thi.
+>
+> **Ab screen khud batati hai:** *"No questions for 2028-29 — Questions are published for a different year. Switch to: [2026-27]"* — aur us button par click karke turant sahi saal par ja sakte ho.
 
 **Isi tarah 2-3 aur sawaal bana lo** — Act 5 aur 6 zyada maza denge.
 
@@ -178,22 +192,36 @@ const ANSWERABLE = { $nin: ['Superseded', 'Archived'] };
 | Audit banana (6-step wizard) | ✅ **Kaam karta hai** |
 | Question likhna, publish, versioning | ✅ **Kaam karta hai — bahut achha bana hai** |
 | Auditor dropdown (server se, validated) | ✅ **Kaam karta hai** |
-| Audits page par create button | ❌ **Nahi hai** — "+ Create" se banta hai (confusing, par bug nahi) |
-| Seed me questionnaire data | ❌ **Nahi hai** — har baar khud banana padta hai |
-| Financial year mismatch par warning | ❌ **Koi warning nahi** — chupchaap khaali page milta hai |
-| Sidebar me "Q-Scoring", "Sampling Engine", "Self Assessment" | ❌ **Khali stubs** |
+| Audits page par create button | ✅ **🔧 FIX ho gaya** — ab "+ New Audit" button hai |
+| Seed me questionnaire data | ✅ **🔧 FIX ho gaya** — 5 published sawaal, 50 marks |
+| Financial year mismatch par warning | ✅ **🔧 FIX ho gaya** — saaf message + sahi saal ka button |
+| Sidebar me "Q-Scoring", "Sampling Engine", "Self Assessment" | ❌ **Khali stubs** — [Phase 3 ka faisla](11-what-next.md) |
 
-> **📌 Sabse pehla sudhaar jo main karvana chahunga:** seed me 4-5 published questions daal do. Tab har naya developer (aur aap khud) Act 5 seedha chala sakoge, bina 20 minute authoring kiye.
+### 🔧 Is chapter ke fixes (kya-kya badla)
+
+| # | Kya | Kahan |
+|---|---|---|
+| 1 | Audits page par "+ New Audit" button + khali-list par hint | [Audits.jsx](../../frontend-react/src/pages/Audits.jsx) |
+| 2 | Topbar ka "New Audit" ab `?new=1` bhejta hai (baaki 8 items jaisa) | [Topbar.jsx](../../frontend-react/src/components/Topbar.jsx) |
+| 3 | Wizard `onCreated` leta hai — list page par filter nahi tootta; submit ke baad form reset | [CreateAudit.jsx](../../frontend-react/src/pages/CreateAudit.jsx) |
+| 4 | Seed 5 published sawaal banata hai (abhi ke FY me) | [seed.js](../../scripts/seed.js) |
+| 5 | Khali questionnaire ab wajah batata hai aur sahi saal ka button deta hai | [AnswerQuestionnaire.jsx](../../frontend-react/src/features/questionnaire/pages/AnswerQuestionnaire.jsx) |
+
+> **Baaki ek cheez — 3 stub pages — jaan-boojh kar nahi chhui.** Woh "bug" nahi hai, **scope ka faisla** hai: Q-Scoring, Sampling Engine aur Self Assessment banane hain ya sidebar se hata dene hain — yeh aapko tay karna hai, [Chapter 11 Phase 3](11-what-next.md) me.
 
 ---
 
 ## ✅ Checkpoint — Act 2
 
-**1. Naya audit banane ka button kahan hai?**
+**1. Naya audit banane ke kitne raaste hain?**
 
 <details><summary>Jawab</summary>
 
-Topbar me upar dayein **"+ Create" → "New Audit"** ([Topbar.jsx:14](../../frontend-react/src/components/Topbar.jsx)). Audits list page par create button **nahi** hai.
+**Do, aur dono ek hi jagah pahunchte hain:**
+1. Audits page par **"+ New Audit"** button
+2. Topbar me **"+ Create" → "New Audit"** — jo `/audits?new=1` par le jaata hai, aur wahan wizard khud khul jaata hai
+
+Pehle sirf doosra raasta tha, aur Audits page par koi button hi nahi tha.
 </details>
 
 **2. Aapne sawaal banaya par vendor ko khaali page dikha. Do sabse sambhavit wajah?**

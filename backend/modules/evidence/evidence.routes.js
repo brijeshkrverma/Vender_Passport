@@ -19,7 +19,9 @@ const evidenceSchema = z.object({
   expiry: z.string().optional(),
   confidentiality: z.enum(['public','internal','confidential','restricted']).optional(),
   status: z.enum(['Draft','Submitted','Under Review','Approved','Rejected','Expired']).optional(),
-  relatedAuditId: z.string().optional(),
+  // Nullable so evidence can be unlinked from an audit, not only linked to one.
+  // `.optional()` alone rejected the null that "detach this" has to send.
+  relatedAuditId: z.string().nullable().optional(),
 });
 
 router.use(authenticate, restrictTo('Super Admin', 'Organization Admin', 'Compliance Manager', 'Audit Manager', 'Auditor', 'Reviewer', 'Risk Manager', 'Document Manager', 'Vendor Manager', 'Employee', 'External Company User', 'CA / Consultant'));

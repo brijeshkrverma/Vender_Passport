@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Toast';
 
 // Must stay a subset of SELF_SIGNUP_ROLES in backend/shared/roles.js.
 // 'Super Admin' is never offered — it bypasses tenant isolation.
@@ -36,6 +37,7 @@ const labelStyle = {
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,8 +70,19 @@ export default function Register() {
     setSubmitting(false);
     // Surface the server's actual reason (duplicate email, existing org name,
     // rejected role) instead of a generic message that hides the cause.
-    if (result.success) navigate('/dashboard');
-    else setError(result.error || 'Registration failed. Please try again.');
+    if (result.success) {
+      // Sign-up lands straight on the dashboard, which on its own gives no sign
+      // that an organization was created — and that, not the account, is the
+      // part that surprises people later.
+      toast(
+        `Welcome, ${fullName.trim().split(' ')[0]}`,
+        `${orgName.trim()} has been created and you are signed in as ${role}.`,
+        'success',
+      );
+      navigate('/dashboard');
+    } else {
+      setError(result.error || 'Registration failed. Please try again.');
+    }
   };
 
   const handleFocus = (e) => {

@@ -11,47 +11,135 @@ const LIFECYCLE_STAGES = [
   'Verification','Report','Closed'
 ];
 
+/**
+ * Evidence attached to this audit, and the means to attach more.
+ *
+ * The tab used to be read-only and told you to "upload evidence from the
+ * Evidence Repository and link it to findings" — but nothing in the repository
+ * could set `relatedAuditId`, so the instruction pointed at a screen that could
+ * not carry it out. The field, its index and `GET /by-audit/:id` all already
+ * existed; only the way to set it was missing.
+ */
 function EvidenceTab({ auditId, authHeaders }) {
   const [linkedEvidence, setLinkedEvidence] = useState([]);
+  const [available, setAvailable] = useState([]);
+  const [picked, setPicked] = useState('');
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!auditId) return;
+  const load = async () => {
     setLoading(true);
-    fetch(`/api/evidence/by-audit/${auditId}`, { headers: authHeaders })
-      .then(r => r.ok ? r.json() : [])
-      .then(json => {
-        setLinkedEvidence(json.data || json || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [auditId]);
+    try {
+      const [linkedRes, allRes] = await Promise.all([
+        fetch(`/api/evidence/by-audit/${auditId}`, { headers: authHeaders }),
+        fetch('/api/evidence', { headers: authHeaders }),
+      ]);
+      const linked = linkedRes.ok ? ((await linkedRes.json()).data || []) : [];
+      const all = allRes.ok ? ((await allRes.json()).data || []) : [];
+      setLinkedEvidence(linked);
+      // Offer only what is not already attached to some audit.
+      setAvailable(all.filter((e) => !e.relatedAuditId));
+    } catch {
+      setError('Could not load evidence.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { if (auditId) load(); }, [auditId, authHeaders]);
+
+  async function setAudit(evidenceId, value) {
+    setBusy(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/evidence/${evidenceId}`, {
+        method: 'PUT', headers: authHeaders,
+        body: JSON.stringify({ relatedAuditId: value }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.message || body.error || `Request failed (HTTP ${res.status})`);
+      } else {
+        setPicked('');
+        await load();
+      }
+    } catch {
+      setError('Cannot reach the server.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   if (loading) return <div className="text-center py-12 text-gray-400">Loading evidence...</div>;
 
-  if (linkedEvidence.length === 0) {
-    return (
-      <div className="text-center py-12 text-gray-400">
-        <div className="text-2xl mb-2">&#128274;</div>
-        <p className="text-sm">No evidence linked to this audit</p>
-        <p className="text-[11px] mt-1">Upload evidence from the Evidence Repository and link it to findings</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {linkedEvidence.map(e => (
-        <div key={e._id || e.id} className="bg-surface border border-border rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-ink-900 mb-1">{e.name || e.title}</h4>
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            {e.type && <span className="badge badge-neutral text-[10px]">{e.type}</span>}
-            <span className={`badge text-[10px] ${statusColor(e.status)}`}>{e.status || 'Pending'}</span>
-          </div>
-          {e.uploadedBy && <p className="text-[10px] text-gray-400">Uploaded by {e.uploadedBy}</p>}
-          {e.expiry && <p className="text-[10px] text-gray-400">Expires {fmtDate(e.expiry)}</p>}
+    <div className="space-y-4">
+      <div className="bg-surface border border-border rounded-lg p-4 flex items-end gap-2 flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          <label htmlFor="link-evidence" className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
+            Attach existing evidence
+          </label>
+          <select
+            id="link-evidence"
+            value={picked}
+            onChange={(e) => setPicked(e.target.value)}
+            disabled={available.length === 0 || busy}
+            className="w-full border border-border rounded px-3 py-2 text-sm bg-surface text-ink focus:outline-none focus:ring-2 focus:ring-seal/30 disabled:opacity-60"
+          >
+            <option value="">
+              {available.length ? 'Select evidence...' : 'Nothing unattached in the repository'}
+            </option>
+            {available.map((e) => (
+              <option key={e._id || e.id} value={e._id || e.id}>
+                {e.name}{e.type ? ` (${e.type})` : ''}
+              </option>
+            ))}
+          </select>
         </div>
-      ))}
+        <button
+          onClick={() => setAudit(picked, auditId)}
+          disabled={!picked || busy}
+          className="bg-seal text-white px-4 py-2 rounded text-sm font-semibold hover:bg-seal-dark disabled:opacity-50"
+        >
+          Attach
+        </button>
+      </div>
+
+      {error && (
+        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
+          {error}
+        </div>
+      )}
+
+      {linkedEvidence.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <div className="text-2xl mb-2">&#128274;</div>
+          <p className="text-sm">No evidence attached to this audit yet</p>
+          <p className="text-[11px] mt-1">Use the picker above, or upload it first in the Evidence repository</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {linkedEvidence.map(e => (
+            <div key={e._id || e.id} className="bg-surface border border-border rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-ink-900 mb-1">{e.name || e.title}</h4>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {e.type && <span className="badge badge-neutral text-[10px]">{e.type}</span>}
+                <span className={`badge text-[10px] ${statusColor(e.status)}`}>{e.status || 'Pending'}</span>
+              </div>
+              {e.uploadedBy && <p className="text-[10px] text-gray-400">Uploaded by {e.uploadedBy}</p>}
+              {e.expiry && <p className="text-[10px] text-gray-400">Expires {fmtDate(e.expiry)}</p>}
+              <button
+                onClick={() => setAudit(e._id || e.id, null)}
+                disabled={busy}
+                className="mt-3 text-[11px] font-semibold border border-border rounded-md px-2.5 py-1 hover:bg-paper disabled:opacity-50"
+              >
+                Detach
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -66,7 +154,7 @@ function FindingsTab({ auditId, authHeaders }) {
     fetch(`/api/findings?auditId=${auditId}`, { headers: authHeaders })
       .then(r => r.ok ? r.json() : [])
       .then(json => {
-        setFindings(json.data || json || []);
+        setFindings(json?.data ?? []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -111,7 +199,7 @@ export default function AuditDetail() {
       .then(r => r.ok ? r.json() : null)
       .then(json => {
         if (cancelled) return;
-        const list = json?.data || json || [];
+        const list = json?.data ?? [];
         setAuditorOptions(Array.isArray(list) ? list : []);
       })
       .catch(() => { if (!cancelled) setAuditorOptions([]); });

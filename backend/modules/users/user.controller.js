@@ -43,7 +43,8 @@ exports.update = async (req, res, next) => {
       throw new ForbiddenError(`You are not allowed to grant the role '${req.body.role}'`);
     }
     const isSuperAdmin = req.user.role === 'Super Admin';
-    const user = await service.update(req.params.id, req.body, req.user.orgId, isSuperAdmin);
+    const user = await service.update(
+      req.params.id, req.body, req.user.orgId, isSuperAdmin, req.user.userId);
     await recordAuditFromReq(req, {
       action: 'update', entity: 'User', entityId: req.params.id, changes: req.body,
     });

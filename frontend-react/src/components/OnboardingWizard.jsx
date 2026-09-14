@@ -1,63 +1,138 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
-import Stepper from './Stepper';
 import { useToast } from './Toast';
 import { useAuth } from '../context/AuthContext';
 
-export default function OnboardingWizard() {
-  const { isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  const [open, setOpen] = useState(() => {
-    if (!isAuthenticated) return false;
-    return !sessionStorage.getItem('vp_onboarding_done');
-  });
+/**
+ * FIRST-RUN SETUP — once per person, and only for the people who can do it.
+ *
+ * ── WHY IT KEPT COMING BACK ───────────────────────────────────────────────
+ *
+ * It is mounted at the app root, beside `<Routes>`, so it floats over every
+ * page — that part is correct for a modal. What was wrong was when it opened:
+ *
+ *   sessionStorage   "already done" was forgotten the moment the tab closed,
+ *                    so it returned on every new session, forever.
+ *   one shared key   not tied to a user, so signing in as somebody else either
+ *                    skipped their setup or replayed yours.
+ *   useState(() =>)  the flag was read once, at mount. Mounting on the login
+ *                    screen meant `isAuthenticated` was still false, so it
+ *                    latched shut; mounting already signed in meant it opened.
+ *                    Same build, opposite behaviour, depending on how you got
+ *                    there.
+ *   every role       an Employee was asked to "add your company" and "invite a
+ *                    vendor" — neither of which their account can do.
+ *
+ * Now: `localStorage`, keyed by user id, decided in an effect that watches the
+ * signed-in user, and only offered to the roles whose API calls would succeed.
+ *
+ * ── AND IT NOW ACTUALLY SAVES ─────────────────────────────────────────────
+ *
+ * It used to collect a company name, a file and a vendor, then throw all three
+ * away — `finish()` set a flag and showed "You're all set". The certificate
+ * step went further and reported `ISO_27001_Certificate.pdf selected` whatever
+ * you picked. A setup wizard that saves nothing teaches people their input does
+ * not matter, which is worse than having no wizard.
+ *
+ * The two steps that had real endpoints behind them now use them. The
+ * certificate step is gone rather than faked: uploading belongs on the
+ * Documents screen, which does it properly.
+ */
 
+/** Roles whose accounts can complete both steps (`/api/settings` ∩ `/api/vendors`). */
+const SETUP_ROLES = ['Super Admin', 'Organization Admin', 'Compliance Manager'];
+
+const doneKey = (user) => `vp_onboarding_done:${user?.id || user?._id || user?.email || 'anon'}`;
+
+export default function OnboardingWizard() {
+  const { isAuthenticated, user, authHeaders } = useAuth();
+  const { toast } = useToast();
+
+  const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [orgName, setOrgName] = useState('GlobalTech Solutions');
-  const [industry, setIndustry] = useState('Information Technology');
-  const [fileSelected, setFileSelected] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const [orgName, setOrgName] = useState('');
+  const [industry, setIndustry] = useState('');
   const [vendorName, setVendorName] = useState('');
   const [vendorEmail, setVendorEmail] = useState('');
-  const fileInputRef = useRef(null);
 
-  const STEPS = ['Add your company', 'Upload a certificate', 'Invite a vendor'];
+  const STEPS = ['Add your company', 'Invite a vendor'];
+
+  /*
+   * Decide in an effect, not in an initializer: the component outlives signing
+   * in and out, so "should this be open?" has to be re-asked when the user
+   * changes — not answered once, whenever it happened to mount.
+   */
+  useEffect(() => {
+    if (!isAuthenticated || !user) { setOpen(false); return; }
+    if (!SETUP_ROLES.includes(user.role)) { setOpen(false); return; }
+
+    let dismissed = false;
+    try { dismissed = !!localStorage.getItem(doneKey(user)); } catch { dismissed = true; }
+    setOpen(!dismissed);
+    setStep(0);
+    setOrgName(user.orgName || '');
+  }, [isAuthenticated, user]);
+
+  /** Remember for this person, permanently. */
+  function markDone() {
+    try { localStorage.setItem(doneKey(user), '1'); } catch { /* private mode */ }
+    setOpen(false);
+    setStep(0);
+    setError('');
+  }
 
   const skip = () => {
-    sessionStorage.setItem('vp_onboarding_done', '1');
-    setOpen(false);
-    setStep(0);
-    setFileSelected(false);
-    setVendorName('');
-    setVendorEmail('');
-    toast('Setup skipped', 'You can complete it anytime from Settings.', 'info');
+    markDone();
+    toast('Setup skipped', 'You can do this anytime from Settings and Vendors.', 'info');
   };
 
-  const finish = () => {
-    sessionStorage.setItem('vp_onboarding_done', '1');
-    setOpen(false);
-    setStep(0);
-    setFileSelected(false);
-    setVendorName('');
-    setVendorEmail('');
-    toast("You're all set");
-  };
+  async function save(path, body) {
+    const res = await fetch(path, {
+      method: path === '/api/settings' ? 'PUT' : 'POST',
+      headers: authHeaders,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({}));
+      throw new Error(
+        Array.isArray(b.errors) && b.errors.length
+          ? b.errors.map((e) => `${e.field}: ${e.message}`).join(' · ')
+          : b.message || b.error || `Request failed (HTTP ${res.status})`
+      );
+    }
+  }
 
-  const handleNext = () => {
-    if (step < STEPS.length - 1) setStep(step + 1);
-  };
+  async function handleNext() {
+    setError('');
+    if (step === 0) {
+      if (!orgName.trim()) { setError('Organization name is required.'); return; }
+      setSaving(true);
+      try {
+        await save('/api/settings', { orgName: orgName.trim(), industry: industry.trim() || undefined });
+        setStep(1);
+      } catch (e) { setError(e.message); } finally { setSaving(false); }
+      return;
+    }
 
-  const handleBack = () => {
-    if (step > 0) setStep(step - 1);
-  };
+    // Last step — the vendor is optional, so an empty form still finishes.
+    if (!vendorName.trim()) { markDone(); toast("You're all set"); return; }
 
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
+    setSaving(true);
+    try {
+      await save('/api/vendors', {
+        name: vendorName.trim(),
+        ...(vendorEmail.trim() ? { email: vendorEmail.trim() } : {}),
+        onboardingStatus: 'Invited',
+      });
+      markDone();
+      toast("You're all set", `${vendorName.trim()} added to your vendors.`, 'success');
+    } catch (e) { setError(e.message); } finally { setSaving(false); }
+  }
 
-  const handleFileChange = (e) => {
-    const f = e.target.files?.[0];
-    if (f) setFileSelected(true);
-  };
+  const handleBack = () => { setError(''); if (step > 0) setStep(step - 1); };
 
   if (!open) return null;
 
@@ -100,55 +175,17 @@ export default function OnboardingWizard() {
           value={industry}
           onChange={(e) => setIndustry(e.target.value)}
           style={inputStyle}
+          placeholder="Information Technology"
           onFocus={(e) => { e.target.style.borderColor = '#B8863B'; e.target.style.boxShadow = '0 0 0 3px rgba(184,134,59,.12)'; }}
           onBlur={(e) => { e.target.style.borderColor = '#DAD5C4'; e.target.style.boxShadow = 'none'; }}
         />
       </div>
-    </div>,
-
-    <div key="step2">
-      <div
-        onClick={handleFileClick}
-        style={{
-          border: '1.5px dashed #DAD5C4',
-          borderRadius: '10px',
-          padding: '26px',
-          textAlign: 'center',
-          cursor: 'pointer',
-          background: '#FCFBF8',
-          transition: 'border-color .15s',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#B8863B'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#DAD5C4'; }}
-      >
-        {fileSelected ? (
-          <div style={{ fontSize: '13.5px', color: '#1F7A4D', fontWeight: 500 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F7A4D" strokeWidth="2" style={{ marginRight: '6px', verticalAlign: '-5px' }}>
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-            ISO_27001_Certificate.pdf selected &#10003;
-          </div>
-        ) : (
-          <div style={{ fontSize: '13.5px', color: '#6C7280' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA0A8" strokeWidth="1.8" style={{ marginBottom: '6px' }}>
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
-              <path d="M14 2v6h6M12 18v-6M9 15h6" />
-            </svg>
-            <div>Click to upload a certificate</div>
-            <div style={{ fontSize: '11px', marginTop: '4px' }}>PDF, up to 25MB</div>
-          </div>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
+      <div style={{ fontSize: '12px', color: '#6C7280', marginTop: '10px' }}>
+        Saved to your organization settings.
       </div>
     </div>,
 
-    <div key="step3">
+    <div key="step2">
       <div style={{ marginBottom: '14px' }}>
         <label style={labelStyle}>Vendor Name</label>
         <input
@@ -173,8 +210,13 @@ export default function OnboardingWizard() {
           onBlur={(e) => { e.target.style.borderColor = '#DAD5C4'; e.target.style.boxShadow = 'none'; }}
         />
       </div>
+      {/* No claim about an invitation email: nothing sends one yet. The vendor
+          is created with onboardingStatus "Invited" and appears under Vendors. */}
       <div style={{ fontSize: '12px', color: '#6C7280', marginTop: '6px' }}>
-        They&rsquo;ll get a free sign-up link &mdash; no cost on their side, ever.
+        Optional &mdash; leave blank to finish. They are added under <b>Vendors</b> as “Invited”.
+      </div>
+      <div style={{ fontSize: '11.5px', color: '#9CA0A8', marginTop: '8px' }}>
+        Certificates and documents are uploaded from the <b>Documents</b> screen.
       </div>
     </div>,
   ];
@@ -188,7 +230,8 @@ export default function OnboardingWizard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <button
             onClick={skip}
-            className="border border-border px-4 py-2 rounded text-sm text-gray-500 hover:bg-paper"
+            disabled={saving}
+            className="border border-border px-4 py-2 rounded text-sm text-gray-500 hover:bg-paper disabled:opacity-50"
             style={{ fontSize: '13px' }}
           >
             Skip setup
@@ -197,18 +240,20 @@ export default function OnboardingWizard() {
             {step > 0 && (
               <button
                 onClick={handleBack}
-                className="border border-border px-4 py-2 rounded text-sm text-gray-500 hover:bg-paper"
+                disabled={saving}
+                className="border border-border px-4 py-2 rounded text-sm text-gray-500 hover:bg-paper disabled:opacity-50"
                 style={{ fontSize: '13px' }}
               >
                 &larr; Back
               </button>
             )}
             <button
-              onClick={step === STEPS.length - 1 ? finish : handleNext}
-              className="bg-seal text-white px-5 py-2 rounded text-sm font-semibold hover:bg-seal-dark"
+              onClick={handleNext}
+              disabled={saving}
+              className="bg-seal text-white px-5 py-2 rounded text-sm font-semibold hover:bg-seal-dark disabled:opacity-50"
               style={{ fontSize: '13px' }}
             >
-              {step === STEPS.length - 1 ? 'Finish' : 'Next \u2192'}
+              {saving ? 'Saving\u2026' : step === STEPS.length - 1 ? 'Finish' : 'Next \u2192'}
             </button>
           </div>
         </div>
@@ -223,6 +268,17 @@ export default function OnboardingWizard() {
             </div>
           ))}
         </div>
+
+        {error && (
+          <div role="alert" style={{
+            marginBottom: '14px', padding: '8px 12px', borderRadius: '6px',
+            background: '#FBEAE7', border: '1px solid rgba(176,54,42,.3)',
+            color: '#B0362A', fontSize: '12.5px',
+          }}>
+            {error}
+          </div>
+        )}
+
         {stepContent[step]}
       </div>
     </Modal>

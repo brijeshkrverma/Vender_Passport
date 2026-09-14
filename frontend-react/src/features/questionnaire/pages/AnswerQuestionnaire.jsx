@@ -54,6 +54,12 @@ export default function AnswerQuestionnaire() {
   const [activeSection, setActiveSection] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  /**
+   * Years that do have answerable questions, looked up only when this one has
+   * none. An empty questionnaire is almost always the wrong year selected, and
+   * saying so beats leaving the respondent to guess which of six to try.
+   */
+  const [yearsWithQuestions, setYearsWithQuestions] = useState(null);
 
   const years = optionsFor('financialYear');
   const readOnly = !!submission?.applicantSubmittedAt;
@@ -95,43 +101,54 @@ export default function AnswerQuestionnaire() {
   /* ── which sections exist this year ──────────────────────────────────── */
 
   useEffect(() => {
-    if (!financialYear) return undefined;
+    if (!submission?._id) return undefined;
     let cancelled = false;
 
     (async () => {
       try {
-        // A light read: metadata only, no answer trees.
-        const rows = await questionnaireApi.list(
-          { financialYear, limit: 200 }, { headers: authHeaders });
+        /*
+         * Read through the submission, not through /api/questionnaires.
+         *
+         * That router serves the authoring document — scoring rules and the
+         * marks on every option — and is closed to applicants for that reason.
+         * This screen asking it for questions is why Vendor Manager and
+         * External Company User saw a 403 and an empty questionnaire: the two
+         * roles the screen exists for were the two it did not work for.
+         *
+         * One call returns both the rail and the years that have anything, so
+         * an empty rail can still say where the questions actually are.
+         */
+        const meta = await submissionApi.sections(submission._id, { headers: authHeaders });
         if (cancelled) return;
 
-        const found = [...new Set((rows || []).map((r) => r.section).filter(Boolean))].sort();
+        const found = meta?.sections || [];
         const list = found.length ? found : ['All questions'];
         setSections(list);
         setActiveSection((cur) => (list.includes(cur) ? cur : list[0]));
+        setYearsWithQuestions(found.length ? null : (meta?.years || []));
       } catch (e) {
         if (!cancelled) setError(e.message);
       }
     })();
 
     return () => { cancelled = true; };
-  }, [financialYear, authHeaders]);
+  }, [submission?._id, authHeaders]);
 
   /* ── this section's questions ────────────────────────────────────────── */
 
   useEffect(() => {
-    if (!financialYear || !activeSection) return undefined;
+    if (!submission?._id || !activeSection) return undefined;
     let cancelled = false;
 
     (async () => {
       try {
-        const rows = await questionnaireApi.list({
-          financialYear,
-          section: activeSection === 'All questions' ? '' : activeSection,
-          // The renderer needs the option tree; the list screen does not.
-          include: 'answers',
-          limit: 100,
-        }, { headers: authHeaders });
+        // Still one section at a time — the projection is smaller, the reason
+        // for paging it is not.
+        const rows = await submissionApi.questions(
+          submission._id,
+          activeSection === 'All questions' ? '' : activeSection,
+          { headers: authHeaders }
+        );
         if (!cancelled) setQuestions(rows || []);
       } catch (e) {
         if (!cancelled) setError(e.message);
@@ -139,7 +156,7 @@ export default function AnswerQuestionnaire() {
     })();
 
     return () => { cancelled = true; };
-  }, [financialYear, activeSection, authHeaders]);
+  }, [submission?._id, activeSection, authHeaders]);
 
   const sheet = useAnswerSheet(submission?._id, questions, { readOnly });
 
@@ -287,10 +304,45 @@ export default function AnswerQuestionnaire() {
             <p className="py-10 text-center text-[13px] text-[#9aa0a6]">Loading…</p>
           )}
 
+          {/*
+            * An empty questionnaire used to say only "No questions in this
+            * section", which is true and useless: the cause is almost always
+            * the wrong financial year, or questions still sitting in Draft,
+            * and neither was discoverable from the screen.
+            */}
           {!sheet.loading && questions.length === 0 && (
-            <p className="rounded-[10px] border border-[#e6e9ec] bg-white py-12 text-center text-[13px] text-[#7c7d7e]">
-              No questions in this section.
-            </p>
+            <div className="rounded-[10px] border border-[#e6e9ec] bg-white px-6 py-10 text-center">
+              <p className="text-[14px] font-semibold text-[#002850]">
+                No questions for {years.find((y) => y.value === financialYear)?.label || financialYear}
+              </p>
+
+              {yearsWithQuestions?.length ? (
+                <>
+                  <p className="mx-auto mt-2 max-w-[420px] text-[13px] leading-relaxed text-[#7c7d7e]">
+                    Questions are published for a different year. Switch to:
+                  </p>
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    {yearsWithQuestions.map((y) => (
+                      <button
+                        key={y}
+                        type="button"
+                        onClick={() => setFinancialYear(y)}
+                        className="rounded-[6px] border border-[#d3dae1] px-3 py-[5px] text-[12px] font-semibold text-[#41474d] hover:bg-[#f3f5f7]"
+                      >
+                        {years.find((o) => o.value === y)?.label || y}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="mx-auto mt-2 max-w-[460px] text-[13px] leading-relaxed text-[#7c7d7e]">
+                  Nothing has been published for any year yet. A question only becomes
+                  answerable once someone publishes it — until then it stays a draft and
+                  does not appear here. Ask whoever authors the questionnaire to publish
+                  this year&rsquo;s set.
+                </p>
+              )}
+            </div>
           )}
 
           {!sheet.loading && questions.map((question, i) => {

@@ -1,9 +1,6 @@
-import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
-import AssistantPanel from './components/AssistantPanel';
-import AssistantFAB from './components/AssistantFAB';
 import ProtectedLayout from './components/ProtectedLayout';
 import { useKeyboard } from './hooks/useKeyboard';
 
@@ -45,7 +42,6 @@ import StubPage from './pages/StubPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
-import OnboardingWizard from './components/OnboardingWizard';
 import Notifications from './pages/Notifications';
 import MyWorkspace from './pages/MyWorkspace';
 import ExpiryAlerts from './pages/ExpiryAlerts';
@@ -59,7 +55,6 @@ import AuditorWorkspace from './pages/AuditorWorkspace';
 import AuditTrail from './pages/AuditTrail';
 
 export default function App() {
-  const [assistantOpen, setAssistantOpen] = useState(false);
   useKeyboard();
 
   return (
@@ -69,7 +64,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route element={<ProtectedLayout onAssistantToggle={() => setAssistantOpen(v => !v)} />}>
+        <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-workspace" element={<MyWorkspace />} />
 
@@ -155,9 +150,12 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
-      <OnboardingWizard />
-      <AssistantFAB onToggle={() => setAssistantOpen(v => !v)} />
-      <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} />
+      {/*
+        * The onboarding wizard and the assistant used to be rendered here, as
+        * siblings of <Routes> — which put them on /login and /register too.
+        * They now live in ProtectedLayout, which routing already guarantees is
+        * signed-in-only. See the note in that file.
+        */}
       </ConfirmProvider>
     </ToastProvider>
   );

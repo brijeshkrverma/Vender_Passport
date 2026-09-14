@@ -10,13 +10,19 @@
 
 ---
 
-## ⚠️ Sabse pehle — ek asli bug ki chetavni
+## 📜 Pehle ek kahani — kyunki iska sabak sabse bada hai
 
-**Is chapter ka pehla kaam fail hoga. Aapki galti nahi hai. Yeh project ka ek asli bug hai.**
+**Jab yeh handbook likhi gayi thi, is chapter ka pehla hi kaam fail hota tha.**
 
-Main isko chhupa sakta tha aur aapko seedha workaround de sakta tha — par tab aap kabhi na jaante ki aapke product ka **sabse important flow toota hua hai**.
+Vendor Manager "Answer Questionnaire" kholta tha aur ek laal banner milta tha:
+```
+Role 'Vendor Manager' does not have access to this module
+```
+**Ek bhi sawaal nahi.** Matlab is app ka core flow — *"vendor jawab deta hai"* — **theek un dono roles ke liye kaam nahi karta tha jinke liye woh bana tha.**
 
-Pehle bug dekho, phir workaround se aage badhenge.
+**🔧 Ab yeh theek ho chuka hai** (neeche poora hisaab hai). Par kahani chapter me rehne di gayi hai, kyunki **isse jo 3 baatein sikhne ko milti hain, woh is project me baar-baar kaam aayengi.**
+
+Aap seedha `vendor.mgr@globaltech.com` se login karke aage badh sakte ho — koi workaround nahi chahiye.
 
 ---
 
@@ -36,83 +42,55 @@ Pehle bug dekho, phir workaround se aage badhenge.
 
 Sidebar → **Answer Questionnaire**
 
-### 🔴 👀 Yeh dikhega — ek laal error banner:
+**👀 Sawaal dikhne chahiye** — sections rail bayein, sawaal beech me, neeche "Submit questionnaire" bar.
 
-```
-Role 'Vendor Manager' does not have access to this module
-```
-
-**Aur ek bhi sawaal nahi dikhega.**
+> **📌 Agar khaali dikhe:** ghabrao mat, ab screen khud bata degi kyun — *"No questions for 2027-28 — Questions are published for a different year. Switch to: [2026]"*. Us button par click karo. (Yeh bhi ek fix tha, [Act 2](03-act2-compliance-manager.md) me.)
 
 ---
 
-## 🔬 Bug ki jaanch — khud karke dekho
+## 🔬 Woh bug tha kya — aur 3 sabak
 
-Yeh maine socha nahi, chalake dekha hai. Aap bhi dekho.
+### Bug ki jad
 
-Backend chalna chahiye. Naya PowerShell terminal kholo:
+Answer screen ko **do** API chahiye thi:
 
-```powershell
-function T($email){
-  (Invoke-RestMethod -Uri "http://localhost:3000/api/auth/login" -Method Post `
-    -ContentType "application/json" `
-    -Body (@{email=$email;password="password123"}|ConvertTo-Json)).data.accessToken
-}
-
-foreach ($u in @("vendor.mgr@globaltech.com","jwhitfield@securecore.com","rohit.kapoor@globaltech.com")) {
-  $t = T $u
-  try {
-    $null = Invoke-WebRequest "http://localhost:3000/api/questionnaires?limit=1" `
-      -Headers @{Authorization="Bearer $t"} -UseBasicParsing
-    "$u -> 200 OK"
-  } catch { "$u -> $($_.Exception.Response.StatusCode.value__) BLOCKED" }
-}
-```
-
-**👀 Yeh aayega:**
-```
-vendor.mgr@globaltech.com    -> 403 BLOCKED
-jwhitfield@securecore.com    -> 403 BLOCKED     ← External Company User
-rohit.kapoor@globaltech.com  -> 200 OK          ← Auditor
-```
-
-### Bug hai kya?
-
-Answer screen ko **do** API chahiye:
-
-| API | Kaam | Vendor Manager allowed? |
+| API | Kaam | Vendor Manager allowed tha? |
 |---|---|---|
-| `/api/questionnaire-submissions` | Submission shuru/save/submit | ✅ **Haan** ([submission.routes.js:22-26](../../backend/modules/questionnaires/submission.routes.js)) |
-| `/api/questionnaires` | **Sawaal padhna** | ❌ **NAHI** ([questionnaire.routes.js:221-224](../../backend/modules/questionnaires/questionnaire.routes.js)) |
+| `/api/questionnaire-submissions` | Submission shuru/save/submit | ✅ Haan |
+| `/api/questionnaires` | **Sawaal padhna** | ❌ **NAHI** |
 
-Answer screen sawaal isi doosri API se laata hai ([AnswerQuestionnaire.jsx:104](../../frontend-react/src/features/questionnaire/pages/AnswerQuestionnaire.jsx)):
-```js
-const rows = await questionnaireApi.list({ financialYear, limit: 200 }, ...);
-```
+Screen sawaal doosri wali se laati thi. **Matlab vendor submission bana sakta tha, par sawaal padh hi nahi sakta tha.**
 
-**Matlab:** vendor submission to bana sakta hai, par **sawaal padh hi nahi sakta.**
+### 🎓 Sabak 1 — toota hua test bug nahi, khuli khidki hota hai
 
-**Natija: is app ka core flow — "vendor jawab deta hai" — un dono roles ke liye kaam nahi karta jinke liye woh bana hai.**
+Yeh bug isliye ship ho gaya kyunki [rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) **syntax error ki wajah se chalta hi nahi tha** ([Act 4](05-act4-auditor.md) me poori kahani).
 
-### Yeh bug pakda kyun nahi gaya?
+> Ek test jo **fail** hota hai, woh shor machata hai. Ek test jo **chalta hi nahi**, woh chup rehta hai aur aapko lagta hai sab theek hai. **Doosra zyada khatarnaak hai.**
 
-Yaad karo Act 4 me kya padha tha:
+### 🎓 Sabak 2 — har bug permission-list ka nahi hota
 
-> [tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — jo test in permission lists ko milata hai — **adhura hai, usme syntax error hai, aur woh kabhi chalta hi nahi.**
+Yeh dilchasp hai: **woh test ab theek hai, par yeh bug woh phir bhi nahi pakadta.**
 
-**Yeh bug bilkul wahi cheez hai jo woh test pakadta.** Guard band pada tha, isliye bug nikal gaya.
+Kyunki **yeh parity ka mismatch hai hi nahi** — dono lists apne routers se bilkul match karti hain. Problem alag kism ki thi:
 
-> **🎯 Yeh handbook ka sabse zaroori sabak hai:** ek toota hua **test** khud me bug nahi hai — woh ek **khuli hui khidki** hai jisme se bug andar aate rehte hain. Isliye Chapter 11 me pehla kaam yeh test theek karna hai, koi feature nahi.
+> **Screen ko do module chahiye the, aur nav sirf ek par gate kar raha tha.**
 
----
+Nav `answer-questionnaire` ko `questionnaireSubmissions` se joda tha ([NAV_ITEM_MODULE](../../frontend-react/src/context/AuthContext.jsx)) — jo sahi tha, par adhura. Doosri zarurat kisi ne likhi hi nahi thi.
 
-## 🩹 Workaround — ab aage badhte hain
+**Isliye guard hone ke baad bhi dimaag lagana padta hai.**
 
-Flow samajhne ke liye aisa role chahiye jo **dono** kaam kar sake. `Auditor` kar sakta hai.
+### 🎓 Sabak 3 — aasan fix aksar naya bug hota hai
 
-**Logout karo → `rohit.kapoor@globaltech.com` / `password123` se login karo → "Answer Questionnaire" kholo.**
+Fix ke do raaste the:
 
-> **⚠️ Yaad rakho: yeh sirf padhne ke liye jugaad hai.** Asli zindagi me Auditor apne hi sawaalon ka jawab nahi dega — woh Act 3 ke independence rules ke bilkul khilaaf hai. Hum yeh sirf isliye kar rahe hain taaki screen dikh jaye.
+| | Hal A — 1 line | Hal B — jo chuna gaya ⭐ |
+|---|---|---|
+| Kya | Dono roles ko authoring router me jod do | Submission par apna read-only endpoint |
+| Vendor ko dikhta | Saare sawaal + **`scoringRule`** + har option ke **marks** | Sirf woh jo bharne hain |
+
+**Hal A permission bug ko information-leak bug me badal deta.** Vendor pehle dekh leta ki kaun sa jawab kitne marks ka hai, phir chunta — **assessment ka matlab hi khatam.**
+
+> **Yeh soch is poore project me kaam aayegi:** "kya yeh fix kaam kar jayega?" kaafi nahi hai. Sawaal hai — **"yeh fix kya naya kholta hai?"**
 
 ---
 
@@ -279,51 +257,98 @@ Aur trend rules **marks dete hi nahi** — woh sirf option **suggest** karte hai
 
 | Cheez | Haalat |
 |---|---|
-| **Vendor Manager / External User sawaal padh sakta hai?** | 🔴 **NAHI — 403. Core flow toota hua hai** |
+| **Vendor Manager / External User sawaal padh sakta hai?** | ✅ **🔧 FIX ho gaya** — 322 sawaal milte hain, scoring leak zero |
 | Autosave (har jawab alag) | ✅ **Kaam karta hai — achha design** |
 | Section-wise loading | ✅ **Kaam karta hai** |
 | Adhura submit rokna | ✅ **Kaam karta hai** |
 | Auto-scoring on submit | ✅ **Kaam karta hai** |
 | Scoring ki ek hi copy | ✅ **Bahut achha design** |
 | Assessor override ki suraksha | ✅ **Kaam karta hai** |
-| `rbac-parity` test | 🔴 **Toota — isiliye upar wala bug nikla** |
-| Seed me questionnaire data | ❌ **Nahi hai** |
-| Financial year mismatch par warning | ❌ **Chupchaap khaali page** |
+| `rbac-parity` test | ✅ **Ab chalta hai** ([Act 4](05-act4-auditor.md)) — par yeh bug parity ka mismatch nahi hai |
+| Seed me questionnaire data | ✅ **🔧 FIX ho gaya** ([Act 2](03-act2-compliance-manager.md)) — 5 published sawaal |
+| Financial year mismatch par warning | ✅ **🔧 FIX ho gaya** ([Act 2](03-act2-compliance-manager.md)) — sahi saal ka button milta hai |
+
+> **📌 Act 5 ke saare issues ab fix ho chuke hain.**
+
+### 🔧 Is chapter ka fix — 403 kaise theek hua
+
+**Do raaste the:**
+
+| | Hal A — seedha | Hal B — jo chuna gaya ⭐ |
+|---|---|---|
+| Kya | Dono roles ko authoring router ke `restrictTo` me jod do | Submission par apna read-only endpoint |
+| Mehnat | 1 line | ~120 lines |
+| Vendor ko kya dikhta | **Saare** sawaal + **`scoringRule`** + har option ke **marks** | Sirf woh jo bharne hain |
+
+**Hal A kyun nahi:** `scoringRule` me likha hota hai ki kaun sa jawab kitne marks ka hai. Woh applicant ko de dena = **permission bug ko information-leak bug me badal dena**. Vendor pehle marks dekh leta, phir jawab chunta — assessment ka matlab hi khatam.
+
+**Ab kya hota hai:**
+```
+GET /api/questionnaire-submissions/:id/questions   ← applicant yahan se padhta hai
+GET /api/questionnaire-submissions/:id/sections    ← rail + "kaunse saal me sawaal hain"
+```
+
+Yeh apni submission ke through jaata hai, isliye `assertMayAct` apne-aap lag jaata hai — **ek applicant doosre ka questionnaire nahi khol sakta.**
+
+**Kya hataya gaya:** `scoringRule`, har option ka `score`/`subScore`, saara `assessorOption` aur uski guidance, `trendRule`.
+**Kya rakha gaya:** `maxMark` (jaan-boojh kar — kul kitne marks ka sawaal hai woh batana theek hai), `dependsOn` (warna chhupe follow-up dikh jaate), `gridFormulas` (warna computed cells lock nahi hote).
+
+**Live verify:**
+```
+vendor.mgr@globaltech.com → 322 questions ✅
+  scoringRule leak?  → nahi ✅
+  option score leak? → nahi ✅
+  assessorOption?    → nahi ✅
+```
 
 ---
 
 ## ✅ Checkpoint — Act 5
 
-**1. Vendor Manager `/answer-questionnaire` khole to kya hota hai aur kyun?**
+**1. Applicant sawaal kahan se padhta hai, aur `/api/questionnaires` se kyun nahi?**
 
 <details><summary>Jawab</summary>
 
-Laal error banner: *"Role 'Vendor Manager' does not have access to this module"*, aur koi sawaal nahi.
-Wajah: `/api/questionnaire-submissions` usko allow karta hai, par sawaal `/api/questionnaires` se aate hain — **us list me Vendor Manager nahi hai** ([questionnaire.routes.js:221-224](../../backend/modules/questionnaires/questionnaire.routes.js)).
+`GET /api/questionnaire-submissions/:id/questions` se — apni submission ke through.
+
+`/api/questionnaires` **authoring document** deta hai: `scoringRule`, har option ke marks, assessor ki guidance. Woh applicant ko de dena matlab usko pehle bata dena ki kaun sa jawab sabse zyada marks ka hai.
+
+Submission ke through jaane ka ek aur fayda: `assertMayAct` apne-aap lag jaata hai, to **ek applicant doosre ka questionnaire nahi khol sakta.**
 </details>
 
-**2. Is bug ko kis cheez ne pakadna tha?**
+**2. Woh bug pakda kyun nahi gaya tha — aur ab bhi `rbac-parity` test usko kyun nahi pakadta?**
 
 <details><summary>Jawab</summary>
 
-[tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — jo frontend ki `API_MODULE_ROLES` aur backend ke `restrictTo(...)` ko milata hai. **Woh file adhuri hai (syntax error), isliye chalti hi nahi** aur bug nikal gaya.
+**Pakda nahi gaya kyunki** [rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) syntax error ki wajah se chalta hi nahi tha — **jo test chalta hi nahi, woh fail bhi nahi hota**, isliye kisi ko shak nahi hua.
+
+**Ab bhi nahi pakadta kyunki yeh parity ka mismatch hai hi nahi** — dono lists apne routers se match karti hain. Problem yeh thi ki **screen do module maangti thi aur nav sirf ek par gate karta tha**. Guard sirf wahi pakadta hai jo woh dekhne ke liye bana ho.
 </details>
 
-**3. Scoring frontend ki file me kyun hai, backend me kyun nahi?**
+**3. Fix ke do raaste the. "1 line wala" kyun nahi chuna?**
+
+<details><summary>Jawab</summary>
+
+Kyunki woh dono roles ko authoring router me jod deta — aur unhe `scoringRule` + har option ke marks mil jaate. **Permission bug ki jagah information-leak bug ban jaata**, jo isse bada nuksan karta.
+
+Sabak: sawaal "kya yeh fix kaam karega?" nahi, **"yeh fix kya naya kholta hai?"** hai.
+</details>
+
+**4. Scoring frontend ki file me kyun hai, backend me kyun nahi?**
 
 <details><summary>Jawab</summary>
 
 Taaki **ek hi copy** rahe. Author ko preview me jo score dikhta hai aur vendor ko jo milta hai — woh ek hi code se aata hai. Do copies drift kar jaati aur scores alag ho jaate — *"the single worst failure this system can have"*. Backend usko `await import()` se load karta hai ([loader.js](../../backend/scoring/loader.js)).
 </details>
 
-**4. Scoring fail ho jaye to submission ka kya hota hai?**
+**5. Scoring fail ho jaye to submission ka kya hota hai?**
 
 <details><summary>Jawab</summary>
 
 Submission **bach jaata hai**. Error `scoringError` field me likh diya jaata hai, aur assessor ki queue me *"rules did not run"* dikhta hai — taaki 0 marks ka matlab saaf rahe. Assessor baad me scoring dobara chala sakta hai.
 </details>
 
-**5. Formulas mark engines se pehle kyun chalte hain?**
+**6. Formulas mark engines se pehle kyun chalte hain?**
 
 <details><summary>Jawab</summary>
 

@@ -5,16 +5,7 @@ const { NotFoundError, ForbiddenError, ValidationError } = require('../../shared
 const { orgFilter, byIdQuery, escapeRegex } = require('../../shared/scope');
 const { ASSIGNABLE_AUDITOR_ROLES } = require('../../shared/roles');
 
-const LIFECYCLE = [
-  'Planning','Scoping','Risk Assessment','Questionnaire','Auditor Assigned',
-  'Execution','Evidence Review','Findings','Corrective Actions',
-  'Verification','Report','Closed'
-];
-
-// Helper: get next status based on stage
-function nextStatus(stageIdx) {
-  return LIFECYCLE[Math.min(stageIdx, LIFECYCLE.length - 1)];
-}
+const { LIFECYCLE, statusForStage: nextStatus } = require('./lifecycle');
 
 class AuditService {
   async list(orgId, query = {}, pagination = {}) {
@@ -64,6 +55,37 @@ class AuditService {
     const audit = await Audit.findOne(byIdQuery(orgId, id));
     if (!audit) throw new NotFoundError('Audit');
     if (audit.stageIdx >= LIFECYCLE.length - 1) throw new ValidationError([{ field:'stage', message:'Audit is already closed' }]);
+
+    /*
+     * Closing is the one transition with a precondition.
+     *
+     * An audit could previously be walked to 'Closed' with findings nobody had
+     * even looked at — the engagement recorded as finished while its results
+     * sat unread. That is the one state an audit platform must not be able to
+     * produce, because the closed audit is what gets reported.
+     *
+     * The bar is acknowledgement, not resolution: 'Acknowledged' and
+     * 'In Progress' findings have an owner and a CAPA, and an audit is
+     * legitimately closed while remediation continues. 'Open' and 'Reopened'
+     * mean nobody has picked them up at all.
+     */
+    if (audit.stageIdx + 1 === LIFECYCLE.length - 1) {
+      // eslint-disable-next-line global-require
+      const Finding = require('../findings/finding.model');
+      const unacknowledged = await Finding.countDocuments({
+        ...orgFilter(orgId),
+        auditId: audit._id,
+        status: { $in: ['Open', 'Reopened'] },
+      });
+      if (unacknowledged > 0) {
+        throw new ValidationError([{
+          field: 'stage',
+          message: `${unacknowledged} finding${unacknowledged > 1 ? 's have' : ' has'} not been acknowledged. `
+            + 'Assign an owner and acknowledge them before closing the audit.',
+        }]);
+      }
+    }
+
     audit.stageIdx += 1;
     audit.status = nextStatus(audit.stageIdx);
     if (audit.stageIdx === LIFECYCLE.length - 1) audit.completedAt = new Date();

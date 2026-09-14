@@ -99,11 +99,28 @@ Shart 1 fail → item chhup gaya.
 >
 > Yeh do lists (`API_MODULE_ROLES` frontend me, aur `restrictTo(...)` backend me) **haath se same rakhni padti hain.**
 >
-> Inko milane wala ek test tha — [tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — **par woh file adhuri hai. Usme syntax error hai, aur woh kabhi chalti hi nahi.**
+> Inko milane wala test hai — [tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js).
 >
-> Khud dekh lo: `npm test` chalao. Aapko `Failed Suites 1` dikhega aur `rbac-parity.test.js (0 test)`.
+> > **🔧 Woh test lambe samay tak chalta hi nahi tha.** Uska `MODULES` array band hi nahi hua tha, matlab poori file ek **syntax error** thi — aur Vitest usko `(0 test)` kehkar chhod deta tha. **Guard tha hi nahi.**
+> >
+> > Yahi wajah hai ki `capa` aur `organizations` wale 403-on-click **ship ho gaye** the (dono baad me haath se pakde gaye).
+> >
+> > **Ab woh chalta hai, aur pehle se kaafi zyada cover karta hai** — 8 modules se badhkar 19, plus:
+> > - `ALL` wale modules sach me sabke liye khule hain ya nahi
+> > - jo router har route par alag guard lagata hai (jaise `reports`), uski **koi route bina guard ke to nahi**
+> > - `API_MODULE_ROLES` me koi module hai jo test me cover hi nahi — woh bhi pakadta hai
+> >
+> > **Natija: `Test Files 17 passed (17)`** — pehli baar saari test files chal rahi hain.
 >
-> Matlab: **abhi in dono lists me farak ho sakta hai aur kisi ko pata nahi chalega.** Chapter 11 me yeh sabse pehla fix hai.
+> **▶️ Khud dekh lo:** `npm test` chalao → `Test Files 17 passed (17)`, `Tests 433 passed`.
+>
+> **▶️ Aur guard sach me kaam karta hai — todkar dekho:**
+> [AuthContext.jsx](../../frontend-react/src/context/AuthContext.jsx) me `risks:` wali line me ek extra role jod do (jaise `'Employee'`), phir `npm test` chalao:
+> ```
+> FAIL  rbac-parity.test.js > risks
+> +   "Employee",
+> ```
+> Test turant pakad leta hai aur **exact role ka naam** bata deta hai. Wapas hata do, sab pass.
 
 ---
 
@@ -202,10 +219,34 @@ Wapas **Audits** → apna audit → **Findings** tab.
 | Stage advance / retreat | ✅ **Kaam karta hai** |
 | Findings CRUD + 5 C's + discussion | ✅ **Achha bana hai** |
 | Evidence list aur upload | ✅ **Kaam karta hai** |
-| **`rbac-parity.test.js`** | 🔴 **TOOTA HUA — syntax error, kabhi chalta hi nahi** |
-| Evidence audit se auto-link | ❌ **Manually karna padta hai** |
-| Working Papers / Auditor Workspace | ⚠️ **Patle hain** (69 aur 156 lines) |
-| Management Response, Traceability, Issues, Exceptions | ❌ **Khali stubs** |
+| **`rbac-parity.test.js`** | ✅ **🔧 FIX ho gaya** — chalta hai, aur pehle se zyada cover karta hai |
+| Evidence ko audit se jodna | ✅ **🔧 FIX ho gaya** — Evidence tab par Attach / Detach |
+| Working Papers / Auditor Workspace | ⚠️ **Patle hain** (69 aur 156 lines) — gap, bug nahi |
+| Management Response, Traceability, Issues, Exceptions | ❌ **Khali stubs** — [Phase 3 ka faisla](11-what-next.md) |
+
+### 🔧 Is chapter ke fixes (kya-kya badla)
+
+| # | Kya | Kahan |
+|---|---|---|
+| 1 | `MODULES` array band kiya — file ab **chalti** hai | [rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) |
+| 2 | Coverage 8 → **19 modules** (ccm, auditlogs, reports, users, dono questionnaire wale) | same |
+| 3 | `ALL` wale 5 modules bhi verify hote hain | same |
+| 4 | Per-route guard wale router ki **har route** check hoti hai | same |
+| 5 | Koi module cover se chhoot gaya to test batata hai | same |
+| 6 | Evidence tab par Attach / Detach | [AuditDetail.jsx](../../frontend-react/src/pages/AuditDetail.jsx) |
+| 7 | `relatedAuditId` ab `null` le sakta hai (detach ke liye) | [evidence.routes.js](../../backend/modules/evidence/evidence.routes.js) |
+
+> ### 🐞 Fix #6 — "evidence link karo" ek aisi jagah bhejta tha jahan ho hi nahi sakta tha
+>
+> Evidence tab par likha aata tha: *"Upload evidence from the Evidence Repository and link it to findings"*.
+>
+> **Par Evidence page par audit se jodne ka koi tareeka tha hi nahi.** Model me `relatedAuditId` field thi, uspar index bhi tha, `GET /by-audit/:id` endpoint bhi tha — **bas usko set karne ka raasta nahi tha.**
+>
+> Ab Evidence tab par ek picker hai (sirf woh evidence dikhata hai jo kisi audit se judi nahi), **Attach** button, aur har card par **Detach**.
+>
+> Detach ke liye backend me ek chhota fix bhi karna pada — `relatedAuditId` zod me `.optional()` tha, jo `null` reject kar deta tha. Ab `.nullable().optional()` hai.
+>
+> **Live verify kiya:** attach → `by-audit` me dikha → detach → picker me wapas aaya → dobara attach → original state restore.
 
 ---
 

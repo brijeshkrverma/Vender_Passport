@@ -18,7 +18,8 @@ const VENDOR_PAGES = ['/vendors', '/vendor-scorecard', '/bulk-invite'];
 test.describe('RBAC — Full Admin Roles', () => {
   const fullAdmins = ROLES.filter(r => r.canAccessAdmin);
 
-  for (const r of fullAdmins) {
+  // /users is narrower than the rest of the admin area — see helpers.js.
+  for (const r of ROLES.filter(x => x.canManageUsers)) {
     test(`${r.role} can access /users`, async ({ page }) => {
       await loginAs(page, r.email, r.password);
       await page.goto('/users');
@@ -26,6 +27,17 @@ test.describe('RBAC — Full Admin Roles', () => {
       const url = page.url();
       expect(url).toContain('/users');
     });
+  }
+
+  for (const r of ROLES.filter(x => x.canAccessAdmin && !x.canManageUsers)) {
+    test(`${r.role} CANNOT access /users`, async ({ page }) => {
+      await loginAs(page, r.email, r.password);
+      const blocked = await verifyCannotAccess(page, '/users');
+      expect(blocked).toBe(true);
+    });
+  }
+
+  for (const r of fullAdmins) {
 
     test(`${r.role} can access /settings`, async ({ page }) => {
       await loginAs(page, r.email, r.password);

@@ -9,8 +9,16 @@ const TYPES = ['Financial Audit','Internal Audit','Operational Audit','Complianc
 const PARTIES = ['first-party','second-party','third-party'];
 const RISK_LEVELS = ['Low','Medium','High','Critical'];
 
-export default function CreateAudit({ open, onClose }) {
-  const { user, authHeaders } = useAuth();
+/**
+ * The audit wizard, opened from two places.
+ *
+ * `onCreated` exists because those two places need different things afterwards:
+ * from the topbar there is nowhere to land but the list, while the Audits page
+ * is already the list and only needs to re-fetch. Navigating there too would
+ * remount the page and throw away the filter the user had set.
+ */
+export default function CreateAudit({ open, onClose, onCreated }) {
+  const { authHeaders } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ title:'', type:'', party:'first-party', frameworkId:'', scope:'', riskLevel:'Medium', lead:'', start:'', due:'' });
   const [frameworks, setFrameworks] = useState([]);
@@ -64,8 +72,12 @@ export default function CreateAudit({ open, onClose }) {
         setError(fieldErrors || body.message || body.error || `Could not create audit (HTTP ${res.status})`);
         return;
       }
+      // Clear the wizard: it is mounted for the life of the page, so without
+      // this the next "+ New Audit" opens on the previous audit's answers.
+      setForm({ title:'', type:'', party:'first-party', frameworkId:'', scope:'', riskLevel:'Medium', lead:'', start:'', due:'' });
       onClose();
-      navigate('/audits');
+      if (onCreated) onCreated();
+      else navigate('/audits');
     } catch (e) {
       setError('Cannot reach the server. Check your connection and try again.');
     } finally {

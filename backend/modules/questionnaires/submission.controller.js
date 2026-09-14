@@ -48,6 +48,31 @@ exports.markAssessed = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+exports.approve = async (req, res, next) => {
+  try {
+    response.success(res, await submissions.approve(req.params.id, req.user.scopeOrgId, req.user));
+  } catch (e) { next(e); }
+};
+
+/**
+ * The questions this submission is for — the respondent's read path.
+ *
+ * Deliberately not `/api/questionnaires`: that router serves the authoring
+ * document, marks and all. See `forRespondent` in the service.
+ */
+exports.questions = async (req, res, next) => {
+  try {
+    response.success(res, await submissions.questionsFor(
+      req.params.id, req.user.scopeOrgId, { section: req.query.section }, req.user));
+  } catch (e) { next(e); }
+};
+
+exports.sections = async (req, res, next) => {
+  try {
+    response.success(res, await submissions.sectionsFor(req.params.id, req.user.scopeOrgId, req.user));
+  } catch (e) { next(e); }
+};
+
 exports.returnToApplicant = async (req, res, next) => {
   try {
     response.success(res, await submissions.returnToApplicant(req.params.id, req.user.scopeOrgId, req.user));

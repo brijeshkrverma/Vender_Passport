@@ -150,10 +150,55 @@ Yeh **rokta nahi**, sirf batata hai — Act 5 wale submit se alag, jo sach me ro
 
 **👀 Status ho jayega `Assessed`**, page read-only.
 
-Server jaanchta hai ([submission.service.js:210-225](../../backend/modules/questionnaires/submission.service.js)):
+Server jaanchta hai ([submission.service.js](../../backend/modules/questionnaires/submission.service.js)):
 - Sirf reviewer role hi kar sakta hai
 - **Applicant ne submit kiya hona chahiye** — warna: *"The applicant has not submitted yet"*
 - Totals dobara gine jaate hain
+- **Aur kis ne assess kiya, woh `assessedBy` me likh diya jaata hai** — agla step isi par tika hai
+
+> **⚠️ Par yahan kahani khatam nahi hoti.** Neeche dekho.
+
+---
+
+## ▶️ Kaam 4b — Approve (score final karna) 🔒
+
+Page read-only ho gaya, par neeche ab bhi ek bar hai:
+
+> *Assessment complete. The score is final once it is approved.*
+> **[Return to applicant]** **[APPROVE]**
+
+### 🧪 Experiment — apni hi assessment approve karke dekho
+
+Aap (`reviewer@globaltech.com`) ne abhi assess kiya hai. Ab **Approve** dabao.
+
+**👀 Do me se ek hoga:**
+
+| | |
+|---|---|
+| Button dikhega hi nahi / error | *"Only an administrator or compliance manager can approve an assessment"* — Reviewer approve nahi kar sakta |
+| Agar aap Compliance Manager hote | *"You assessed this submission, so you cannot also approve it"* |
+
+**▶️ Ab sahi tareeke se karo:** logout → `org.admin@globaltech.com` se login → Assessment Queue → wahi submission → **Approve**
+
+**👀 Status `Approved` ho jayega.** Score ab final hai.
+
+### ⭐ Yeh step pehle tha hi nahi
+
+> **🔧 `Approved` aur `adminApprovedAt` model me shuru se the — par unhe set karne wala kuch tha hi nahi.**
+>
+> Flow `Assessed` par ruk jaata tha. Matlab **ek assessor ke kehne bhar se score final ho jaata tha.** Model kehta tha "doosri nazar design ka hissa hai"; code ne woh nazar kabhi maangi hi nahi.
+
+**Ab teen rok hain:**
+
+| Rok | Kyun |
+|---|---|
+| Sirf Super Admin / Org Admin / Compliance Manager | Score final karna programme ki zimmedari hai, har marking karne wale ki nahi |
+| **Jisne assess kiya, wahi approve nahi kar sakta** | Wahi niyam jo evidence verification aur auditor assignment par hai |
+| Sirf `Assessed` se, aur ek hi baar | Adhure ya dobara approve se bachne ke liye |
+
+> **💡 Teesri rok ke liye model me `assessedBy` jodna pada.**
+>
+> Aap soch sakte ho: "audit trail me to pehle se likha hai kisne kya kiya, wahi se padh lo." Baat sahi hai — **par ek niyam log se lagu nahi hota.** Check ko woh id **usi document par** chahiye jiske baare me faisla ho raha hai. Log itihaas ke liye hai, rok lagane ke liye nahi.
 
 ---
 
@@ -172,7 +217,7 @@ Sidebar → **CAPA**
 > Aur dekho ki comment me kya likha hai ([AuthContext.jsx:97-99](../../frontend-react/src/context/AuthContext.jsx)):
 > *"'capa' is deliberately absent [for CA / Consultant]: /api/capa is restricted to… so showing the nav item here only produced a 403 after the click."*
 >
-> **Yeh bilkul waisa hi bug tha jaisa humne Act 5 me pakda** — bas yeh theek kar diya gaya tha, woh reh gaya.
+> **Yeh us 403-on-click parivaar ka hi bug tha** jo [Act 5](06-act5-applicant.md) me mila — CAPA wala pehle pakad liya gaya tha, Act 5 wala reh gaya tha. **Ab dono theek hain**, aur [rbac-parity test](../../tests/unit/rbac-parity.test.js) is kism ke naye bug ko pakad lega.
 
 ---
 
@@ -180,19 +225,47 @@ Sidebar → **CAPA**
 
 Sidebar → **Audits** → `Handbook Test Audit`
 
-**Overview → "Advance Stage →"** baar-baar dabao jab tak:
+**Overview → "Advance Stage →"** baar-baar dabao:
 
 ```
 Findings → Corrective Actions → Verification → Report → Closed
 ```
 
-**👀 Status `Closed` ho jayega.** Lifecycle tab me **saare 12 gole hare**.
+### 🛑 Aakhri kadam par aap ruk jaoge — aur yeh sahi hai
 
-**▶️ Ab ek baar aur "Advance Stage" dabao:**
+Jab `Report` se `Closed` jaane ki koshish karoge:
 
-**👀 Laal error:** *"Audit is already closed"* ([audit.service.js:66](../../backend/modules/audits/audit.service.js))
+**👀 Laal error:**
+```
+1 finding has not been acknowledged.
+Assign an owner and acknowledge them before closing the audit.
+```
 
-Aur jab audit `Closed` hua, `completedAt` par time likh diya gaya ([audit.service.js:69](../../backend/modules/audits/audit.service.js)).
+Yaad hai [Act 4](05-act4-auditor.md) me aapne ek finding banayi thi — *"Access reviews not performed quarterly"*? Woh abhi bhi `Open` hai. **Usko kisi ne uthaya hi nahi.**
+
+**▶️ Theek karo:** Sidebar → **Findings** → us finding par **Edit** → Status: **Acknowledged** → Owner bhi daalo → Save.
+
+**▶️ Ab wapas audit par jao aur "Advance Stage" dabao.**
+
+**👀 Ab `Closed` ho jayega.** Lifecycle tab me **saare 12 gole hare**.
+
+**▶️ Ek baar aur dabao:** *"Audit is already closed"* ([audit.service.js](../../backend/modules/audits/audit.service.js))
+
+Aur jab audit `Closed` hua, `completedAt` par time likh diya gaya.
+
+### ⭐ Yeh rok pehle nahi thi
+
+> **🔧 Pehle aap "Advance Stage" dabate raho aur audit band ho jaata tha** — chahe aisi findings padi hon jinhe kisi ne **dekha tak na ho**.
+>
+> Ek audit platform me yeh ulta hai: **band hone wala audit hi woh hai jo report hota hai.** Usme likha ho ki "kaam poora" jabki uske nateeje koi padha bhi nahi — yahi ek haalat hai jo system ko banne hi nahi deni chahiye.
+
+> **💡 Rok "resolve" par nahi, "acknowledge" par kyun?**
+>
+> Asli duniya me audit band hote waqt findings **khuli hoti hain** — unpar CAPA mahinon chalta rehta hai. `Acknowledged` aur `In Progress` ka matlab hai **owner hai, plan hai** — us haalat me audit band karna bilkul sahi hai.
+>
+> Par `Open` aur `Reopened` ka matlab hai **kisi ne uthaya hi nahi**. Bas wahi roka gaya hai.
+>
+> **Aur beech ke stages par koi asar nahi** — khuli findings ke saath bhi audit `Planning` se `Report` tak aaram se badhta rahega. Sirf aakhri darwaze par jaanch hai.
 
 # 🎉 Kahani poori hui
 
@@ -202,11 +275,18 @@ Org Admin ne team banayi
       → Audit Manager ne auditor lagaya
          → Auditor ne findings likhe
             → Applicant ne jawab diye, scoring chali
-               → Reviewer ne jaancha, CAPA banaya
-                  → Audit CLOSED ✅
+               → Reviewer ne jaancha  (Assessed)
+                  → Admin ne approve kiya  (Approved) 🔒
+                     → Findings acknowledge huin, CAPA bana
+                        → Audit CLOSED ✅
 ```
 
 **Aapne poora product chalake dekh liya.**
+
+> **📌 Dhyan do ki aakhri do kadam me 3 alag log the:**
+> assess karne wala, approve karne wala, aur findings ka owner.
+>
+> **Yeh sanyog nahi hai** — audit software ka poora matlab hi yahi hai ki koi ek banda akela shuru se ant tak na le ja sake. Aapne yeh niyam is safar me **teen jagah** dekha: auditor assignment ([Act 3](04-act3-audit-manager.md)), evidence verification, aur ab approval.
 
 ---
 
@@ -221,12 +301,48 @@ Org Admin ne team banayi
 | `scoringError` ka banner | ✅ **Achhi soch** |
 | Audit close + "already closed" rok | ✅ **Kaam karta hai** |
 | CAPA CRUD | ✅ **Kaam karta hai** |
-| **`Approved` status** | ⚠️ **Model me hai, par usme le jaane ka UI nahi** — flow `Assessed` par ruk jaata hai |
-| **Audit close hone par kuch verify nahi hota** | ⚠️ Khuli findings ya adhoore CAPA ke saath bhi audit band ho jaata hai |
-| Verification / Report stage ka apna page | ❌ **Nahi hai** — sirf stage naam badalta hai |
-| Management Response, Exceptions | ❌ **Khali stubs** |
+| **`Approved` status** | ✅ **🔧 FIX ho gaya** — Approve button + segregation of duties |
+| **Audit close hone par verification** | ✅ **🔧 FIX ho gaya** — bina acknowledge kiye findings par close nahi hoga |
+| Verification / Report stage ka apna page | ❌ **Nahi hai** — sirf stage naam badalta hai ([Phase 3](11-what-next.md)) |
+| Management Response, Exceptions | ❌ **Khali stubs** — [Phase 3 ka faisla](11-what-next.md) |
 
-> **📌 `Approved` waali baat dhyan se:** [submission.model.js:59](../../backend/modules/questionnaires/submission.model.js) me 6 status hain aur `adminApprovedAt` field bhi hai — par usko set karne wala **koi endpoint aur koi button nahi**. Yeh adhura feature hai: soch liya gaya, banaya nahi gaya.
+### 🔧 Is chapter ke fixes
+
+#### 1. `Approved` ab sach me pahunchne layak hai
+
+Pehle model me 6 status the aur `adminApprovedAt` field bhi — **par unhe set karne wala kuch tha hi nahi.** Flow `Assessed` par ruk jaata tha, matlab ek assessor ke kehne bhar se score final ho jaata tha.
+
+**Ab:**
+```
+Assessed → [Approve] → Approved
+```
+
+**Aur uspar teen rok hain:**
+
+| Rok | Kyun |
+|---|---|
+| Sirf Super Admin / Organization Admin / Compliance Manager | Score final karna programme ki zimmedari hai, har marking karne wale ki nahi |
+| **Jisne assess kiya wahi approve nahi kar sakta** | Wahi niyam jo evidence verification aur auditor assignment par hai — jo record banata hai woh uspar mohar nahi lagata |
+| Sirf `Assessed` se, aur ek hi baar | Adhure ya dobara approve se bachne ke liye |
+
+Iske liye model me `assessedBy` aur `approvedBy` jode gaye — **audit trail me actor to pehle se tha, par ek niyam log se lagu nahi hota**, usko document par id chahiye.
+
+#### 2. Audit ab khuli findings par band nahi hota
+
+Pehle "Advance Stage" dabate raho aur audit `Closed` ho jaata tha — chahe aisi findings padi hon **jinhe kisi ne dekha tak na ho**.
+
+**Ab closing par ek shart hai:** koi bhi finding `Open` ya `Reopened` me nahi honi chahiye.
+
+> **Rok "resolve" par nahi, "acknowledge" par hai — aur yeh soch-samajh kar hai.**
+>
+> Asli duniya me audit close hote waqt findings khuli hoti hain; unpar CAPA chalta rehta hai. To `Acknowledged` aur `In Progress` par rokna galat hota.
+>
+> Par `Open`/`Reopened` ka matlab hai **kisi ne uthaya hi nahi**. Audit "poora ho gaya" likhna jabki uske nateeje koi padha bhi nahi — yahi ek haalat hai jo audit platform ko banne nahi deni chahiye.
+
+Error saaf batata hai: *"3 findings have not been acknowledged. Assign an owner and acknowledge them before closing the audit."*
+
+**Aur baaki stages par koi asar nahi** — beech ke stage khuli findings ke saath aage badhte rahenge.
+
 
 ---
 
@@ -265,6 +381,30 @@ Counters **drift** kar sakte hain (galat ho jaate hain). Isliye `recomputeTotals
 <details><summary>Jawab</summary>
 
 `/api/capa` sirf Super Admin, Organization Admin, Compliance Manager, Reviewer ko allow karta hai. **Segregation of duties** — jisne kami dhundhi, wahi uska "theek ho gaya" certificate na de.
+</details>
+
+**6. Aapne assess kiya. Ab aap hi approve kyun nahi kar sakte?**
+
+<details><summary>Jawab</summary>
+
+Wahi **segregation of duties** — jo record banata hai woh uspar mohar nahi lagata. Approval jo assessor khud de sake, woh **control nahi, sirf ek click** hai.
+Yeh niyam is app me teen jagah hai: auditor assignment, evidence verification, aur ab approval.
+</details>
+
+**7. "Kisne assess kiya" audit trail me to likha hi hai. Phir model me `assessedBy` field kyun jodni padi?**
+
+<details><summary>Jawab</summary>
+
+Kyunki **ek niyam log se lagu nahi hota.** Audit trail itihaas ke liye hai — "kya hua tha" batane ke liye. Rok lagane wale check ko woh id **usi document par** chahiye jiske baare me faisla ho raha hai, taaki woh sasti aur bharosemand ho.
+</details>
+
+**8. Audit close par rok `Resolved` par kyun nahi, `Acknowledged` par kyun?**
+
+<details><summary>Jawab</summary>
+
+Kyunki asli duniya me audit band hote waqt findings khuli hoti hain — CAPA mahinon chalta rehta hai. `Resolved` maangna galat hota aur log stage ko zabardasti aage badhate.
+`Acknowledged`/`In Progress` = **owner hai, plan hai** → band karna sahi.
+`Open`/`Reopened` = **kisi ne uthaya hi nahi** → yahi roka gaya hai.
 </details>
 
 ---

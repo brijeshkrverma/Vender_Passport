@@ -23,13 +23,15 @@ Poora project padhne aur chalane ke baad — mera saaf jawab:
 | `orgFilter` har query me | Multi-tenancy sahi lagi hai |
 | 4 independence rules server par | Audit domain sahi samjha gaya hai |
 | Scoring ki ek hi copy | Sabse mushkil hissa achhe se hal hua |
-| 389 tests pass | Behaviour likha hua hai |
+| 452 tests pass | Behaviour likha hua hai |
 | Comments me "kyun" likha hai | Code maintainable hai |
 
-**Problem code ki quality nahi hai. Problem teen cheezein hain:**
-1. **Kooda** — 21,000 lines murda code
-2. **Adhure vaade** — 23 khali stub pages
-3. **Ek toota guard** — jiski wajah se asli bug zinda hai
+**Problem code ki quality nahi hai. Problem teen cheezein thi:**
+1. **Kooda** — ~21,000 lines murda code *(abhi bhi hai — Phase 2)*
+2. **Adhure vaade** — 23 khali stub pages *(abhi bhi hain — Phase 3 ka faisla)*
+3. ~~**Ek toota guard** — jiski wajah se asli bug zinda tha~~ ✅ **theek ho gaya**
+
+> **Teesri wali sabse mahengi thi, aur ab woh khatam hai.** Us ek bandh pade test ki wajah se do 403-on-click bug ship ho chuke the. Ab woh chalta hai, pehle se zyada dekhta hai, aur us kism ke naye bug ko pakad leta hai.
 
 **Yeh teenon safai se theek hote hain, dobara likhne se nahi.**
 
@@ -66,63 +68,42 @@ Aur:
 
 ---
 
-## 🔥 Phase 1 — Toota Guard Theek Karo (2-3 din)
+## ✅ Phase 1 — Toota Guard aur Behaviour Bugs — **HO GAYA**
 
-> **Yeh Phase 2 se pehle kyun?** Kyunki abhi aapke paas **ek asli bug ka saboot** hai (Act 5), aur usko pakadne wala test band pada hai. **Pehle alarm theek karo, phir aag bujhao.**
+> Yeh Phase 2 se pehle isliye tha ki **pehle alarm theek karo, phir aag bujhao.**
 
-### Kaam 1.1 — `rbac-parity.test.js` chalu karo
+Handbook ke saath-saath yeh sab kar diya gaya:
 
-[tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) me `MODULES` array band nahi hota. Line ~50 par `];` chahiye:
+| # | Kaam | Kahan padhein |
+|---|---|---|
+| 1.1 | `rbac-parity.test.js` chalu kiya — aur 8 → **19 modules** tak badhaya | [Act 4](05-act4-auditor.md) |
+| 1.2 | Applicant ka 403 theek kiya (**Hal B** — alag read-only endpoint) | [Act 5](06-act5-applicant.md) |
+| 1.3 | Users page ke 3 bug (edit/delete `undefined`, self-delete button) | [Act 1](02-act1-org-admin.md) |
+| 1.4 | Lockout guards — apna role/status, aakhri admin | [Act 1](02-act1-org-admin.md) |
+| 1.5 | Lifecycle ki **5 copies → 1** + parity test | [Act 3](04-act3-audit-manager.md) |
+| 1.6 | `Approved` step + segregation of duties | [Act 6](07-act6-assessor.md) |
+| 1.7 | Audit close par acknowledge-check | [Act 6](07-act6-assessor.md) |
+| 1.8 | Audit Universe: fake risk score + nav 403 | [Ch 9](09-architecture.md) |
+| 1.9 | 4 dead nav entries + unhe rokne wala test | [Ch 8](08-support-roles.md) |
 
-```js
-const MODULES = [
-  ['capa', 'capa.routes.js'],
-  ['risks', 'risk.routes.js'],
-  ['vendors', 'vendor.routes.js'],
-  ['organizations', 'org.routes.js'],
-  ['settings', 'settings.routes.js'],
-  ['audits', 'audit.routes.js'],
-  ['findings', 'finding.routes.js'],
-  ['controls', 'control.routes.js'],
-];          // ← yeh line jodo
+```
+Pehle:  Test Files 16 passed, 1 failed (17)   ·   389 tests
+Ab:     Test Files 17 passed      (17)        ·   452 tests
 ```
 
-Phir `npm test` chalao.
-
-**👀 Ab woh test chalega — aur shayad fail hoga.** Har failure ek **asli permission mismatch** hai. Ek-ek karke theek karo.
-
-### Kaam 1.2 — Questionnaire modules bhi us test me jodo
-
-Upar wali list me `questionnaires` aur `questionnaireSubmissions` **hain hi nahi** — isiliye Act 5 wala bug is test se bhi nahi pakda jaata.
-
-```js
-  ['questionnaires', 'questionnaire.routes.js'],
-  ['questionnaires', 'submission.routes.js'],
-```
-
-*(Note: test ka `frontendRoles()` module ke naam se dhundta hai, aur submissions frontend me `questionnaireSubmissions` naam se hai — to test ka mapping thoda adjust karna padega.)*
-
-### Kaam 1.3 — 🔴 Act 5 wala bug theek karo
-
-**Bug:** Vendor Manager aur External Company User `/api/questionnaires` par **403** paate hain, isliye Answer Questionnaire screen khali aur toota hua hai.
-
-**Jagah:** [questionnaire.routes.js:221-224](../../backend/modules/questionnaires/questionnaire.routes.js)
-
-**Do sambhavit hal — faisla aapka:**
-
-| Hal | Kya karna | Fayda | Nuksan |
-|---|---|---|---|
-| **A** | Un dono roles ko `restrictTo` me jod do | Ek line ka fix | Applicant ko **saare** sawaal dikh jayenge, uske apne hi nahi — aur woh scoring rules bhi padh lega |
-| **B** ⭐ | Submissions router par ek naya read-only endpoint banao jo sirf **answerable** sawaal de (bina `scoringRule` ke) | Applicant ko sirf utna hi milega jitna chahiye | Thoda zyada kaam |
-
-> **Meri salaah: B.** Kyunki `scoringRule` me hi likha hota hai ki kaun sa jawab kitne marks ka hai — woh applicant ko dikhna hi nahi chahiye. **A karoge to permission bug ki jagah ek information-leak bug bana doge.**
-
-### Kaam 1.4 — E2E tests chalao
+### ⏳ Phase 1 ka jo bacha hai — E2E tests
 
 ```powershell
 npx playwright test
 ```
-[test-results/](../../test-results/) batata hai ki auth, RBAC aur per-role wale fail ho rahe the. Ek-ek karke dekho.
+
+> **✅ Yeh bhi ho gaya.** Poora suite chromium par chalaya gaya — **239 passed**.
+>
+> Pehle 13 fail ho rahe the. Unme se **sirf 1 asli bug tha**; baaki **10 purane test** the jo aisi access expect karte the jo API sahi tarah mana karti hai (jaise *"Auditor can access /reports"*). Woh us daur ke hain jab menu 403 dene wali pages dikhata tha.
+>
+> Teen test files theek ki gayi ([Act 4](05-act4-auditor.md) me detail), aur `test-results/` folder bhi hat gaya.
+>
+> **Baki:** firefox aur webkit par abhi nahi chalaya — sirf chromium. Chahein to `npx playwright test` (bina `--project`) se teeno chalte hain.
 
 ---
 
@@ -132,14 +113,14 @@ npx playwright test
 
 | Kya | Kaise |
 |---|---|
-| [Books/](../../Books/) | Project ke bahar le jao |
-| [test-results/](../../test-results/) | Delete + `.gitignore` me daalo |
+| ~~`Books/`~~ | ✅ Ho gaya — hata diya gaya |
+| ~~`test-results/`~~ | ✅ Ho gaya — hata diya (`.gitignore` me pehle se tha) |
 | [Eco/](../../Eco/) | **Zip banao, bahar rakho**, phir delete (~20,800 lines) |
 | [shared/esc.js](../../shared/esc.js) | Delete (uske test bhi) |
 | [pages/AuditComments.jsx](../../frontend-react/src/pages/AuditComments.jsx) | Delete |
 | [pages/ExportCSV.jsx](../../frontend-react/src/pages/ExportCSV.jsx) | Delete |
 
-> **⚠️ `CreateAudit.jsx` mat chhedna** — woh Topbar me modal ki tarah use hota hai.
+> **⚠️ `CreateAudit.jsx` mat chhedna** — woh Audits page par "+ New Audit" wizard ki tarah use hota hai.
 > **⚠️ `backend/assistantService.js` mat chhedna** — woh AI pipeline hai, `assistant.service.js` usko require karta hai.
 
 **Delete se pehle hamesha:**
@@ -165,10 +146,16 @@ Select-String -Path (Get-ChildItem backend,frontend-react\src,tests,scripts -Rec
 >
 > 23 khali pages product ko adhura dikhate hain. **Kam features jo poore hon, zyada achhe hain — bajaye bahut saare jo khali hon.**
 
-**Isi ke saath yeh adhure kaam bhi list karo:**
-- Settings ke security toggles — chalu karo ya UI se hatao ([Act 1](02-act1-org-admin.md))
-- Submission ka `Approved` status — uska button banao ya status hata do ([Act 6](07-act6-assessor.md))
-- Certificate expiry email — `nodemailer`/`node-cron` install hain par koi job nahi
+**Isi ke saath yeh 4 faisle bhi bache hain — sab aapke hain, mere nahi:**
+
+| # | Faisla | Kyun maine nahi liya |
+|---|---|---|
+| 1 | **Settings ke 5 toggles** — 2FA, session timeout, 3 email flags. Banana hai ya hata dena? ([Act 1](02-act1-org-admin.md)) | Abhi saaf *"Not active yet"* likha hai, to jhooth nahi bol rahe. Par 2FA **banana** ek poora feature hai, product ka faisla. |
+| 2 | **Organizations vs Vendors** — dono overlap karte hain ([Act 1](02-act1-org-admin.md)) | `Organizations` tenant-scoped hai (har org ka apna `orgId`) par subtitle "your network" kehta hai; `Vendors` alag model hai jo asal me supply chain hai. **Tay karo dono ka matlab kya hai**, phir seed aur subtitle match karao. Yeh data-model ka faisla hai. |
+| 3 | **Email / scheduling** — `nodemailer` aur `node-cron` install hain, [shared/email.js](../../backend/shared/email.js) ko **koi import nahi karta**, koi job nahi chalta | Email system banane ke liye SMTP setup chahiye — woh aapke paas hai, mere paas nahi. Ya banao, ya dono dependencies hata do. |
+| 4 | **CA / Consultant ka multi-client** — page hai, mechanism nahi ([Ch 8](08-support-roles.md)) | CA ka `scopeOrgId` uski apni org hai, to "kai clients" dikhenge kaise? Iska jawab #2 se juda hai. |
+
+> **💡 Yeh chaar "bug" nahi hain.** Inme se har ek ka matlab hai *"kisi ne tay hi nahi kiya ki yeh kya hona chahiye."* Code likhne se pehle woh faisla chahiye — warna main ek aur adhura feature bana dunga, jo abhi project ki sabse badi bimari hai.
 
 ---
 
@@ -198,38 +185,47 @@ Ab naye kaam par lago — patle modules poore karo (reports, ccm), ek-ek karke.
 
 **Yeh abhi karo.** Chhota hai, surakshit hai, aur poori loop sikha dega.
 
-### Kaam: `Books/` folder hatao aur `test-results/` ignore karo
+### Kaam: do murda pages hatao
+
+[AuditComments.jsx](../../frontend-react/src/pages/AuditComments.jsx) aur [ExportCSV.jsx](../../frontend-react/src/pages/ExportCSV.jsx) — inka koi route nahi, koi import nahi, koi test nahi.
 
 ```powershell
 cd "D:\Brijesh Kr. Verma\Test"
 
-# 1. Git hai? (Phase 0 kiya tha?)
-git status
+# 1. Baseline — abhi kya haalat hai?
+npm test                      # 👀 Test Files 17 passed (17) · 452 tests
 
-# 2. Kya koi code Books ko use karta hai? — kuch nahi aana chahiye
-Select-String -Path (Get-ChildItem backend,frontend-react\src,tests,scripts -Recurse -Include *.js,*.jsx).FullName -Pattern "Books"
+# 2. ⚠️ SABSE ZAROORI — kya sach me koi inhe use nahi karta?
+Select-String -Path (Get-ChildItem frontend-react\src,tests -Recurse -Include *.js,*.jsx).FullName -Pattern "AuditComments|ExportCSV"
+#    → kuch bhi na aaye, tabhi aage badho
 
-# 3. Bahar le jao (delete nahi — safe)
-Move-Item "Books" "$env:USERPROFILE\Desktop\Books-backup"
+# 3. Hatao
+Remove-Item frontend-react\src\pages\AuditComments.jsx
+Remove-Item frontend-react\src\pages\ExportCSV.jsx
 
-# 4. test-results ignore karo
-Add-Content .gitignore "`ntest-results/"
-Remove-Item "test-results" -Recurse -Force
+# 4. Kuch toota to nahi?
+npm test                      # 👀 wahi 452 pass
+cd frontend-react; npx vite build; cd ..
 
-# 5. Kuch toota to nahi?
-npm test
-
-# 6. Commit
+# 5. Commit
 git add -A
-git commit -m "Remove unrelated Books folder and ignore test-results"
+git commit -m "Remove two unreferenced pages"
 ```
 
-**👀 `npm test` me wahi natija aana chahiye jo Phase 0 me tha** — `16 passed, 1 failed (rbac-parity)`.
+> **⚠️ Step 2 skip mat karna.** Yehi woh kadam hai jisne `CreateAudit.jsx` ko bachaya tha — uska bhi koi route nahi hai, to woh murda lagta tha, par `Audits.jsx` usko "+ New Audit" wizard ki tarah import karta hai. **"Route nahi hai" ka matlab "use nahi hota" nahi.**
 
 > **🎓 Aapne abhi jo kiya, wahi poore project ki loop hai:**
 > **git → check → change → test → commit**
 >
 > Yehi 5 kadam har baar. Bade change me bhi yahi.
+>
+> Aur yeh sirf theory nahi — **is handbook ke dauraan git ne ek baar sach me bachaya.**
+>
+> PowerShell se kuch files edit karne par 7 files ki encoding kharab ho gayi thi: em-dash aur emoji toot kar kuda ban gaye. (Wajah: PowerShell 5.1 file ko ANSI me padhta hai aur UTF-8 me likhta hai — beech me characters mar jaate hain.)
+>
+> `git checkout` se saaf version wapas aa gaya aur edits dobara safe tareeke se lag gaye. **Bina git ke woh 7 files haath se theek karni padti.**
+>
+> **Sabak:** is repo me text edits ke liye PowerShell ka read/write mat use karna — editor ya koi encoding-safe tool hi.
 
 ---
 
@@ -239,36 +235,45 @@ Print kar lo ya ek file me rakho:
 
 ```
 PHASE 0 — Suraksha
-  [ ] git init + pehla commit
-  [ ] .env ka backup bahar
-  [ ] npm test ka baseline save
+  [x] git init + pehla commit
+  [x] .env ka backup bahar
+  [x] npm test ka baseline save
 
-PHASE 1 — Toota Guard  🔥 SABSE PEHLE
-  [ ] rbac-parity.test.js ka `];` jodo
-  [ ] npm test — jo fail hon woh theek karo
-  [ ] questionnaire modules us test me jodo
-  [ ] 🔴 Act 5 wala 403 bug theek karo (hal B)
-  [ ] playwright test chalao aur theek karo
+PHASE 1 — Toota Guard aur behaviour bugs
+  [x] rbac-parity.test.js chalu (8 -> 19 modules)
+  [x] Applicant ka 403 (hal B: alag read-only endpoint)
+  [x] Users page: edit/delete undefined, self-delete button
+  [x] Lockout guards: apna role/status, aakhri admin
+  [x] Lifecycle 5 copies -> 1 + parity test
+  [x] Approved step + segregation of duties
+  [x] Audit close par acknowledge-check
+  [x] Audit Universe: fake risk score + nav 403
+  [x] 4 dead nav entries + rokne wala test
+  [x] playwright chalaya - 239 passed (chromium)
+  [ ] firefox + webkit par bhi chalao (abhi sirf chromium)
 
 PHASE 2 — Safai
-  [ ] Books/ bahar
-  [ ] test-results/ delete + gitignore
-  [ ] Eco/ zip karke bahar (~20,800 lines)
+  [x] Books/ bahar
+  [x] test-results/ delete
+  [ ] AuditComments.jsx, ExportCSV.jsx delete   <-- "pehla change" exercise
+  [ ] Eco/ zip karke bahar (~20,800 lines, repo ka 52%)
   [ ] shared/esc.js delete
-  [ ] AuditComments.jsx, ExportCSV.jsx delete
-  [ ] ⚠️ CreateAudit.jsx aur assistantService.js MAT chhedo
+  [ ] !! CreateAudit.jsx aur assistantService.js MAT chhedo
 
-PHASE 3 — Scope
+PHASE 3 — Scope (faisle, code nahi)
   [ ] 23 stubs par faisla — rakho / hatao
-  [ ] Settings toggles: chalu karo ya hatao
-  [ ] Approved status: banao ya hatao
+  [ ] Settings toggles: banao ya hatao
+  [ ] Organizations vs Vendors: dono ka matlab tay karo
+  [ ] Email/cron: banao ya dependencies hatao
+  [ ] CA multi-client: mechanism tay karo
 
 PHASE 4 — Documentation
-  [ ] README dobara likho
-  [ ] docs/ archive karo
+  [ ] README dobara likho (abhi bhi "Vanilla JS" likhta hai)
+  [ ] docs/ ki 25+ purani files archive karo
+  [x] CLAUDE.md — bana aur update hota raha
 
 PHASE 5 — Aage
-  [ ] Patle modules poore karo
+  [ ] Patle modules poore karo (reports, ccm)
 ```
 
 ---
@@ -277,13 +282,23 @@ PHASE 5 — Aage
 
 Ab aapke paas hai:
 - ✅ App chalane ka tareeka
-- ✅ Poora business flow — role-by-role
+- ✅ Poora business flow — role-by-role, shuru se `Closed` tak
 - ✅ Code ka pattern — 23 modules ka ek naksha
 - ✅ File map — kya zinda, kya murda
-- ✅ **Ek asli bug**, saboot ke saath
-- ✅ Ek saaf order kaam ka
+- ✅ Ek saaf order kaam ka, aur **Phase 1 poora ho chuka**
 
 **Aap ab is project ke owner ho — sirf naam se nahi.**
+
+### Jaate-jaate: 4 baatein jo baar-baar kaam aayengi
+
+Yeh handbook ke dauraan mile **asli bugs** se nikli hain, kitaab se nahi:
+
+| # | Sabak | Kahan mila |
+|---|---|---|
+| 1 | **Jo test chalta hi nahi, woh fail bhi nahi hota.** `Tests: 389 passed` ke bajaye `Test Files: 16 passed (17)` dekho | [Act 4](05-act4-auditor.md) |
+| 2 | **Nav ko us module se jodo jo page sach me fetch karta hai** — us section se nahi jisme woh dikhta hai. Yeh galti 3 baar mili | [Act 5](06-act5-applicant.md) · [Ch 9](09-architecture.md) |
+| 3 | **"Kya yeh fix kaam karega?" kaafi nahi — "yeh fix kya naya kholta hai?"** 1-line wala fix vendor ko marks dikha deta | [Act 5](06-act5-applicant.md) |
+| 4 | **Banaya hua data crash se bura hai.** Crash dikh jaata hai; jhootha risk score asli jaisa dikhta hai | [Ch 9](09-architecture.md) |
 
 ---
 

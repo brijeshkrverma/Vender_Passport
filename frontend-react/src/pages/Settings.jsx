@@ -16,7 +16,6 @@ export default function Settings() {
   const [certExpiryAlerts, setCertExpiryAlerts] = useState(true);
   const [twoFactor, setTwoFactor] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState(true);
-  const [auditLog, setAuditLog] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -29,7 +28,6 @@ export default function Settings() {
     setCertExpiryAlerts(savedSettings.notifications?.certExpiryAlerts ?? true);
     setTwoFactor(savedSettings.security?.twoFactor ?? false);
     setSessionTimeout(savedSettings.security?.sessionTimeout ?? true);
-    setAuditLog(savedSettings.security?.auditLog ?? true);
   }, [savedSettings, user]);
 
   const handleSave = async () => {
@@ -47,7 +45,9 @@ export default function Settings() {
         security: {
           twoFactor,
           sessionTimeout,
-          auditLog,
+          // Sent as true rather than read from a switch: audit logging is not
+          // optional, so there is nothing here for a user to have turned off.
+          auditLog: true,
         },
       };
       const res = await fetch('/api/settings', {
@@ -131,17 +131,32 @@ export default function Settings() {
 
         <div className="bg-surface border border-border rounded-lg p-6 space-y-4">
           <h2 className="text-sm font-semibold text-ink-900 pb-2 border-b border-border">Notifications</h2>
-          <Toggle label="Email Notifications" checked={emailNotifs} onChange={setEmailNotifs} />
-          <Toggle label="Audit Reminders" checked={auditReminders} onChange={setAuditReminders} />
-          <Toggle label="Certificate Expiry Alerts" checked={certExpiryAlerts} onChange={setCertExpiryAlerts} />
+          <p className="text-[11px] text-gray-500 leading-relaxed -mt-1">
+            In-app notifications (the bell) already work. Email delivery is not wired up yet —
+            no scheduled job sends mail, so these three are saved as preferences only.
+          </p>
+          <Toggle label="Email Notifications" checked={emailNotifs} onChange={setEmailNotifs}
+            note="Not active yet — no mail is sent." />
+          <Toggle label="Audit Reminders" checked={auditReminders} onChange={setAuditReminders}
+            note="Not active yet — no reminder job runs." />
+          <Toggle label="Certificate Expiry Alerts" checked={certExpiryAlerts} onChange={setCertExpiryAlerts}
+            note="Not active yet — expiry shows on the Expiry Alerts page instead." />
         </div>
 
         <div className="bg-surface border border-border rounded-lg p-6 space-y-4 lg:col-span-2">
           <h2 className="text-sm font-semibold text-ink-900 pb-2 border-b border-border">Security</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Toggle label="Two-Factor Authentication" checked={twoFactor} onChange={setTwoFactor} />
-            <Toggle label="Session Timeout" checked={sessionTimeout} onChange={setSessionTimeout} />
-            <Toggle label="Audit Logging" checked={auditLog} onChange={setAuditLog} />
+            <Toggle label="Two-Factor Authentication" checked={twoFactor} onChange={setTwoFactor}
+              note="Not active yet — sign-in is password + JWT only." />
+            <Toggle label="Session Timeout" checked={sessionTimeout} onChange={setSessionTimeout}
+              note={`Not active yet — sessions end when the token expires (JWT_EXPIRY, default 24h).`} />
+            {/*
+              * Always on, and deliberately not switchable: every mutating router
+              * mounts `auditTrail(...)` unconditionally. An audit platform whose
+              * audit log can be turned off from a settings page is not one.
+              */}
+            <Toggle label="Audit Logging" checked
+              locked="Always on — every change is recorded and this cannot be disabled." />
           </div>
         </div>
       </div>
@@ -149,23 +164,40 @@ export default function Settings() {
   );
 }
 
-function Toggle({ label, checked, onChange }) {
+/**
+ * A preference switch.
+ *
+ * `note` marks a switch that is stored but not yet acted on anywhere. It is
+ * rendered disabled rather than removed, because the setting is a real intention
+ * — but a live-looking "Two-Factor Authentication: On" that enforces nothing is
+ * worse than no switch at all: on a compliance product it is a control someone
+ * would report as in place.
+ */
+function Toggle({ label, checked, onChange, note, locked }) {
+  const inert = !!note || !!locked;
   return (
-    <div className="flex items-center justify-between py-1">
-      <span className="text-xs text-ink-900">{label}</span>
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-          checked ? 'bg-seal' : 'bg-gray-200'
-        }`}
-      >
-        <span
-          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-            checked ? 'translate-x-4' : 'translate-x-0.5'
-          }`}
-        />
-      </button>
+    <div className="py-1">
+      <div className="flex items-center justify-between">
+        <span className={`text-xs ${inert ? 'text-gray-400' : 'text-ink-900'}`}>{label}</span>
+        <button
+          type="button"
+          disabled={inert}
+          aria-label={label}
+          onClick={() => !inert && onChange(!checked)}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+            checked ? 'bg-seal' : 'bg-gray-200'
+          } ${inert ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <span
+            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+              checked ? 'translate-x-4' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
+      </div>
+      {(note || locked) && (
+        <p className="text-[10.5px] text-gray-400 mt-0.5 pr-11 leading-snug">{note || locked}</p>
+      )}
     </div>
   );
 }

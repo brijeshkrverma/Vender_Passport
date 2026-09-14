@@ -28,13 +28,19 @@ Login karte hi **sidebar dekho aur Act 1/2 se compare karo.**
 
 **👀 Yeh abhi bhi hain:** Audits, Findings, Risks, Controls, Questionnaire, Reports, Documents…
 
-> **💡 Yeh kahan se aaya?** [AuthContext.jsx:89](../../frontend-react/src/context/AuthContext.jsx):
+> **💡 Yeh kahan se aaya?** [AuthContext.jsx](../../frontend-react/src/context/AuthContext.jsx):
 > ```js
-> 'Audit Manager': { hidden: AUDITOR_HIDDEN.slice(0, 10) },
+> 'Audit Manager': { hidden: AUDIT_MANAGER_HIDDEN },
 > ```
-> Matlab `AUDITOR_HIDDEN` list ke **pehle 10** items chhupa do.
+> jahan `AUDIT_MANAGER_HIDDEN = [...ADMIN_ONLY, 'risk-scheduler', 'sampling-engine']`.
 >
-> **⚠️ Yeh code smell hai** — `.slice(0, 10)` ek "magic number" hai. Kal koi us list me ek item aage jod de, to Audit Manager ka menu bina wajah badal jayega. Chapter 11 me isko theek karne layak cheezon me rakhunga.
+> Matlab: admin ke screens, plus do planning tools jo unke nahi hain.
+>
+> > **🔧 Pehle yahan likha tha: `AUDITOR_HIDDEN.slice(0, 10)`** — yaani "us doosri list ke **pehle 10** items chhupa do".
+> >
+> > **Yeh ginti thi, matlab nahi.** Agar koi `AUDITOR_HIDDEN` me beech me ek item jod deta, to Audit Manager ka menu **chup-chaap badal jaata** — aur koi test nahi pakadta.
+> >
+> > Ab list ka apna naam hai aur usme saaf likha hai kya chhupana hai. **Menu bilkul waisa hi raha** — maine dono lists compare karke check kiya, ek bhi item ka farak nahi.
 
 ---
 
@@ -60,9 +66,15 @@ Sidebar → **Audits** → apne `Handbook Test Audit` par click karo.
 
 Abhi pehla gola (Planning) sunehra hoga.
 
-> **💡 Yeh sirf dikhawa nahi hai.** Database me har audit ek number rakhta hai — `stageIdx` (0 se 11). Yeh page us number ko 12 golon me dikha raha hai. Poori list [audit.service.js:8](../../backend/modules/audits/audit.service.js) me hai, aur wahi list frontend me bhi dobara likhi hai [AuditDetail.jsx:8](../../frontend-react/src/pages/AuditDetail.jsx) me.
+> **💡 Yeh sirf dikhawa nahi hai.** Database me har audit ek number rakhta hai — `stageIdx` (0 se 11). Yeh page us number ko 12 golon me dikha raha hai.
 >
-> **⚠️ Yeh duplicate list ek technical debt hai** — do jagah same 12 naam. Ek jagah badla aur doosri bhool gaye, to UI aur database alag baat kahenge.
+> > **🔧 Yeh list pehle 5 jagah likhi hui thi** — handbook me maine "do jagah" likha tha, par dhoondhne par nikli **paanch**: model ka enum, service ki list, AI assistant ki "active statuses", detail page ka stepper, aur ek test.
+> >
+> > **Paanch copies = paanch mauke galti ke.** Aur galti chup-chaap hoti: agar model me stage ka naam badla aur service me nahi, to service aisa status banati jo schema hi reject kar de. **Yeh exactly pehle ho chuka hai** — [audit-lifecycle.test.js](../../tests/unit/audit-lifecycle.test.js) ka comment batata hai ki isi wajah se 12 me se 6 stage kabhi reachable hi nahi the.
+> >
+> > **Ab ek hi source hai:** [backend/modules/audits/lifecycle.js](../../backend/modules/audits/lifecycle.js). Model, service aur assistant — teeno wahi padhte hain.
+> >
+> > Browser wali do files usko import nahi kar saktin (woh ES module hain, yeh CommonJS), to unki copy rehti hai — **par ab ek test unhe milata hai.** Maine jaan-boojh kar ek stage ka naam badal kar dekha, test turant fail hua aur exact naam bataya.
 
 ---
 
@@ -193,9 +205,39 @@ try {
 | 4 independence rules | ✅ **Server par lage hain — tested** |
 | Auto stage advance (0 → 4) | ✅ **Kaam karta hai** |
 | Notification bhejna | ✅ **Kaam karta hai** |
-| Lifecycle stage list | ⚠️ **Do jagah likhi hai** (backend + frontend) — drift ka khatra |
-| `AUDITOR_HIDDEN.slice(0, 10)` | ⚠️ **Magic number** — list badli to menu tootega |
-| "Audit Program" menu item | ❌ **Khali stub** |
+| Lifecycle stage list | ✅ **🔧 FIX ho gaya** — 5 copies se ghatkar 1 source + parity test |
+| `AUDITOR_HIDDEN.slice(0, 10)` | ✅ **🔧 FIX ho gaya** — ab `AUDIT_MANAGER_HIDDEN`, koi magic number nahi |
+| **Audits list ka Progress column** | ✅ **🔧 FIX ho gaya** — pehle **hamesha khaali** dikhta tha |
+| "Audit Program" menu item | ❌ **Khali stub** — [Phase 3 ka faisla](11-what-next.md) |
+
+### 🔧 Is chapter ke fixes (kya-kya badla)
+
+| # | Kya | Kahan |
+|---|---|---|
+| 1 | Lifecycle ka **ek hi source** banaya | naya: [lifecycle.js](../../backend/modules/audits/lifecycle.js) |
+| 2 | Model ka enum, service ki list, assistant ki active-statuses — teeno usi se | [audit.model.js](../../backend/modules/audits/audit.model.js) · [audit.service.js](../../backend/modules/audits/audit.service.js) · [assistantService.js](../../backend/assistantService.js) |
+| 3 | Browser ki 2 copies ko milane wala **parity test** | [audit-lifecycle.test.js](../../tests/unit/audit-lifecycle.test.js) |
+| 4 | `AUDIT_MANAGER_HIDDEN` naam wali list (behaviour same) | [AuthContext.jsx](../../frontend-react/src/context/AuthContext.jsx) |
+| 5 | Audits list ka Progress column theek | [Audits.jsx](../../frontend-react/src/pages/Audits.jsx) |
+
+> ### 🐞 Fix #5 — ek bug jo handbook me tha hi nahi
+>
+> Audits list ke **Progress** column me maine dekha ki har row par bar khaali aur label `—` hai.
+>
+> Code aisa tha:
+> ```js
+> const STAGE_WIDTHS = { 'Planning':'w-1/4', 'Fieldwork':'w-2/4', 'Reporting':'w-3/4', 'Closed':'w-full' };
+> ...
+> <div className={STAGE_WIDTHS[a.stage] || 'w-0'} />
+> ```
+>
+> **Do galtiyan ek saath:**
+> 1. Audit me `stage` naam ka field **hai hi nahi** (`status` aur `stageIdx` hain) — maine API se confirm kiya
+> 2. `Fieldwork` aur `Reporting` naam ke koi stage hain hi nahi
+>
+> To `STAGE_WIDTHS[undefined]` → hamesha `w-0`. **Woh column kabhi kaam kiya hi nahi tha.**
+>
+> Ab woh `stageIdx` se banta hai. Live data par: `Scoping → 17%`, `Auditor Assigned → 42%`, `Corrective Actions → 75%`.
 
 ---
 
@@ -222,11 +264,21 @@ Uska status `On Leave` hai, `Active` nahi. Server ki query me `status: 'Active'`
 **Haan, zaroor.** UI ki rok koi bhi bypass kar sakta hai (jaise humne PowerShell se kiya). Asli rok server par hai — `ForbiddenError` phenkta hai ([audit.service.js:133-135](../../backend/modules/audits/audit.service.js)). **UI suvidha hai, API suraksha.**
 </details>
 
-**4. `AUDITOR_HIDDEN.slice(0, 10)` me kya dikkat hai?**
+**4. `AUDITOR_HIDDEN.slice(0, 10)` me kya dikkat thi, aur ab kya hai?**
 
 <details><summary>Jawab</summary>
 
-Yeh position par nirbhar hai, naam par nahi. Agar koi us array me beech me ek item jod de, to Audit Manager ka menu bina soche badal jayega — aur kisi test me pakda nahi jayega.
+Woh **position** par nirbhar tha, naam par nahi. Us array me beech me ek item jud jaata to Audit Manager ka menu chup-chaap badal jaata — koi test nahi pakadta.
+Ab `AUDIT_MANAGER_HIDDEN` hai, jisme saaf likha hai kya chhupana hai. Menu bilkul same raha.
+</details>
+
+**5. Lifecycle list 5 jagah likhi thi. Ab kitni jagah hai, aur bachi hui copies safe kaise hain?**
+
+<details><summary>Jawab</summary>
+
+Server par **ek** — [lifecycle.js](../../backend/modules/audits/lifecycle.js). Model, service aur assistant teeno wahi padhte hain.
+Browser ki 2 files (AuditDetail, Audits) apni copy rakhti hain kyunki woh ES module hain aur `lifecycle.js` CommonJS — import nahi kar saktin. Unhe **parity test** safe rakhta hai: list alag hui to test fail ho jaata hai aur bata deta hai kaunsa stage alag hai.
+</details>
 </details>
 
 ---

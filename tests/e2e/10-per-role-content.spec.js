@@ -9,8 +9,22 @@
 import { test, expect } from '@playwright/test';
 import { ROLES, loginAs, verifyCannotAccess } from './helpers.js';
 
-// Roles that see every core page
-const FULL_ACCESS = ['Super Admin', 'Organization Admin', 'Compliance Manager', 'Audit Manager', 'Reviewer'];
+/*
+ * ── THIS MATRIX MIRRORS `API_MODULE_ROLES`, NOT THE MENU ──────────────────
+ *
+ * A page is reachable only where the nav list AND the API agree
+ * (`isNavVisibleForRole` intersects them). This suite used to assert the menu
+ * alone — so it expected Auditor → /reports, Vendor Manager → /organizations
+ * and eight more the server refuses, which is the very 403-on-click the
+ * intersection was added to prevent. Those were failing tests describing a bug
+ * as if it were the spec.
+ *
+ * Adding a role to a page here without adding it in `API_MODULE_ROLES` will
+ * fail, and should.
+ */
+
+// Only these three reach every core page.
+const FULL_ACCESS = ['Super Admin', 'Organization Admin', 'Compliance Manager'];
 
 // page → expected heading
 const PAGES = {
@@ -20,12 +34,14 @@ const PAGES = {
 };
 
 const ACCESS = {
-  Auditor: { can: ['/certificates', '/reports'], cannot: ['/organizations', '/client-portfolio', '/users'] },
-  'Risk Manager': { can: ['/certificates', '/reports', '/organizations', '/risks'], cannot: ['/findings', '/vendors', '/users'] },
-  'Document Manager': { can: ['/certificates', '/reports', '/documents'], cannot: ['/organizations', '/risks', '/findings'] },
-  'Vendor Manager': { can: ['/certificates', '/reports', '/organizations', '/vendors'], cannot: ['/findings', '/risks'] },
-  Employee: { can: ['/certificates', '/reports', '/documents'], cannot: ['/organizations', '/risks', '/users'] },
-  'External Company User': { can: ['/certificates', '/reports', '/documents'], cannot: ['/organizations', '/findings', '/users'] },
+  'Audit Manager': { can: ['/certificates', '/reports', '/findings'], cannot: ['/organizations', '/risks', '/users'] },
+  Reviewer: { can: ['/certificates', '/findings', '/documents'], cannot: ['/reports', '/organizations', '/users'] },
+  Auditor: { can: ['/certificates', '/findings', '/documents'], cannot: ['/reports', '/organizations', '/client-portfolio', '/users'] },
+  'Risk Manager': { can: ['/certificates', '/reports', '/risks', '/documents'], cannot: ['/organizations', '/findings', '/vendors', '/users'] },
+  'Document Manager': { can: ['/certificates', '/documents'], cannot: ['/reports', '/organizations', '/risks', '/findings'] },
+  'Vendor Manager': { can: ['/certificates', '/vendors', '/documents'], cannot: ['/reports', '/organizations', '/findings', '/risks'] },
+  Employee: { can: ['/certificates', '/documents'], cannot: ['/reports', '/organizations', '/risks', '/users'] },
+  'External Company User': { can: ['/certificates', '/documents'], cannot: ['/reports', '/organizations', '/findings', '/users'] },
   'CA / Consultant': { can: ['/certificates', '/reports', '/organizations', '/findings', '/risks', '/documents', '/client-portfolio'], cannot: ['/vendors', '/users'] },
 };
 

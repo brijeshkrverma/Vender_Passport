@@ -31,7 +31,7 @@ export default function AssessorQueue() {
   const [filters, setFilters] = useState({ status: 'Submitted', financialYear: '' });
 
   const { data: rows, pagination, loading, error, page, setPage } =
-    usePaginatedApi(SUBMISSION_BASE, filters, 20);
+    usePaginatedApi(SUBMISSION_BASE, filters, 10);
 
   const th = 'px-3 py-[9px] text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7c7d7e]';
   const td = 'px-3 py-[11px] align-middle text-[13px] text-[#41474d]';

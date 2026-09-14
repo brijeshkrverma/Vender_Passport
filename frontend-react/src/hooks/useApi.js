@@ -21,7 +21,17 @@ export function useApi(url, options = {}) {
       const res = await fetch(url, finalOptions);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      setData(json.data || json);
+      /*
+       * `??`, not `||`.
+       *
+       * Every API response is `{ success, data, meta }` (`shared/response.js`),
+       * so the fallback is only ever reached when `data` is genuinely absent.
+       * With `||` it was also reached when `data` was legitimately empty or
+       * zero — and what landed in state then was the whole envelope, which the
+       * page would render as if it were the record. The questionnaire services
+       * already use this form; the older hooks did not.
+       */
+      setData(json?.data ?? json);
     } catch (err) {
       setError(err.message);
     } finally {

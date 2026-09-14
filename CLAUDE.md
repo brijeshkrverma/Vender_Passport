@@ -68,7 +68,26 @@ Frontend list pages are thin: `usePaginatedApi` + `useCrud` + `EntityFormModal`.
 4. **Every rule lives in two places:** the UI hides what a role cannot do (convenience),
    the API refuses it (security). A UI-only rule is not a rule.
 5. **Literal routes before `/:id`** — otherwise Express matches them as an id.
-6. **Scoring logic has exactly one copy.** It lives in the frontend ES modules under
+6. **List, create and update must return the same shape.** `/api/users` once returned raw
+   documents (`_id`) from `list()` while `create()`/`update()` returned `toSafeObject()` (`id`),
+   so every row rendered from the list called `/api/users/undefined`, and the "is this me?"
+   check that hides your own delete button never matched. When a model has a safe-object
+   projection, every endpoint that returns it uses it.
+7. **The audit lifecycle has one definition.** `backend/modules/audits/lifecycle.js` — the model
+   enum, the stage machine and the assistant all read it. `stageIdx` is an index into that array,
+   so reordering it is a migration, not an edit. The two browser copies
+   (`AuditDetail.jsx`, `Audits.jsx`) cannot import CommonJS and are held in step by
+   `tests/unit/audit-lifecycle.test.js`.
+8. **An applicant never reads `/api/questionnaires`.** That router serves the authoring
+   document — `scoringRule`, every option's marks, the assessor's guidance. Answering reads
+   `GET /api/questionnaire-submissions/:id/questions`, which is scoped by the submission (so
+   `assertMayAct` applies) and projected through `forRespondent()` in `submission.service.js`.
+   Adding a field to a question? Decide whether it belongs in that projection.
+9. **Whoever produces a record does not attest to it.** Evidence uploader ≠ verifier
+   (`shared/verificationPolicy.js`), nobody staffs themselves onto an audit
+   (`audit.service.js`), and the assessor of a submission cannot approve it
+   (`submission.service.js` → `approve()`). New sign-off steps follow the same shape.
+10. **Scoring logic has exactly one copy.** It lives in the frontend ES modules under
    `features/questionnaire/services/` and the CommonJS backend loads it via
    `await import()` (`backend/scoring/loader.js`). Never port or duplicate it: the author's
    preview and the vendor's real score must come from the same code.
@@ -79,12 +98,25 @@ Frontend list pages are thin: `usePaginatedApi` + `useCrud` + `EntityFormModal`.
 
 - `frontend-react/src/context/AuthContext.jsx` → `API_MODULE_ROLES` (what the server accepts)
   and `ROLE_ROUTES` (what is useful per role). Nav visibility is their **intersection**.
+- `NAV_ITEM_MODULE` must name **the module the page actually fetches**, not the section it
+  appears under. Three separate 403-on-click bugs came from getting this wrong
+  (CA/Consultant → CAPA, the applicant's questionnaire, Audit Universe → `/api/organizations`).
+  A page that reads two modules is gated on only one — check the fetches, not the menu group.
 - `backend/modules/*/*.routes.js` → `restrictTo(...)` — the real enforcement.
 
 `tests/unit/rbac-parity.test.js` exists to keep them in sync.
 
-> 🔴 **That test is currently broken** — its `MODULES` array is unterminated, so the file has a
-> syntax error and never runs. Fixing it is the highest-priority task in the repo.
+**Lockout guards on `/api/users`** (`user.service.js`) — an organization must always keep someone
+who can administer it, so the service refuses to: change your own role, deactivate your own
+account, delete your own account, or demote/deactivate/delete the last *active* `Super Admin` or
+`Organization Admin` of an org. An Organization Admin creating another Organization Admin **is**
+allowed and deliberate — it is a lateral grant inside a tenant they already control, and without
+it a one-admin org has no way to hand over.
+
+It covers all 19 declared modules, asserts that `ALL` modules really are open to every role,
+checks that a router guarding per route (`reports`) leaves no route unguarded, and fails if a
+module is added to `API_MODULE_ROLES` without being covered here. **Add new modules to its
+`MODULES` list.**
 
 ---
 
@@ -92,19 +124,17 @@ Frontend list pages are thin: `usePaginatedApi` + `useCrud` + `EntityFormModal`.
 
 | Issue | Detail |
 |---|---|
-| 🔴 **Applicant flow is broken** | `Vendor Manager` and `External Company User` get **403** on `/api/questionnaires`, so the Answer Questionnaire screen loads no questions. They are allowed on `/api/questionnaire-submissions` but not on the questions route (`questionnaire.routes.js:221-224`). |
-| 🔴 **`rbac-parity.test.js` never runs** | Syntax error; this is why the bug above shipped. |
 | 🟠 E2E tests | Were failing (see `test-results/`) — auth, RBAC, per-role content. |
 | 🟠 23 stub pages | `<StubPage>` in `App.jsx` — rendered, but empty. Marked `soon: true` in the sidebar. |
-| 🟠 Settings security toggles | `twoFactor`, `sessionTimeout` etc. are stored and validated but **never read** by any code. |
-| 🟠 `Approved` submission status | Exists in the model with `adminApprovedAt`, but no endpoint or button sets it. |
+| 🟠 Settings toggles do nothing | `twoFactor`, `sessionTimeout`, and the three notification flags are stored and validated but **never read** by any code, and `shared/email.js` is imported by nothing — no mail is ever sent. The UI now renders them disabled with a "Not active yet" note rather than pretending; wiring them up is still open. `auditLog` is locked on, because `auditTrail(...)` is mounted unconditionally on 18 routers. |
+| 🤔 Organizations vs Vendors | Both exist and overlap. `Organization` is tenant-scoped by `orgId` (the seed gives each its own, so they behave as tenants) yet its page is titled "orgs in your network"; `Vendor` is a separate model that is the actual supply chain. Which is which is an open **product** decision — do not "fix" it by changing the seed or the scope filter without one. |
 | 🟠 Email / scheduling | `nodemailer` and `node-cron` are installed; no job actually runs. |
-| 🟠 Duplicated lifecycle list | The 12 audit stages are written in both `audit.service.js` and `AuditDetail.jsx`. |
-| 🟠 `AUDITOR_HIDDEN.slice(0, 10)` | Position-dependent nav config in `AuthContext.jsx`; reordering that array silently changes Audit Manager's menu. |
 | 🔴 Dead weight | `Eco/` (~20,800 lines of unused Angular), `Books/` (unrelated), `test-results/` (~25 MB), `shared/esc.js`, `pages/AuditComments.jsx`, `pages/ExportCSV.jsx`. |
 
 **Looks dead but is NOT — do not delete:**
-- `frontend-react/src/pages/CreateAudit.jsx` — no route, but `Topbar.jsx` mounts it as a modal.
+- `frontend-react/src/pages/CreateAudit.jsx` — no route of its own, but `Audits.jsx` mounts it
+  as the "+ New Audit" wizard (it takes an optional `onCreated` so the list re-fetches instead
+  of navigating). The topbar reaches it by navigating to `/audits?new=1`.
 - `backend/assistantService.js` — the AI pipeline; `modules/assistant/assistant.service.js` requires it.
 
 ---

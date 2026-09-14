@@ -183,7 +183,9 @@ async function handleOrganizations(message, orgId, orgName) {
 }
 
 async function handleGeneral(orgId, orgName) {
-  const ACTIVE_STATUSES = ['Planning', 'Scoping', 'Risk Assessment', 'Questionnaire', 'Auditor Assigned', 'Execution', 'Evidence Review', 'Findings', 'Corrective Actions', 'Verification', 'Report'];
+  // Derived from the lifecycle rather than listed again: a stage added there
+  // must not silently be treated here as though the audit were closed.
+  const { ACTIVE_STATUSES } = require('./modules/audits/lifecycle');
   const OPEN_FINDING_STATUSES = ['Open', 'Overdue', 'Acknowledged', 'In Progress', 'Reopened'];
   const HIGH_RISKS = ['High', 'Critical'];
   const ATTENTION_CERTS = ['Expiring Soon', 'Expired'];

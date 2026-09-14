@@ -7,10 +7,17 @@
 
 const { expect } = require('@playwright/test');
 
+/**
+ * `canAccessAdmin`  — may open /settings and /audit-trail.
+ * `canManageUsers`  — may open /users. NARROWER: `/api/users` is Super Admin and
+ *                     Organization Admin only, so a Compliance Manager reaching
+ *                     that page would be refused. The two used to be one flag,
+ *                     which is why this suite asserted access the API refuses.
+ */
 const ROLES = [
-  { role: 'Super Admin', email: 'super.admin@globaltech.com', password: 'password123', name: 'Admin User', sidebarItems: 61, canAccessAdmin: true },
-  { role: 'Organization Admin', email: 'org.admin@globaltech.com', password: 'password123', name: 'Org Admin', sidebarItems: 61, canAccessAdmin: true },
-  { role: 'Compliance Manager', email: 'priya.sharma@globaltech.com', password: 'password123', name: 'Priya Sharma', sidebarItems: 61, canAccessAdmin: true },
+  { role: 'Super Admin', email: 'super.admin@globaltech.com', password: 'password123', name: 'Admin User', sidebarItems: 61, canAccessAdmin: true, canManageUsers: true },
+  { role: 'Organization Admin', email: 'org.admin@globaltech.com', password: 'password123', name: 'Org Admin', sidebarItems: 61, canAccessAdmin: true, canManageUsers: true },
+  { role: 'Compliance Manager', email: 'priya.sharma@globaltech.com', password: 'password123', name: 'Priya Sharma', sidebarItems: 61, canAccessAdmin: true, canManageUsers: false },
   { role: 'Audit Manager', email: 'meera.nair@globaltech.com', password: 'password123', name: 'Meera Nair', sidebarItems: 51, canAccessAdmin: false },
   { role: 'Auditor', email: 'rohit.kapoor@globaltech.com', password: 'password123', name: 'Rohit Kapoor', sidebarItems: 35, canAccessAdmin: false },
   { role: 'Reviewer', email: 'reviewer@globaltech.com', password: 'password123', name: 'Reviewer User', sidebarItems: 40, canAccessAdmin: false },
@@ -25,12 +32,54 @@ const ROLES = [
 async function loginAs(page, email, password) {
   await page.goto('/login', { waitUntil: 'commit' });
   await expect(page.locator('input[type="email"]')).toBeVisible();
-  await page.evaluate(() => sessionStorage.setItem('vp_onboarding_done', '1'));
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
   await page.click('button:has-text("Sign in")');
   await page.waitForURL('**/dashboard**', { timeout: 10000 });
   await expect(page.locator('main')).toBeVisible();
+  await dismissOnboarding(page, email);
+}
+
+/**
+ * Roles the first-run wizard is offered to — mirrors `SETUP_ROLES` in
+ * `components/OnboardingWizard.jsx`.
+ */
+const ONBOARDED_ROLES = ['Super Admin', 'Organization Admin', 'Compliance Manager'];
+
+/**
+ * Close the first-run wizard, for the accounts that get one.
+ *
+ * It is a modal with a full-screen backdrop, so while it is open every other
+ * click in the suite lands on that backdrop and times out with
+ * "subtree intercepts pointer events".
+ *
+ * Two things make this fiddly, and both have already cost a debugging session:
+ *
+ *   1. It used to be suppressed by writing `sessionStorage.vp_onboarding_done`
+ *      before signing in. That stopped working when the flag became per-user
+ *      and moved to `localStorage` — and the failures pointed at the assistant,
+ *      not at onboarding.
+ *   2. The wizard decides whether to open in an effect, so for one tick after
+ *      the dashboard renders it is not there yet. Asking `isVisible()` at that
+ *      instant answers "no", the dismissal is skipped, and the modal appears a
+ *      moment later over everything.
+ *
+ * So: wait for it, but only for the roles that actually get it — otherwise
+ * every login in the suite would pay the timeout for a dialog that was never
+ * coming.
+ */
+async function dismissOnboarding(page, email) {
+  const role = ROLES.find((r) => r.email === email)?.role;
+  if (role && !ONBOARDED_ROLES.includes(role)) return;
+
+  const skip = page.locator('button:has-text("Skip setup")');
+  try {
+    await skip.waitFor({ state: 'visible', timeout: 5000 });
+  } catch {
+    return;                       // already dismissed for this account
+  }
+  await skip.click();
+  await expect(skip).toBeHidden({ timeout: 5000 });
 }
 
 /**
@@ -79,4 +128,4 @@ async function verifyCannotAccess(page, path) {
   }
 }
 
-module.exports = { ROLES, loginAs, countSidebarItems, openSection, verifyCannotAccess };
+module.exports = { ROLES, loginAs, dismissOnboarding, countSidebarItems, openSection, verifyCannotAccess };

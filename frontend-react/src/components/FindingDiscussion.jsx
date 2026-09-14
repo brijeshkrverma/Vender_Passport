@@ -15,7 +15,7 @@ export default function FindingDiscussion({ finding, onClose }) {
     setLoading(true);
     fetch(`/api/comments/by-finding/${finding._id || finding.id}`, { headers: authHeaders })
       .then(r => r.ok ? r.json() : [])
-      .then(json => { setComments(json.data || json || []); })
+      .then(json => { setComments(json?.data ?? []); })
       .catch(() => setComments([]))
       .finally(() => setLoading(false));
   }, [finding]);
@@ -32,7 +32,7 @@ export default function FindingDiscussion({ finding, onClose }) {
       });
       if (res.ok) {
         const json = await res.json();
-        setComments([...comments, json.data || json]);
+        setComments([...comments, json?.data ?? json]);
         setBody('');
       }
     } catch (e) {}

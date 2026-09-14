@@ -54,6 +54,15 @@ const submissionSchema = new mongoose.Schema({
   assessorSubmittedAt: Date,
   adminApprovedAt: Date,
 
+  /**
+   * Who did each of the last two, so approval can refuse the assessor.
+   *
+   * The audit trail records the actor for every mutation, but a rule cannot be
+   * enforced from a log — the check needs the id on the document it is about.
+   */
+  assessedBy: { type: String, default: '' },
+  approvedBy: { type: String, default: '' },
+
   status: {
     type: String,
     enum: ['Draft', 'Submitted', 'Under Assessment', 'Assessed', 'Approved', 'Returned'],

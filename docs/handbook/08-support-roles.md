@@ -50,8 +50,9 @@ for (let l = 1; l <= 5; l++) {
 > **⚠️ Ek chhoti dikkat:** yeh **saare** risks memory me le aata hai phir 25 baar filter karta hai. 100 risks tak theek hai; 50,000 par yeh dheema padega. Tab ise MongoDB aggregation banana hoga. **Abhi problem nahi hai — par jaan lena achha hai.**
 
 ### 🔴 Kya toota hai
-- **Settings** menu me dikhta hai (`allowed` list me hai) par `API_MODULE_ROLES.settings` me Risk Manager **nahi** hai → intersection use chhupa deta hai. Yeh **theek kaam kar raha hai**, par dono lists ka aapas me na milna is project ki aam bimari hai.
-- **Risk-Based Scheduler** — khali stub
+- ✅ **🔧 FIX ho gaya** — `allowed` list me `settings` aur `organizations` pade the, jinhe API **mana** karti hai (neeche poori kahani)
+- **Risk-Based Scheduler** — khali stub ([Phase 3](11-what-next.md))
+- ⚠️ **Heatmap ka code aage dheema padega** — abhi problem nahi, par jaan lena achha hai (upar wala box)
 
 ---
 
@@ -70,9 +71,11 @@ Bhi `allowed` list wala role hai — sirf documents, evidence, certificates, pol
 > **💡 Certificates aur Documents alag kyun?** Certificate ki **expiry** hoti hai aur uspar alert chahiye. Document sirf ek file hai. Isliye alag models.
 
 ### 🔴 Kya toota hai
-- **Document Exchange**, **Doc Versions** — khali stubs
+- ✅ **🔧 FIX ho gaya** — `allowed` me `settings` aur `reports` pade the, dono ko API mana karti hai
+- **Document Exchange**, **Doc Versions** — khali stubs ([Phase 3](11-what-next.md))
 - **Policy Lifecycle** — page hai par patla (46 lines)
-- Certificate expiry ka **email** nahi jaata — `nodemailer` aur `node-cron` package install hain ([package.json](../../package.json)), par unka koi scheduled job nahi chalta. Alert sirf tab dikhta hai jab aap page kholo.
+- Certificate expiry ka **email nahi jaata** — `nodemailer` aur `node-cron` install hain ([package.json](../../package.json)), par koi scheduled job nahi chalta aur [shared/email.js](../../backend/shared/email.js) ko **koi module import hi nahi karta**. Alert sirf tab dikhta hai jab aap page kholo.
+  > **Yeh jaan-boojh kar nahi banaya gaya** — email system banane ke liye SMTP setup chahiye aur woh aapka faisla hai, mera nahi. [Phase 3](11-what-next.md) me hai: banana hai ya dependencies hata deni hain.
 
 ---
 
@@ -92,8 +95,8 @@ Bhi `allowed` list wala role hai — sirf documents, evidence, certificates, pol
 3. **Bulk Invite** kholo → ek saath kai vendors ko bulane ka page
 
 ### 🔴 Kya toota hai
-- 🔴 **Answer Questionnaire → 403** (Act 5 dekho — sabse bada bug)
-- Bulk Invite se email sach me jaate hain? — **nahi**, email bhejne ka koi chalta hua system nahi hai
+- ✅ **🔧 FIX ho gaya** — Answer Questionnaire ab kaam karta hai ([Act 5](06-act5-applicant.md)). Pehle 403 aata tha.
+- Bulk Invite se email sach me jaate hain? — **nahi**, email bhejne ka koi chalta hua system nahi hai (upar Document Manager wala note dekho)
 
 ---
 
@@ -120,7 +123,7 @@ Matlab pehle **CAPA menu me dikhta tha**, CA / Consultant click karta tha, aur *
 
 > **🎯 Yeh bilkul wahi bug hai jo Act 5 me abhi bhi zinda hai** — bas alag module me.
 >
-> Ek jagah pakda gaya aur theek kar diya gaya. Doosri jagah **nahi pakda gaya**, kyunki usko pakadne wala test ([rbac-parity.test.js](../../tests/unit/rbac-parity.test.js)) **adhura hai**.
+> Ek jagah pakda gaya aur theek kar diya gaya. Doosri jagah **nahi pakda gaya**, kyunki usko pakadne wala test ([rbac-parity.test.js](../../tests/unit/rbac-parity.test.js)) **us waqt adhura tha** — ab theek hai ([Act 4](05-act4-auditor.md)).
 >
 > **Yahi kaaran hai ki Chapter 11 ka pehla kaam woh test theek karna hai, koi feature banana nahi.**
 
@@ -140,6 +143,54 @@ Sabse kam access. Sirf dashboard, my-workspace, documents, evidence, certificate
 
 ---
 
+---
+
+## 🔧 Is chapter ka fix — 4 "chhupe hue" dead nav entries
+
+Handbook me maine pehle likha tha ki Risk Manager ke `allowed` me `settings` pada hai jise API mana karti hai, aur *"yeh theek kaam kar raha hai"*. **Baat aadhi sahi thi.**
+
+Maine script chalakar **saare** roles check kiye. 1 nahi, **4** aise entries the:
+
+```
+Risk Manager
+   x organizations  -> /api/organizations refuses this role
+   x settings       -> /api/settings refuses this role
+
+Document Manager
+   x settings       -> /api/settings refuses this role
+   x reports        -> /api/reports refuses this role
+```
+
+### Yeh "kaam kar raha tha" — phir problem kya thi?
+
+Chaaron **dikhte hi nahi the**, kyunki `isNavVisibleForRole` dono lists ka intersection leta hai. Runtime par kuch galat nahi ho raha tha.
+
+> **Par dead config harmless nahi hoti.**
+>
+> Woh 4 entries ek **list hain un cheezon ki jo kisi ne socha tha ki yeh role kar sakta hai.** Agli baar koi nav file kholega, unhe **iraada** samajhkar padhega — aur kabhi koi intersection ko "simplify" kar dega ya item ko kisi aur list me "restore" kar dega.
+>
+> **Tab woh menu me aa jayega, aur click par 403 dega.** Bilkul wahi jo CA / Consultant → CAPA ke saath hua tha.
+
+### Kaunsi taraf theek ki?
+
+**Nav list.** Kyunki is project ka apna niyam hai:
+
+> **UI suvidha hai, API suraksha.** Jhagda ho to **API sach hai.**
+
+`settings` ko Risk Manager ke liye khol dena ek **permission widening** hota — woh product ka faisla hai, safai nahi. Isliye maine nav se hataya, API nahi chhui. **Runtime behaviour bilkul nahi badla** — woh items pehle bhi nahi dikhte the.
+
+### Aur ab yeh dobara nahi aa sakte
+
+[rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) me ek naya test hai: *"no role is offered a page its API would refuse"*.
+
+**Todkar dekha:** `settings` wapas jodne par —
+```
+FAIL: these nav entries would 403 on click:
+Risk Manager → settings (/api/settings refuses it)
+```
+
+---
+
 ## 📊 Sab roles ek table me
 
 | Role | Tareeka | Sabse khaas cheez | Bug? |
@@ -152,10 +203,10 @@ Sabse kam access. Sirf dashboard, my-workspace, documents, evidence, certificate
 | Reviewer | `hidden` (chhota) | CAPA + assessment | — |
 | Risk Manager | **`allowed`** | Heatmap | — |
 | Document Manager | **`allowed`** | Files + expiry | ⚠️ Email nahi jaate |
-| Vendor Manager | `hidden` | Vendors + applicant | 🔴 **403 on questions** |
-| External Company User | `hidden` | Sirf applicant | 🔴 **403 on questions** |
+| Vendor Manager | `hidden` | Vendors + applicant | ✅ 403 fix ho gaya |
+| External Company User | `hidden` | Sirf applicant | ✅ 403 fix ho gaya |
 | Employee | `hidden` | Bahut kam access | — |
-| CA / Consultant | **`allowed`** (16) | Bahar ka, multi-client | ⚠️ Multi-client adhura |
+| CA / Consultant | **`allowed`** (16) | Bahar ka, multi-client | 🤔 Multi-client ka faisla baaki |
 
 ---
 
@@ -174,10 +225,29 @@ Sabse kam access. Sirf dashboard, my-workspace, documents, evidence, certificate
 <details><summary>Jawab</summary>
 
 `/api/capa` usko allow nahi karta, isliye menu se hata diya gaya — pehle wahan click par 403 aata tha.
-**Rishta:** Act 5 ka Vendor Manager wala 403 **bilkul wahi bug** hai, bas theek nahi hua. Dono ko ek hi test pakadta — [rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — jo adhura hai.
+**Rishta:** Act 5 ka Vendor Manager wala 403 isi parivaar ka bug tha (ab dono fix hain). Farak yeh hai ki CAPA wala parity ka mismatch tha, jabki Act 5 wala alag kism ka — wahan screen **do** module maangti thi aur nav sirf **ek** par gate karta tha.
 </details>
 
-**3. Risk heatmap ka `score` kaise nikalta hai, aur us code me aage kya dikkat aa sakti hai?**
+**3. Risk Manager ke `allowed` me `settings` pada tha, par woh menu me dikhta hi nahi tha. To problem kya thi?**
+
+<details><summary>Jawab</summary>
+
+Runtime par kuch galat nahi ho raha tha — intersection use chhupa deta tha.
+
+**Problem yeh thi ki woh entry ek iraada bayaan karti thi.** Agla banda use padhkar samajhta "haan Risk Manager settings dekh sakta hai", aur kabhi kisi ne intersection hata diya ya item kahin aur "restore" kar diya — to woh menu me aa jaata aur **click par 403** deta. Bilkul wahi jo CA / Consultant → CAPA ke saath hua tha.
+
+**Dead config harmless nahi hoti — woh agle banda ke liye galat naksha hoti hai.**
+</details>
+
+**4. Nav list aur API me jhagda ho to kaunsi taraf theek karni chahiye?**
+
+<details><summary>Jawab</summary>
+
+**API sach hai, nav ko badlo.** (Jab tak permission widening ka soch-samajh kar faisla na liya ho.)
+`settings` ko Risk Manager ke liye khol dena safai nahi, **product ka faisla** hota. Isliye 4 dead entries nav se hataye gaye, API chhui hi nahi — aur runtime behaviour bilkul nahi badla.
+</details>
+
+**5. Risk heatmap ka `score` kaise nikalta hai, aur us code me aage kya dikkat aa sakti hai?**
 
 <details><summary>Jawab</summary>
 

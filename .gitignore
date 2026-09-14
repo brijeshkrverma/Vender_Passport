@@ -37,3 +37,6 @@ Thumbs.db
 
 # Archives
 *.zip
+
+# Local clickthrough recording (screenshots + video)
+walkthrough/

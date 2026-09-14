@@ -11,6 +11,23 @@ function errorHandler(err, req, res, next) {
     return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', errors });
   }
 
+  /*
+   * Mongoose cast error — an id that is not an id.
+   *
+   * This was falling through to the 500 handler, so a malformed id in the URL
+   * was reported as a server fault: `/api/users/undefined` answered
+   * "Cast to ObjectId failed", code INTERNAL_ERROR. It is a bad request, and
+   * saying so is what makes the real cause (a caller that built the URL from an
+   * undefined value) visible instead of looking like a backend crash.
+   */
+  if (err.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      code: 'INVALID_ID',
+      message: `'${err.value}' is not a valid ${err.path === '_id' ? 'id' : err.path}`,
+    });
+  }
+
   // Mongoose duplicate key
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern)[0];

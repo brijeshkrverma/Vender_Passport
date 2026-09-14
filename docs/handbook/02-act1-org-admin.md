@@ -110,17 +110,46 @@ Wajah [Users.jsx:216](../../frontend-react/src/pages/Users.jsx) me likhi hai: *"
 
 ---
 
-## ▶️ Kaam 4 — Organizations dekho
+## ▶️ Kaam 4 — Organizations sambhalo
 
 Sidebar → **Organizations**
 
-**👀 Dikhega:** cards — vendors, partners, clients — compliance score bar ke saath.
+**👀 Dikhega:** organization cards — compliance score bar, status, contact — aur upar dayein **"+ Add Organization"** button.
 
-**▶️ Ab ek cheez dhundo: "Add Organization" button.**
+> **🔧 Yeh pehle sirf padhne ka page tha.** Backend me poora CRUD bana hua tha ([org.routes.js](../../backend/modules/organizations/org.routes.js)) par UI me use karne ka koi raasta nahi tha. **Ab jud gaya hai** — add, edit, remove teenon.
 
-**👀 Nahi milega.** Yeh page **sirf padhne ke liye** hai ([Organizations.jsx](../../frontend-react/src/pages/Organizations.jsx) — koi create/edit code nahi).
+### ▶️ Ek organization banao
 
-> **📌 Yeh gap hai, feature nahi.** Backend me `POST /api/organizations` bana hua hai ([org.routes.js](../../backend/modules/organizations/org.routes.js)), par UI me use karne ka koi raasta nahi. **Aisi cheezein aapko poore project me milengi — backend taiyar, UI adhura.**
+**"+ Add Organization"** → bharo:
+- Name: `Handbook Test Vendor`
+- Relationship: **Supplier**
+- Industry / Country / Contact: kuch bhi
+
+**Create organization** → card list me aa jayega. **Edit** aur **Remove** bhi try karo (Remove soft delete hai — wahi confirmation dikhega).
+
+### 🧪 Filter pills dekho
+
+**👀 Ab 5 pills hain:** Own Organization · Supplier · Vendor · Partner · Client
+
+> **🔧 Pehle yahan `Internal` naam ka pill tha — jo model me exist hi nahi karta.** Matlab us pill par click karne se **hamesha khaali list** aati thi. Aur `Own Organization` aur `Supplier` — jo asli types hain — unke liye koi pill hi nahi tha.
+>
+> Ab pills model ke enum se match karte hain ([org.model.js:6](../../backend/modules/organizations/org.model.js)).
+
+### 🤔 Ek design sawaal jo abhi khula hai
+
+Aapko shayad sirf **1-2 cards** dikhen, jabki seed 7 organizations banata hai.
+
+**Yeh bug nahi hai** — yeh multi-tenancy hai. Har organization ka apna `orgId` hai (ORG-101 se ORG-107), aur `orgFilter` sirf **aapki** org dikhata hai. Aap ORG-101 ho, to aapko ORG-101 wali dikhi.
+
+**Par page ka subtitle kehta hai** *"Vendors, partners, and internal orgs in your network"* — jo "mera network" wala matlab hai, "platform ke tenants" wala nahi.
+
+**Aur is project me ek alag `Vendors` module bhi hai** ([vendor.model.js](../../backend/modules/vendors/vendor.model.js)) — riskTier, onboardingStatus ke saath — jo asal me "mera supply chain" hai.
+
+> **📌 To sawaal yeh hai: `Organizations` aur `Vendors` me farak kya hai?**
+> - Agar Organizations = **platform ke tenants**, to abhi jo ho raha hai woh sahi hai — bas subtitle galat hai.
+> - Agar Organizations = **mera network**, to seed galat hai (sabko `orgId: ORG-101` hona chahiye) aur Vendors ke saath overlap hai.
+>
+> **Yeh maine jaan-boojh kar nahi badla** — yeh code ka bug nahi, **product ka faisla** hai, aur woh aapka hai. [Chapter 11 Phase 3](11-what-next.md) me isko list kiya hai.
 
 ---
 
@@ -133,21 +162,38 @@ Email Notifications, Audit Reminders, Certificate Expiry Alerts, Two-Factor Auth
 
 Kuch badlo aur **Save Changes** dabao → "Settings saved" toast aayega.
 
-### ⚠️ Ab sach jaan lo
+### 👀 Dhyan do — toggles ab sach bolte hain
 
-**Yeh toggles kuch karte nahi hain.**
+Har toggle ke neeche ek chhoti line hai, aur woh **dabte nahi**:
 
-Maine poore backend me dhoonda — `twoFactor`, `sessionTimeout`, `certExpiryAlerts`, `auditReminders` sirf **do jagah** milte hain:
-- [settings.model.js](../../backend/modules/settings/settings.model.js) — database me save karne ke liye
-- [settings.routes.js](../../backend/modules/settings/settings.routes.js) — validate karne ke liye
+| Toggle | Kya likha hai |
+|---|---|
+| Email Notifications | *Not active yet — no mail is sent.* |
+| Audit Reminders | *Not active yet — no reminder job runs.* |
+| Certificate Expiry Alerts | *Not active yet — expiry shows on the Expiry Alerts page instead.* |
+| Two-Factor Authentication | *Not active yet — sign-in is password + JWT only.* |
+| Session Timeout | *Not active yet — sessions end when the token expires (24h).* |
+| **Audit Logging** | ✅ **Always on** — *cannot be disabled.* |
 
-**Kahin bhi inko padha nahi jaata.** Matlab:
-- "Two-Factor Authentication" ON karo → **2FA chalu nahi hoga**
-- "Session Timeout" OFF karo → **kuch nahi hoga**
+> **🔧 Pehle yeh sab chalu-band ho jaate the aur "Settings saved" bhi dikha dete the — par karte kuch nahi the.**
+>
+> Maine poore backend me dhoonda tha: `twoFactor`, `sessionTimeout`, `certExpiryAlerts`, `auditReminders` sirf **do jagah** milte hain — [settings.model.js](../../backend/modules/settings/settings.model.js) (save karne ke liye) aur [settings.routes.js](../../backend/modules/settings/settings.routes.js) (validate karne ke liye). **Koi code inhe padhta hi nahi.**
+>
+> Aur email? [shared/email.js](../../backend/shared/email.js) file to hai, par usko **koi module import nahi karta.** Koi mail kabhi nahi jaati.
 
-Yeh sirf database me `true`/`false` save ho jaate hain aur wahin pade rehte hain.
+> ### ⚠️ Yeh sirf UI ki galti nahi thi — yeh khatarnaak tha
+>
+> Ek compliance product me **"Two-Factor Authentication: ON"** dikhna, aur asal me kuch na hona — iska matlab hai koi is control ko **"lagu hai"** report kar dega. Audit me isse bura kuch nahi: aisa control jo kagaz par hai, hakeekat me nahi.
+>
+> **Isliye ab woh saaf-saaf "Not active yet" kehta hai.** Toggle hataya nahi — feature ka iraada asli hai — par jhooth bolna band kar diya.
 
-> **💡 Yeh "one-shot AI project" ki classic nishani hai** — UI bana diya gaya kyunki dikhna chahiye tha, par usse jodne wala kaam nahi hua. Chapter 11 me faisla lena hoga: yeh toggles chalu karein ya UI se hata dein.
+> ### 💡 "Audit Logging" ab band ho hi nahi sakta — aur yeh jaan-boojh kar hai
+>
+> Maine check kiya: `auditTrail(...)` **18 routers par bina shart lagi hai** — har badlav record hota hai.
+>
+> To woh toggle pehle bhi jhooth tha (band karne se logging band nahi hoti thi). **Aur honi bhi nahi chahiye** — jis audit platform ka audit log settings page se band ho jaye, woh audit platform hai hi nahi.
+>
+> Ab woh locked hai: hamesha on.
 
 ---
 
@@ -158,9 +204,25 @@ Yeh sirf database me `true`/`false` save ho jaate hain aur wahin pade rehte hain
 | Users banana / badalna / hatana | ✅ **Poora kaam karta hai** |
 | Super Admin ki rok | ✅ **Dono taraf lagi hai** (UI + server) |
 | Soft delete + audit trail | ✅ **Kaam karta hai** |
-| Organizations create/edit | ❌ **UI nahi hai** (API bani hui hai) |
-| Settings ke security toggles | ❌ **Save hote hain, use nahi hote** |
-| Permission Matrix / Role Dashboard (menu me) | ❌ **Khali stub pages** |
+| Organizations create/edit | ✅ **🔧 FIX ho gaya** — add / edit / remove jud gaya |
+| Organizations ke filter pills | ✅ **🔧 FIX ho gaya** — `Internal` (jo exist hi nahi karta) hataya, asli 5 types lagaye |
+| Settings ke toggles | ✅ **🔧 FIX ho gaya** — jhooth bolna band; "Not active yet" saaf likha hai |
+| Audit Logging toggle | ✅ **🔧 FIX ho gaya** — ab locked, hamesha on |
+| Permission Matrix / Role Dashboard (menu me) | ❌ **Khali stubs** — [Phase 3 ka faisla](11-what-next.md) |
+| Organizations vs Vendors ka overlap | 🤔 **Product ka faisla** — upar wala "design sawaal" dekho |
+
+### 🔧 Is chapter ke fixes (kya-kya badla)
+
+| # | Kya | Kahan |
+|---|---|---|
+| 1 | Organizations page par poora CRUD — "+ Add Organization", Edit, Remove | [Organizations.jsx](../../frontend-react/src/pages/Organizations.jsx) |
+| 2 | Filter pills model ke enum se match karte hain (`Internal` hata, `Own Organization` + `Supplier` jude) | [Organizations.jsx](../../frontend-react/src/pages/Organizations.jsx) |
+| 3 | Settings ke 5 dead toggles ab disabled + "Not active yet" wajah ke saath | [Settings.jsx](../../frontend-react/src/pages/Settings.jsx) |
+| 4 | Audit Logging toggle locked — hamesha on, band nahi ho sakta | [Settings.jsx](../../frontend-react/src/pages/Settings.jsx) |
+
+> **Do cheezein jaan-boojh kar nahi chhui:**
+> - **Stub pages** (Permission Matrix, Role Dashboard) — scope ka faisla, bug nahi.
+> - **Organizations vs Vendors** — yeh **product ka faisla** hai (dono ka matlab kya hai), code ka nahi. Iska jawab aapko dena hai.
 
 ---
 
@@ -181,14 +243,23 @@ Register page se sign-up karne par **nayi company** ban jaati hai (`SELF_SIGNUP_
 Kyunki Super Admin ka `scopeOrgId` `null` hota hai = **sabhi companies** ka data. Rok do jagah: UI me [Users.jsx:61](../../frontend-react/src/pages/Users.jsx) (option chhupata hai) aur server me [roles.js:43](../../backend/shared/roles.js) `canGrantRole()` (asli rok). **Server wali asli hai.**
 </details>
 
-**3. Settings me "Two-Factor Authentication" ON karne se kya hoga?**
+**3. "Two-Factor Authentication" toggle ab dabta kyun nahi?**
 
 <details><summary>Jawab</summary>
 
-**Kuch nahi.** Database me `twoFactor: true` save ho jayega, par koi code use nahi padhta. Yeh adhura feature hai.
+Kyunki woh **kaam nahi karta** — 2FA kahin implement nahi hai. Pehle woh dabta tha aur "Settings saved" bhi dikha deta tha, matlab user ko lagta tha 2FA chalu ho gaya.
+Ek compliance product me yeh khatarnaak hai: koi us control ko "lagu hai" report kar deta. Ab woh disabled hai aur *"Not active yet"* saaf likha hai.
 </details>
 
-**4. User "Remove" karne par uska data mit jaata hai?**
+**4. "Audit Logging" toggle band kyun nahi ho sakta?**
+
+<details><summary>Jawab</summary>
+
+Kyunki audit logging **band hoti hi nahi** — `auditTrail(...)` 18 routers par bina shart lagi hai. Woh toggle pehle bhi jhooth tha.
+Aur usko band karne ki suvidha honi bhi nahi chahiye: jis audit platform ka audit log settings se band ho jaye, woh audit platform hai hi nahi.
+</details>
+
+**5. User "Remove" karne par uska data mit jaata hai?**
 
 <details><summary>Jawab</summary>
 

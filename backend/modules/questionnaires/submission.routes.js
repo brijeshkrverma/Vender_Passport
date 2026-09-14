@@ -56,8 +56,16 @@ router.get('/', ctrl.list);
 router.post('/', tenantIsolation, validate(startSchema), ctrl.start);
 router.get('/:id', ctrl.getById);
 
+// The respondent's view of the questions — projected, without marks or scoring
+// rules. This is why an applicant never needs /api/questionnaires.
+router.get('/:id/questions', ctrl.questions);
+router.get('/:id/sections', ctrl.sections);
+
 router.post('/:id/submit', ctrl.submit);
 router.post('/:id/assess', ctrl.markAssessed);
+// Final sign-off. Guarded in the service: admin-level roles only, and never the
+// same person who assessed it.
+router.post('/:id/approve', ctrl.approve);
 router.post('/:id/return', ctrl.returnToApplicant);
 router.post('/:id/recompute', ctrl.recompute);
 // Scoring writes marks, so it is an assessor action even though it awards

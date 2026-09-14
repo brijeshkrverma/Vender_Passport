@@ -21,7 +21,7 @@ export default function QuestionBank() {
   const [filters, setFilters] = useState({ category: '', search: '' });
 
   const { data: rows, pagination, loading, error, page, setPage } =
-    usePaginatedApi(QUESTIONNAIRE_BASE, filters, 20);
+    usePaginatedApi(QUESTIONNAIRE_BASE, filters, 10);
 
   return (
     <div className="space-y-4">

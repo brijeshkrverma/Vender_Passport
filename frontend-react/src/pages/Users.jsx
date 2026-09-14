@@ -8,6 +8,7 @@ import Pagination from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import { useCreateFromUrl } from '../hooks/useCreateFromUrl';
 import { useConfirm } from '../components/ConfirmDialog';
+import { useToast } from '../components/Toast';
 
 /**
  * Roles an administrator can hand out. 'Super Admin' appears only for a Super
@@ -46,6 +47,7 @@ const editFields = (roles) => [
 export default function Users() {
   const { user: me } = useAuth();
   const confirm = useConfirm();
+  const { toast } = useToast();
   const { data: users, loading, error, pagination, page, setPage, refetch } =
     usePaginatedApi('/api/users');
 
@@ -54,6 +56,19 @@ export default function Users() {
 
   const close = useCallback(() => { setCreating(false); setEditing(null); }, []);
   const crud = useCrud('/api/users', { onDone: async () => { await refetch(); close(); } });
+
+  /**
+   * Confirm every write on screen.
+   *
+   * The dialog closing was the only signal that anything had happened, which
+   * reads the same as the dialog being dismissed. A failure already shows its
+   * reason in the form; a success said nothing at all.
+   */
+  async function run(action, onSuccess) {
+    const res = await action;
+    if (res?.ok) onSuccess();
+    return res;
+  }
 
   // "+ Create" in the top bar deep-links here with ?new=1.
   useCreateFromUrl(useCallback(() => setCreating(true), []));
@@ -68,7 +83,10 @@ export default function Users() {
       confirmLabel: 'Remove user',
       tone: 'danger',
     });
-    if (ok) await crud.remove(u.id);
+    if (!ok) return;
+    const res = await crud.remove(u.id);
+    if (res?.ok) toast('User removed', `${u.name} can no longer sign in.`, 'success');
+    else if (crud.error) toast('Could not remove user', crud.error, 'error');
   }
 
   const header = (
@@ -159,7 +177,10 @@ export default function Users() {
         submitLabel="Create user"
         saving={crud.saving}
         error={crud.error}
-        onSubmit={(payload) => crud.create(payload)}
+        onSubmit={(payload) => run(
+          crud.create(payload),
+          () => toast('User created', `${payload.name} can now sign in with the password you set.`, 'success'),
+        )}
       />
 
       <EntityFormModal
@@ -171,7 +192,10 @@ export default function Users() {
         submitLabel="Save changes"
         saving={crud.saving}
         error={crud.error}
-        onSubmit={(payload) => crud.update(editing.id, payload)}
+        onSubmit={(payload) => run(
+          crud.update(editing.id, payload),
+          () => toast('Changes saved', `${payload.name || editing.name} has been updated.`, 'success'),
+        )}
       />
     </div>
   );

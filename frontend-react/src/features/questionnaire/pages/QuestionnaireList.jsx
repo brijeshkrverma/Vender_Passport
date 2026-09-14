@@ -47,7 +47,7 @@ export default function QuestionnaireList() {
 
   const {
     data: rows, pagination, loading, error, page, setPage, refetch,
-  } = usePaginatedApi(QUESTIONNAIRE_BASE, filters, 20);
+  } = usePaginatedApi(QUESTIONNAIRE_BASE, filters, 10);
 
   const setFilter = (name, value) => setFilters((f) => ({ ...f, [name]: value }));
   const activeFilters = Object.entries(filters).filter(([, v]) => v).length;

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const softDelete = require('../../shared/softDelete');
+const { LIFECYCLE } = require('./lifecycle');
 
 const auditSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -16,13 +17,8 @@ const auditSchema = new mongoose.Schema({
   targetOrgId: String,
   frameworkId: String,
   scope: String,
-  status: {
-    type: String, enum: [
-      'Planning', 'Scoping', 'Risk Assessment', 'Questionnaire', 'Auditor Assigned',
-      'Execution', 'Evidence Review', 'Findings', 'Corrective Actions',
-      'Verification', 'Report', 'Closed'
-    ], default: 'Planning'
-  },
+  status: { type: String, enum: LIFECYCLE, default: LIFECYCLE[0] },
+  /** An index into LIFECYCLE — see the note in `lifecycle.js` on why order is a contract. */
   stageIdx: { type: Number, default: 0 },
   riskLevel: { type: String, enum: ['Low', 'Medium', 'High', 'Critical'], default: 'Medium' },
   lead: String,

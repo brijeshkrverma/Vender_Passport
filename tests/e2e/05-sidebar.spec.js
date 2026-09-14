@@ -65,10 +65,23 @@ test.describe('Sidebar — Role-Specific Visibility', () => {
     expect(auditorCount).toBeLessThan(adminCount);
   });
 
-  test('Super Admin total sidebar item count matches the permission matrix', async ({ page }) => {
+  /**
+   * A Super Admin is hidden from nothing, so they should see every nav item
+   * the sidebar declares.
+   *
+   * Counted from the source rather than hardcoded: the number used to be `61`
+   * and the sidebar had grown past it, so this failed for a reason that had
+   * nothing to do with permissions. An assertion that goes stale every time
+   * someone adds a menu entry teaches people to ignore it.
+   */
+  test('Super Admin sees every sidebar item there is', async ({ page }) => {
+    const { readFileSync } = await import('node:fs');
+    const source = readFileSync('frontend-react/src/components/Sidebar.jsx', 'utf8');
+    const declared = [...source.matchAll(/\{\s*id:\s*'[\w-]+'/g)].length;
+
     await loginAs(page, 'super.admin@globaltech.com', 'password123');
     const total = await countSidebarItems(page);
-    expect(total).toBe(61);
+    expect(total).toBe(declared);
   });
 
   test('Employee sidebar is limited to a subset', async ({ page }) => {

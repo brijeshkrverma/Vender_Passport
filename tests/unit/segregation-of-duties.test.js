@@ -86,6 +86,82 @@ describe('evidence verification is a restricted control activity', () => {
   });
 });
 
+describe('approving an assessment is a second pair of eyes', () => {
+  const source = readFileSync(
+    join(ROOT, 'backend/modules/questionnaires/submission.service.js'), 'utf8');
+  const approve = source.slice(source.indexOf('async approve('), source.indexOf('async returnToApplicant('));
+
+  it('refuses the person who carried out the assessment', () => {
+    expect(approve).toMatch(/submission\.assessedBy.*===.*actor\.userId/s);
+    expect(approve).toMatch(/cannot also approve it/);
+  });
+
+  it('records who assessed, so the rule has something to compare', () => {
+    expect(source).toMatch(/fresh\.assessedBy = actor\.userId/);
+  });
+
+  it('records who approved, and when', () => {
+    expect(approve).toMatch(/fresh\.approvedBy = actor\.userId/);
+    expect(approve).toMatch(/fresh\.adminApprovedAt = new Date\(\)/);
+  });
+
+  it('refuses an approval that cannot be attributed to anyone', () => {
+    expect(approve).toMatch(/if \(!actor\.userId\)/);
+  });
+
+  it('only reaches Approved from a completed assessment', () => {
+    expect(approve).toMatch(/status !== 'Assessed'/);
+  });
+
+  it.each(['Auditor', 'Reviewer', 'Vendor Manager', 'External Company User'])(
+    'does not let %s grant the final approval', (role) => {
+      const list = source.slice(source.indexOf('const APPROVER_ROLES'), source.indexOf('function forRespondent'));
+      expect(list).not.toContain(`'${role}'`);
+    }
+  );
+});
+
+describe('an applicant never reads the authoring document', () => {
+  const source = readFileSync(
+    join(ROOT, 'backend/modules/questionnaires/submission.service.js'), 'utf8');
+  const projection = source.slice(source.indexOf('function forRespondent'), source.indexOf('class SubmissionService'));
+
+  it.each(['scoringRule', 'assessorOption', 'assessorGuidence', 'subScore', 'trendRule'])(
+    'does not hand %s to the respondent', (field) => {
+      expect(projection).not.toMatch(new RegExp(`\\b${field}:`));
+    }
+  );
+
+  it('still gives the renderer what it cannot work without', () => {
+    // Visibility conditions and the cells a formula fills — without these the
+    // sheet renders follow-ups that should be hidden and lets people type into
+    // computed cells.
+    expect(projection).toMatch(/dependsOn: s\.dependsOn/);
+    expect(projection).toMatch(/gridFormulas: s\.gridFormulas/);
+  });
+
+  it('the answering screen goes through the submission, not /api/questionnaires', () => {
+    const screen = readFileSync(
+      join(ROOT, 'frontend-react/src/features/questionnaire/pages/AnswerQuestionnaire.jsx'), 'utf8');
+    expect(screen).toMatch(/submissionApi\.questions\(/);
+    expect(screen).not.toMatch(/questionnaireApi\.list\(/);
+  });
+});
+
+describe('an audit does not close over findings nobody picked up', () => {
+  const source = readFileSync(join(ROOT, 'backend/modules/audits/audit.service.js'), 'utf8');
+  const advance = source.slice(source.indexOf('async advanceStage('), source.indexOf('async retreatStage('));
+
+  it('checks for unacknowledged findings on the last transition only', () => {
+    expect(advance).toMatch(/stageIdx \+ 1 === LIFECYCLE\.length - 1/);
+    expect(advance).toMatch(/\$in: \['Open', 'Reopened'\]/);
+  });
+
+  it('names how many are outstanding rather than refusing blankly', () => {
+    expect(advance).toMatch(/\$\{unacknowledged\}/);
+  });
+});
+
 describe('auditor assignment', () => {
   const source = readFileSync(join(ROOT, 'backend/modules/audits/audit.service.js'), 'utf8');
   const assign = source.slice(source.indexOf('async assignAuditor'), source.indexOf('async unassignAuditor'));

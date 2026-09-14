@@ -136,7 +136,9 @@ All collections cleared
 
 > **⚠️ Dhyan do:** `All collections cleared` ka matlab hai **poora database khaali karke** naya demo data daala jaata hai. Aage kabhi apna asli data daalo, to `npm run seed` mat chalana.
 
-> **📌 Ek zaroori baat:** Seed **questionnaires aur submissions nahi banata** — sirf audits, findings, risks, vendors waghairah. Isliye Chapter 4 me questionnaire aapko **khud banana** padega. Yeh project ka ek gap hai, aapki galti nahi.
+> **📌 Questionnaire ke 5 sawaal bhi seed hote hain** — Published, abhi ke financial year me, 50 marks ke. Isliye Act 5 (questionnaire bharna) seedha chal jaata hai, bina pehle sawaal likhe.
+>
+> *(Yeh pehle nahi hota tha — seed sirf audits/findings/risks banata tha aur questionnaire khud likhna padta tha. Ab theek hai.)*
 
 ---
 
@@ -200,6 +202,16 @@ Login page dikhega. Yeh use karo:
 **Sabhi 13 demo users ka password `password123` hai** ([seed.js:90](../../scripts/seed.js)).
 
 Login ke baad Dashboard dikhega, aur left me ek lamba sidebar.
+
+> **👋 Pehli baar ek popup aayega: "Welcome to Vendor Passport"**
+>
+> Yeh **first-run setup wizard** hai — 2 steps: company details aur ek vendor. **Yeh sach me save karta hai** (settings aur vendors me), to chaho to bhar lo.
+>
+> Aage badhne ke liye **"Skip setup"** dabao — bas.
+>
+> **Yeh ek hi baar aata hai, har user ke liye alag.** Agar baar-baar aaye to woh bug hai, batana.
+>
+> Dhyan do: yeh sirf **Super Admin, Organization Admin aur Compliance Manager** ko dikhta hai — kyunki inhi ke account woh dono steps kar sakte hain. [Act 3](04-act3-audit-manager.md) se aage ke roles ko nahi dikhega.
 
 ---
 

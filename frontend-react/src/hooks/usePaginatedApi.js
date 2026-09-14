@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export function usePaginatedApi(baseUrl, params = {}, limit = 20) {
+/** 10 rows a page by default — the same number every list screen uses. */
+export function usePaginatedApi(baseUrl, params = {}, limit = 10) {
   const { authHeaders } = useAuth();
   const [page, setPage] = useState(1);
   const [data, setData] = useState([]);

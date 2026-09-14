@@ -16,6 +16,9 @@ const CAPA = require('../backend/modules/capa/capa.model');
 const Evidence = require('../backend/modules/evidence/evidence.model');
 const EvidenceLink = require('../backend/modules/evidence/evidenceLink.model');
 const Vendor = require('../backend/modules/vendors/vendor.model');
+const QuestionnaireQuestion = require('../backend/modules/questionnaires/questionnaire.model');
+const QuestionnaireSubmission = require('../backend/modules/questionnaires/submission.model');
+const QuestionnaireResponse = require('../backend/modules/questionnaires/response.model');
 
 const ORG_NAME_TO_ID = {
   'GlobalTech Solutions': 'ORG-101',
@@ -48,7 +51,10 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log('Connected to MongoDB');
 
-  const models = [User, Organization, Framework, Audit, Finding, Risk, Control, Certificate, Document, Notification, CAPA, Evidence, EvidenceLink, Vendor];
+  // Submissions and responses are cleared alongside the questions: a submission
+  // that outlives the questions it answers scores against nothing.
+  const models = [User, Organization, Framework, Audit, Finding, Risk, Control, Certificate, Document, Notification, CAPA, Evidence, EvidenceLink, Vendor,
+    QuestionnaireQuestion, QuestionnaireSubmission, QuestionnaireResponse];
   for (const Model of models) {
     await Model.deleteMany({});
   }
@@ -256,6 +262,83 @@ async function seed() {
   const links = await EvidenceLink.insertMany(linkData);
   console.log(`  ✔ Evidence Links: ${links.length}`);
 
+  /*
+   * ── 14. Seed Questionnaire questions ──────────────────────────────────────
+   *
+   * Published, not Draft: a Draft question is not answerable, so seeding drafts
+   * would leave the answering screen as empty as seeding nothing at all — the
+   * failure this section exists to remove.
+   *
+   * The year is the current one because the answering screen defaults to it.
+   * A fixed year would silently stop matching, and the symptom of that is a
+   * blank questionnaire with no error, which is the hardest kind to diagnose.
+   */
+  const fy = String(new Date().getFullYear());
+
+  /** Options, keyed stably — rules address a `key`, never a position. */
+  const opts = (rows) => rows.map(([key, label, score], i) => ({
+    key, answerLabel: label, displayLabel: label, sortOrder: i + 1, score,
+    subAnswer: 'no', subAnswers: [],
+  }));
+
+  const questionData = [
+    {
+      section: 'Environment', questionOrderNo: 1, position: 1, maxMark: 10,
+      question: 'Does the organisation hold a valid ISO 14001 environmental management certificate?',
+      description: 'Attach the certificate in the evidence section if available.',
+      answerType: 'RadioButton',
+      answers: opts([['a', 'Yes — currently valid', 10], ['b', 'Applied for / in progress', 5], ['c', 'No', 0]]),
+    },
+    {
+      section: 'Environment', questionOrderNo: 2, position: 2, maxMark: 15,
+      question: 'Which of the following emission-reduction measures are in place?',
+      description: 'Select every measure that is operational today.',
+      answerType: 'CheckBox',
+      answers: opts([
+        ['a', 'Renewable energy sourcing', 5],
+        ['b', 'Energy efficiency programme', 5],
+        ['c', 'Scope 1 & 2 emissions measured annually', 5],
+        ['d', 'None of the above', 0],
+      ]),
+    },
+    {
+      section: 'Governance', questionOrderNo: 3, position: 3, maxMark: 10,
+      question: 'Is there a board-approved code of conduct covering anti-bribery and corruption?',
+      answerType: 'RadioButton',
+      answers: opts([['a', 'Yes — board approved and published', 10], ['b', 'Drafted but not approved', 4], ['c', 'No', 0]]),
+    },
+    {
+      section: 'Governance', questionOrderNo: 4, position: 4, maxMark: 10,
+      question: 'How frequently is the supplier risk register reviewed?',
+      answerType: 'RadioButton',
+      answers: opts([['a', 'Quarterly or more often', 10], ['b', 'Annually', 6], ['c', 'Ad hoc', 2], ['d', 'Not maintained', 0]]),
+    },
+    {
+      section: 'Social', questionOrderNo: 5, position: 5, maxMark: 5,
+      question: 'Describe the grievance redressal mechanism available to workers.',
+      description: 'A short free-text answer is enough; the assessor awards the marks.',
+      answerType: 'Text',
+      answers: [],
+    },
+  ].map((q) => ({
+    ...q,
+    orgId: 'ORG-101',
+    financialYear: fy,
+    assessmentYear: fy,
+    category: 'Supplier Assessment',
+    type: ['OEM'],
+    // Explicit rather than left to the default, so the authoring screen shows
+    // the same engine the scoring pass will actually run.
+    scoringRule: { engine: 'optionSum', config: {} },
+    isMarks: true,
+    status: 'Published',
+    version: 1,
+    createdBy: 'seed',
+  }));
+
+  const questions = await QuestionnaireQuestion.insertMany(questionData);
+  console.log(`  ✔ Questionnaire Questions: ${questions.length} (FY ${fy}, all Published)`);
+
   // ── Summary ──
   console.log('\n═══════════════════════════════════');
   console.log('  SEEDING COMPLETE');
@@ -274,6 +357,7 @@ async function seed() {
   console.log(`  CAPA Items    : ${capaItems.length}`);
   console.log(`  Evidence      : ${evidenceItems.length}`);
   console.log(`  Evidence Links: ${links.length}`);
+  console.log(`  Questions     : ${questions.length}  (FY ${fy}, Published)`);
   console.log('═══════════════════════════════════\n');
 
   await mongoose.connection.close();

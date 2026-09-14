@@ -22,6 +22,88 @@ const REVIEWER_ROLES = new Set([
 
 const isReviewer = (user) => REVIEWER_ROLES.has(user?.role);
 
+/**
+ * Who may grant the final approval.
+ *
+ * Narrower than the assessor list on purpose: approving is the step that makes a
+ * score final, so it sits with the people accountable for the programme rather
+ * than with everyone who can mark an answer.
+ */
+const APPROVER_ROLES = new Set([
+  'Super Admin', 'Organization Admin', 'Compliance Manager',
+]);
+
+/**
+ * A question as the person answering it may see it.
+ *
+ * ── WHY THE APPLICANT DOES NOT READ /api/questionnaires ────────────────────
+ *
+ * The answering screen needs the questions, and the obvious way to give it them
+ * was to add `Vendor Manager` and `External Company User` to the authoring
+ * router's `restrictTo`. That would have worked and been wrong: a question
+ * document carries `scoringRule`, and every option carries the marks it is
+ * worth. Handing those to the respondent turns a permission bug into an
+ * information-leak bug — they would be told which answer scores best before
+ * choosing one, which is the end of the assessment being worth anything.
+ *
+ * So answering reads through the submission instead, and the submission only
+ * ever hands back what a respondent legitimately needs.
+ *
+ * ── WHAT SURVIVES, AND WHY ────────────────────────────────────────────────
+ *
+ *   maxMark        shown to the respondent on purpose — how much a question is
+ *                  worth in total is disclosed; how each option scores is not.
+ *   dependsOn      a follow-up that only appears in some cases. The renderer
+ *                  cannot decide visibility without it.
+ *   gridFormulas   cells the sheet fills in itself; the screen needs these to
+ *                  lock them. They name references, never values.
+ *
+ * Removed: `scoringRule`, every `score`/`subScore`, and every `assessorOption`
+ * and its guidance — the assessor's marking notes, which are not the
+ * respondent's business at all.
+ */
+function forRespondent(q) {
+  return {
+    _id: q._id,
+    financialYear: q.financialYear,
+    section: q.section,
+    subSection: q.subSection,
+    category: q.category,
+    position: q.position,
+    questionOrderNo: q.questionOrderNo,
+    question: q.question,
+    description: q.description,
+    tooltip: q.tooltip,
+    answerType: q.answerType,
+    maxMark: q.maxMark,
+    isText: q.isText,
+    isUpload: q.isUpload,
+    status: q.status,
+    version: q.version,
+    answers: (q.answers || []).map((a) => ({
+      key: a.key,
+      answerLabel: a.answerLabel,
+      displayLabel: a.displayLabel,
+      sortOrder: a.sortOrder,
+      subAnswer: a.subAnswer,
+      subAnswerType: a.subAnswerType,
+      subAnswers: (a.subAnswers || []).map((s) => ({
+        key: s.key,
+        subAnswerLabel: s.subAnswerLabel,
+        gridLabel: s.gridLabel,
+        subAnswerTypes: s.subAnswerTypes,
+        isTypeText: s.isTypeText,
+        isTypeNumericText: s.isTypeNumericText,
+        isUploadText: s.isUploadText,
+        isDisabled: s.isDisabled,
+        evidenceRequired: s.evidenceRequired,
+        dependsOn: s.dependsOn,
+        gridFormulas: s.gridFormulas,
+      })),
+    })),
+  };
+}
+
 class SubmissionService {
   /**
    * The applicant's own submission for a year, created on first use.
@@ -206,6 +288,62 @@ class SubmissionService {
     return Submission.findOne(byIdQuery(orgId, id));
   }
 
+  /**
+   * The questions this submission is for, as its respondent may see them.
+   *
+   * Scoped by the submission, not by a year the caller names: a respondent asks
+   * for "my questionnaire", and which year that is follows from the submission
+   * they are allowed to open. `assertMayAct` is what stops one applicant reading
+   * another's.
+   */
+  async questionsFor(id, orgId, { section } = {}, actor = {}) {
+    const submission = await this.getById(id, orgId, actor);
+
+    // eslint-disable-next-line global-require
+    const { ANSWERABLE } = require('./questionnaire.service');
+    const filter = {
+      ...orgFilter(orgId),
+      financialYear: submission.financialYear,
+      status: ANSWERABLE,
+    };
+    if (section) filter.section = section;
+
+    const questions = await Question.find(filter)
+      .sort({ position: 1, questionOrderNo: 1 })
+      .lean();
+
+    return questions.map(forRespondent);
+  }
+
+  /**
+   * The rail on the left, and the way out of an empty one.
+   *
+   * Returns both the sections for this submission's year and every year that
+   * has anything answerable at all. The second half is what turns "No questions
+   * in this section" — which tells a respondent nothing and is where they used
+   * to give up — into "published for a different year: 2026-27".
+   *
+   * One call rather than two, because the answer to the second is small and the
+   * screen needs it exactly when the first comes back empty.
+   */
+  async sectionsFor(id, orgId, actor = {}) {
+    const submission = await this.getById(id, orgId, actor);
+
+    // eslint-disable-next-line global-require
+    const { ANSWERABLE } = require('./questionnaire.service');
+    const scope = { ...orgFilter(orgId), status: ANSWERABLE };
+
+    const [sections, years] = await Promise.all([
+      Question.distinct('section', { ...scope, financialYear: submission.financialYear }),
+      Question.distinct('financialYear', scope),
+    ]);
+
+    return {
+      sections: sections.filter(Boolean).sort(),
+      years: years.filter(Boolean).sort(),
+    };
+  }
+
   /** Assessment finished — moves the submission on, does not award anything. */
   async markAssessed(id, orgId, actor = {}) {
     if (!isReviewer(actor)) throw new ForbiddenError('Only an assessor can complete an assessment');
@@ -219,7 +357,60 @@ class SubmissionService {
     await this.recomputeTotals(id, orgId);
     const fresh = await Submission.findOne(byIdQuery(orgId, id));
     fresh.assessorSubmittedAt = new Date();
+    // Recorded so approval can refuse the same person twice — see approve().
+    fresh.assessedBy = actor.userId || '';
     fresh.status = 'Assessed';
+    await fresh.save();
+    return fresh;
+  }
+
+  /**
+   * The final sign-off. Assessed → Approved.
+   *
+   * ── WHY THIS EXISTS ───────────────────────────────────────────────────────
+   *
+   * `Approved` and `adminApprovedAt` were both in the model from the start, and
+   * nothing could ever set them: the flow stopped at `Assessed`, so a score was
+   * final the moment one assessor said so. The status said a second pair of eyes
+   * was part of the design; the code never asked for them.
+   *
+   * ── WHY THE ASSESSOR MAY NOT APPROVE THEIR OWN ASSESSMENT ─────────────────
+   *
+   * The same rule as evidence verification (`shared/verificationPolicy.js`) and
+   * as staffing an audit: whoever produces a record does not attest to it. An
+   * approval that the assessor can grant themselves is a click, not a control.
+   */
+  async approve(id, orgId, actor = {}) {
+    if (!APPROVER_ROLES.has(actor?.role)) {
+      throw new ForbiddenError('Only an administrator or compliance manager can approve an assessment');
+    }
+
+    const submission = await Submission.findOne(byIdQuery(orgId, id));
+    if (!submission) throw new NotFoundError('Submission');
+
+    if (submission.status === 'Approved') {
+      throw new ValidationError([{ field: 'status', message: 'This assessment is already approved' }]);
+    }
+    if (!submission.assessorSubmittedAt || submission.status !== 'Assessed') {
+      throw new ValidationError([{
+        field: 'status',
+        message: 'Only a completed assessment can be approved',
+      }]);
+    }
+    if (!actor.userId) {
+      throw new ForbiddenError('An approval has to be attributable to a person');
+    }
+    if (submission.assessedBy && String(submission.assessedBy) === String(actor.userId)) {
+      throw new ForbiddenError('You assessed this submission, so you cannot also approve it');
+    }
+
+    // Rebuild from the answers first: an approval fixes the score, so it must
+    // fix the real one rather than whatever the counters last happened to say.
+    await this.recomputeTotals(id, orgId);
+    const fresh = await Submission.findOne(byIdQuery(orgId, id));
+    fresh.adminApprovedAt = new Date();
+    fresh.approvedBy = actor.userId;
+    fresh.status = 'Approved';
     await fresh.save();
     return fresh;
   }

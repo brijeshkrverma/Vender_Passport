@@ -87,7 +87,20 @@ export const submissionApi = {
   score: (id, { dryRun } = {}, opts) => request(
     'POST', `/${id}/score${dryRun ? '?dryRun=1' : ''}`, opts),
 
+  /**
+   * The questions, as the respondent may see them — no marks, no scoring rules.
+   *
+   * Not `questionnaireApi.list`: that router serves the authoring document and
+   * is closed to applicants for exactly that reason.
+   */
+  questions: (id, section, opts) => request(
+    'GET', `/${id}/questions${section ? `?section=${encodeURIComponent(section)}` : ''}`, opts),
+
+  sections: (id, opts) => request('GET', `/${id}/sections`, opts),
+
   submit: (id, opts) => request('POST', `/${id}/submit`, opts),
   assess: (id, opts) => request('POST', `/${id}/assess`, opts),
+  /** Final sign-off — admin roles only, and never the assessor themselves. */
+  approve: (id, opts) => request('POST', `/${id}/approve`, opts),
   returnToApplicant: (id, opts) => request('POST', `/${id}/return`, opts),
 };

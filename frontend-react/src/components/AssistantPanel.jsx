@@ -3,6 +3,42 @@ import SlidePanel from './SlidePanel';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
 
+/**
+ * The server's own limit, mirrored so the box can stop you before the round
+ * trip rather than after it (`assistant.routes.js` → `validateQuery`).
+ */
+const MAX_CHARS = 2000;
+
+/**
+ * Turn a failed response into something the person can act on.
+ *
+ * Every failure used to produce the same sentence — "I couldn't answer that
+ * right now. The assistant is still in beta." A rate limit, an expired session,
+ * a message over the length limit and a missing API key are four different
+ * problems with four different things to do about them, and that message
+ * suggested waiting for all of them.
+ */
+function failureFor(status, body) {
+  const serverSaid = body?.error || body?.message;
+  switch (status) {
+    case 400:
+      return { text: serverSaid || 'That question could not be read. Try rephrasing it.', title: 'Not sent', tone: 'warning' };
+    case 401:
+      return { text: 'Your session has expired. Sign in again to keep asking.', title: 'Signed out', tone: 'error' };
+    case 403:
+      return { text: 'Your role is not allowed to use the assistant.', title: 'Not allowed', tone: 'error' };
+    case 429:
+      return { text: 'You have asked a lot of questions in the last minute. Wait about a minute and try again.', title: 'Slow down', tone: 'warning' };
+    case 503:
+      return { text: 'The assistant is not configured on this server (no API key). Everything else still works.', title: 'Assistant off', tone: 'warning' };
+    default:
+      return {
+        text: serverSaid || 'Something went wrong answering that. Try again in a moment.',
+        title: 'Assistant error', tone: 'error',
+      };
+  }
+}
+
 export default function AssistantPanel({ open, onClose }) {
   const { user, authHeaders } = useAuth();
   const { toast } = useToast();
@@ -13,6 +49,10 @@ export default function AssistantPanel({ open, onClose }) {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  const trimmed = input.trim();
+  const tooLong = input.length > MAX_CHARS;
+  const canSend = trimmed.length > 0 && !tooLong && !loading;
+
   const PROMPTS = [
     'Which certificates expire this month?',
     'Summarize open findings',
@@ -21,25 +61,42 @@ export default function AssistantPanel({ open, onClose }) {
   ];
 
   async function sendMessage(prefill) {
-    const text = prefill || input.trim();
+    const text = (prefill || input).trim();
+
+    // Same three rules the server applies, checked here so an obviously
+    // unsendable question does not cost a round trip or a rate-limit slot.
     if (!text || loading) return;
+    if (text.length > MAX_CHARS) {
+      toast('Too long', `Questions are limited to ${MAX_CHARS} characters.`, 'warning');
+      return;
+    }
+
     setMessages(m => [...m, { role: 'user', content: text, id: Date.now() }]);
     setInput('');
     setLoading(true);
     try {
-      const res = await fetch('/api/assistant/query', { method: 'POST', headers: authHeaders, body: JSON.stringify({ message: text }) });
-      const data = await res.json();
+      const res = await fetch('/api/assistant/query', {
+        method: 'POST', headers: authHeaders,
+        // Only the message. `orgId`, `role` and `scope` are derived from the
+        // session, and the server rejects the request outright if they appear
+        // in the body — sending them would be an attempt to widen your scope.
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setMessages(m => [...m, { role: 'assistant', content: "I couldn't answer that right now. The assistant is still in beta — try again shortly, or ask a simpler question.", id: Date.now() + 1 }]);
-        toast('Assistant unavailable', 'The AI assistant is still in beta. Please try again later.', 'warning');
+        const f = failureFor(res.status, data);
+        setMessages(m => [...m, { role: 'assistant', content: f.text, id: Date.now() + 1, failed: true }]);
+        toast(f.title, f.text, f.tone);
         return;
       }
+
       const body = data.data || data;
       const msg = body.message || body;
       setMessages(m => [...m, { role: 'assistant', content: msg.content || 'No response', refs: body.metadata?.totalRecords, id: Date.now() + 1 }]);
-    } catch(e) {
-      setMessages(m => [...m, { role: 'assistant', content: 'Unable to reach assistant. Check your connection.', id: Date.now() + 1 }]);
-      toast('Query failed', 'AI assistant unavailable', 'error');
+    } catch (e) {
+      setMessages(m => [...m, { role: 'assistant', content: 'Could not reach the server. Check your connection and try again.', id: Date.now() + 1, failed: true }]);
+      toast('Query failed', 'Could not reach the assistant.', 'error');
     }
     setLoading(false);
   }
@@ -92,13 +149,39 @@ export default function AssistantPanel({ open, onClose }) {
           )}
           <div ref={endRef} />
         </div>
-        <div className="border-t border-border flex gap-2" style={{ padding: '12px 16px 16px' }}>
-          <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} rows={1} placeholder="Ask about audits, certificates, findings..."
-            className="flex-1 resize-none text-sm focus:outline-none focus:ring-2 focus:ring-seal/30 bg-paper max-h-28" style={{ padding: '9px 14px', borderRadius: '18px', border: '1px solid #DAD5C4' }} />
-          <button onClick={() => sendMessage()} disabled={!input.trim() || loading}
-            className="rounded-full bg-seal text-white flex items-center justify-center disabled:opacity-40 hover:bg-seal-dark transition" style={{ width: '38px', height: '38px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 6 6 6-6 6"/></svg>
-          </button>
+        <div className="border-t border-border" style={{ padding: '12px 16px 16px' }}>
+          <div className="flex gap-2">
+            <textarea
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              rows={1}
+              maxLength={MAX_CHARS + 200}
+              aria-label="Ask the assistant a question"
+              aria-invalid={tooLong || undefined}
+              placeholder="Ask about audits, certificates, findings..."
+              className="flex-1 resize-none text-sm focus:outline-none focus:ring-2 focus:ring-seal/30 bg-paper max-h-28"
+              style={{ padding: '9px 14px', borderRadius: '18px', border: `1px solid ${tooLong ? '#B0362A' : '#DAD5C4'}` }}
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={!canSend}
+              title={tooLong ? `Over the ${MAX_CHARS}-character limit` : 'Send'}
+              aria-label="Send question"
+              className="rounded-full bg-seal text-white flex items-center justify-center disabled:opacity-40 hover:bg-seal-dark transition"
+              style={{ width: '38px', height: '38px', flexShrink: 0 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+          </div>
+
+          {/* Only once it matters — a counter on an empty box is noise. */}
+          {input.length > MAX_CHARS * 0.8 && (
+            <div className="mt-1.5 text-right" style={{ fontSize: '11px', color: tooLong ? '#B0362A' : '#9CA0A8' }}>
+              {input.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+              {tooLong && ' — too long to send'}
+            </div>
+          )}
         </div>
       </div>
     </SlidePanel>

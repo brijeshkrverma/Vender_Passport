@@ -78,6 +78,17 @@ export function useAuth() {
 
 const ADMIN_ONLY = ['users','settings','audit-cost','sla-dashboard','report-scheduler','api-integrations','audit-trail','perm-matrix'];
 const AUDITOR_HIDDEN = [...ADMIN_ONLY,'risk-scheduler','sampling-engine','maturity-model','gap-analysis','traceability','issues','exceptions','client-portfolio','org-compare','org-hierarchy','vendor-scorecard','vendor-onboard','esg','capa','gantt','calendar','role-dashboard','q-scoring','audit-program','organizations'];
+/**
+ * An Audit Manager runs engagements, so they keep almost everything an Auditor
+ * loses — only the admin screens and two planning tools they do not own.
+ *
+ * Spelled out rather than taken as `AUDITOR_HIDDEN.slice(0, 10)`, which is what
+ * this was: a count, not a meaning. Inserting one entry anywhere in the first
+ * ten of that list silently changed what an Audit Manager could see, and no
+ * test would have noticed.
+ */
+const AUDIT_MANAGER_HIDDEN = [...ADMIN_ONLY, 'risk-scheduler', 'sampling-engine'];
+
 const VENDOR_HIDDEN = [...ADMIN_ONLY,'assessor-queue','risks','risk-heatmap','findings','mgmt-response','audits','audit-detail','audit-universe','auditor-workspace','working-papers','questionnaire','question-bank','controls','control-testing','gap-analysis','regulatory-changes','maturity-model','self-assessment','ccm-dashboard'];
 const EXTERNAL_HIDDEN = [...ADMIN_ONLY,...AUDITOR_HIDDEN,'assessor-queue','questionnaire-bank','audits','findings','risks','controls','capa'];
 const EMPLOYEE_HIDDEN = [...ADMIN_ONLY,...AUDITOR_HIDDEN,'questionnaire-bank','audits','findings','risks','controls'];
@@ -86,11 +97,22 @@ const ROLE_ROUTES = {
   'Super Admin': { allowedAll: true },
   'Organization Admin': { allowedAll: true },
   'Compliance Manager': { allowedAll: true },
-  'Audit Manager': { hidden: AUDITOR_HIDDEN.slice(0, 10) },
+  'Audit Manager': { hidden: AUDIT_MANAGER_HIDDEN },
   'Auditor': { hidden: AUDITOR_HIDDEN },
   'Reviewer': { hidden: [...ADMIN_ONLY, 'users'] },
-  'Risk Manager': { allowed: ['risks','risk-heatmap','dashboard','risk-scheduler','reports','organizations','certificates','documents','evidence','my-workspace','notifications','settings'] },
-  'Document Manager': { allowed: ['documents','evidence','exchange','doc-versions','policy-lifecycle','certificates','dashboard','my-workspace','notifications','settings','reports'] },
+  /*
+   * `organizations` and `settings` used to be listed here, and `settings` and
+   * `reports` for the Document Manager below. All four were dead: the API
+   * refuses those modules to these roles, so the intersection in
+   * `isNavVisibleForRole` hid them anyway.
+   *
+   * Dead entries are not harmless. They are a list of things somebody believed
+   * this role could do, and the next person to touch the nav reads them as
+   * intent — which is how an item gets "restored" into a menu that then 403s on
+   * click. `tests/unit/rbac-parity.test.js` now fails if one comes back.
+   */
+  'Risk Manager': { allowed: ['risks','risk-heatmap','dashboard','risk-scheduler','reports','certificates','documents','evidence','my-workspace','notifications'] },
+  'Document Manager': { allowed: ['documents','evidence','exchange','doc-versions','policy-lifecycle','certificates','dashboard','my-workspace','notifications'] },
   'Vendor Manager': { hidden: VENDOR_HIDDEN },
   'Employee': { hidden: EMPLOYEE_HIDDEN },
   'External Company User': { hidden: EXTERNAL_HIDDEN },
@@ -138,7 +160,17 @@ export const NAV_ITEM_MODULE = {
   users: 'users', settings: 'settings', 'ccm': 'ccm', 'audit-trail': 'auditlogs',
   organizations: 'organizations', 'org-compare': 'organizations', 'org-hierarchy': 'organizations',
   'client-portfolio': 'organizations', auditors: 'users',
-  audits: 'audits', 'audit-universe': 'audits', 'auditor-workspace': 'audits',
+  audits: 'audits', 'auditor-workspace': 'audits',
+  /*
+   * Named for the API it calls, not for the section it sits in.
+   *
+   * `AuditUniverse.jsx` fetches `/api/organizations`, which Audit Manager,
+   * Auditor and Reviewer are all refused — but this said `audits`, which they
+   * are allowed, so the item showed in their menu and the page then failed.
+   * The same shape as CA / Consultant → CAPA and the applicant's questionnaire:
+   * the gate has to name the module the page actually reads.
+   */
+  'audit-universe': 'organizations',
   'working-papers': 'audits', 'audit-program': 'audits',
   findings: 'findings', 'mgmt-response': 'findings',
   capa: 'capa',

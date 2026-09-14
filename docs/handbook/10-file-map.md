@@ -15,14 +15,14 @@
 
 | Folder | Kya hai | Files | Lines | Label |
 |---|---|---|---|---|
-| [backend/](../../backend/) | Node + Express + MongoDB API | 120 | ~5,500 | 🟢 **Zinda** |
-| [frontend-react/](../../frontend-react/) | React + Vite + Tailwind | 129 | ~17,900 | 🟢 **Zinda** |
-| [tests/](../../tests/) | Vitest + Playwright | 29 | ~3,850 | 🟡 **Zinda par ek toota** |
+| [backend/](../../backend/) | Node + Express + MongoDB API | 119 | ~6,200 | 🟢 **Zinda** |
+| [frontend-react/](../../frontend-react/) | React + Vite + Tailwind | 139 | ~18,300 | 🟢 **Zinda** |
+| [tests/](../../tests/) | Vitest + Playwright | 30 | ~4,100 | 🟢 **Zinda — 452 tests, sab pass** |
 | [scripts/](../../scripts/) | seed, sync-indexes, import | 4 | ~500 | 🟢 **Zinda** |
 | [docs/](../../docs/) | 25+ purane documents + **yeh handbook** | 30+ | — | 🟡 **Zyadatar purana** |
 | [Eco/](../../Eco/) | Purana **Angular** code | 70 | **~20,800** | 🔴 **Murda** |
-| [Books/](../../Books/) | Personal-growth tutorial | 3 | ~1 MB | 🔴 **Project ka nahi** |
-| [test-results/](../../test-results/) | E2E failure videos/screenshots | 80+ | ~25 MB | 🔴 **Kooda** |
+| ~~`Books/`~~ | Personal-growth tutorial | 3 | ~1 MB | ✅ **Hata diya gaya** |
+| ~~`test-results/`~~ | E2E failure videos/screenshots | 80+ | ~25 MB | ✅ **Hata diya gaya** |
 | [uploads/](../../uploads/) | Upload ki gayi files | — | — | 🟢 **Zinda** (git me nahi) |
 
 > **⚠️ Sabse chaunkane wali baat:** [Eco/](../../Eco/) akela **~20,800 lines** hai — poore backend se **teen guna bada**. Aur app kahin bhi usko use nahi karta.
@@ -39,6 +39,7 @@ backend/
 ├── scoring/          🟢 loader (ES module bridge) + engines
 ├── assistantService.js 🟢 AI pipeline (assistant module isko use karta hai)
 └── modules/          🟢 23 modules × 4 files
+    └── audits/lifecycle.js  🟢 12 stages ka EK source (model+service+assistant isi se)
 ```
 
 ### 23 modules — kaunsa kitna bhara hua
@@ -62,6 +63,7 @@ backend/
 | [shared/roles.js](../../backend/shared/roles.js) | 12 roles ka **ek hi** sach |
 | [shared/softDelete.js](../../backend/shared/softDelete.js) | Record kabhi mitta nahi |
 | [scoring/loader.js](../../backend/scoring/loader.js) | Scoring ki **ek hi copy** ka pul |
+| [modules/audits/lifecycle.js](../../backend/modules/audits/lifecycle.js) | 12 stages ka ek source — `stageIdx` isme index hai |
 
 ---
 
@@ -106,7 +108,7 @@ Yeh sab [App.jsx](../../frontend-react/src/App.jsx) me `<StubPage title="..." />
 | [pages/ExportCSV.jsx](../../frontend-react/src/pages/ExportCSV.jsx) | Koi import nahi, koi route nahi — **murda** |
 
 > **⚠️ [pages/CreateAudit.jsx](../../frontend-react/src/pages/CreateAudit.jsx) is list me NAHI hai.**
-> Uska koi route nahi hai, isliye pehli nazar me murda lagta hai — **par woh zinda hai.** [Topbar.jsx:6](../../frontend-react/src/components/Topbar.jsx) usko import karke **modal** ki tarah dikhata hai.
+> Uska koi route nahi hai, isliye pehli nazar me murda lagta hai — **par woh zinda hai.** [Audits.jsx](../../frontend-react/src/pages/Audits.jsx) usko "+ New Audit" wizard ki tarah mount karta hai.
 >
 > **Seekh: "route nahi hai" ka matlab "use nahi hota" nahi hai.** Delete karne se pehle hamesha import search karo:
 > ```powershell
@@ -134,11 +136,11 @@ Eco/
 >
 > **Salaah:** delete mat karo — **zip banakar project ke bahar rakh do**. Kal ko kisi purane behaviour ka reference chahiye ho sakta hai.
 
-### 2. [Books/](../../Books/) — project se koi rishta nahi
+### 2. ~~`Books/`~~ — project se koi rishta nahi ✅ *(hata diya gaya)*
 
 `personal-growth-master-tutorial.html` (988 KB) + 2 markdown. Galti se aa gaya. **Bahar nikal do.**
 
-### 3. [test-results/](../../test-results/) — ~25 MB kooda
+### 3. ~~`test-results/`~~ — ~25 MB kooda ✅ *(hata diya gaya)*
 
 Playwright ke fail hue tests ki videos, screenshots, trace files. Yeh **hamesha** `.gitignore` me hone chahiye.
 
@@ -150,43 +152,46 @@ Playwright ke fail hue tests ki videos, screenshots, trace files. Yeh **hamesha*
 
 ---
 
-## 🟡 Tests
+## 🟢 Tests
 
 ```
 tests/
-├── unit/   17 files, 2,824 lines  → 389 tests ✅ PASS
-└── e2e/    12 files, 1,028 lines  → Playwright ❌ fail ho rahe the
-```
-
-### 🔴 Ek test file kabhi chalti hi nahi
-
-[tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — **68 lines, syntax error, adhuri.**
-
-Line 50 ke aas-paas `MODULES` array **band hi nahi hota**:
-```js
-const MODULES = [
-  ['capa', 'capa.routes.js'],
-  ...
-  ['controls', 'control.routes.js'],
-
-                          ← yahan `];` hona chahiye tha. Nahi hai.
-
-describe('frontend nav permissions mirror backend RBAC', () => {
+├── unit/   17 files, ~3,000 lines  → 452 tests ✅ SAB PASS
+└── e2e/    12 files, ~1,000 lines  → Playwright ❌ fail ho rahe the
 ```
 
 **▶️ Khud dekho:**
 ```powershell
 npm test
 ```
-**👀 Milega:** `Test Files  1 failed | 16 passed (17)` aur `rbac-parity.test.js (0 test)`
+**👀 Milega:** `Test Files 17 passed (17)` · `Tests 452 passed (452)`
 
-> **🎯 Yeh project ka sabse mahenga toota hua tukda hai.**
+### 🔧 Ek test file kabhi chalti hi nahi thi
+
+[tests/unit/rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) ka `MODULES` array **band hi nahi hota tha** — matlab poori file ek **syntax error** thi, aur Vitest usko `(0 test)` kehkar chhod deta tha.
+
+```js
+const MODULES = [
+  ['capa', 'capa.routes.js'],
+  ...
+  ['controls', 'control.routes.js'],
+
+                          ← yahan `];` hona chahiye tha. Nahi tha.
+
+describe('frontend nav permissions mirror backend RBAC', () => {
+```
+
+> **🎯 Yeh project ka sabse mahenga toota hua tukda tha.**
 >
-> 389 test pass ho rahe hain — dikhne me sab hara. Par yeh **ek** file jo permission lists ko milati thi, chal hi nahi rahi. **Aur usi wajah se Act 5 wala 403 bug zinda hai.**
+> 389 test pass ho rahe the — dikhne me sab hara. Par yeh **ek** file, jo frontend aur backend ki permission lists ko milati thi, **chalti hi nahi thi**. Isiliye CA/Consultant → CAPA aur [Act 5](06-act5-applicant.md) ka 403 — dono ship ho gaye.
+>
+> **Ab woh chalta hai aur pehle se kaafi zyada dekhta hai:** 8 → 19 modules, `ALL` wale modules bhi verify hote hain, per-route guard wale router ki har route check hoti hai, aur koi module cover se chhoot jaye to bhi batata hai.
 
 ### 🟢 Baaki tests achhe hain
 
-`auth-hardening` (36), `mark-engines` (50), `questionnaire-authoring` (38), `soft-delete` (37), `helpers` (28), `questionnaire-responses` (28), `grid-formula` (26), `rbac` (24)…
+`mark-engines` (50), `questionnaire-authoring` (38), `soft-delete` (37), `auth-hardening` (36), `segregation-of-duties`, `helpers` (28), `questionnaire-responses` (28), `grid-formula` (26), `rbac` (24), `audit-lifecycle`…
+
+> **💡 Ek cheez dhyan dene layak:** kai tests **source code padhte hain** aur pattern match karte hain (jaise `auth-hardening`, `segregation-of-duties`, `rbac-parity`). Yeh ajeeb lagta hai, par bahut kaam ka hai — yeh un niyamon ki raksha karte hain jo kisi ek function me nahi, **poore codebase ke aakar me** hote hain.
 
 > **💡 Yeh tests documentation se behtar hain** — inhe padho to pata chalta hai system ko **kya karna chahiye**. Aur woh kabhi purana nahi hota, kyunki galat hone par test fail ho jaata hai.
 
@@ -237,14 +242,18 @@ Kuch dhundhna ho to:
 <details><summary>Jawab</summary>
 
 **Import search karo**, sirf route list mat dekho.
-[CreateAudit.jsx](../../frontend-react/src/pages/CreateAudit.jsx) ka koi route nahi hai — par [Topbar.jsx](../../frontend-react/src/components/Topbar.jsx) usko modal ki tarah import karta hai. Route na hone ka matlab murda hona nahi.
+[CreateAudit.jsx](../../frontend-react/src/pages/CreateAudit.jsx) ka koi route nahi hai — par [Audits.jsx](../../frontend-react/src/pages/Audits.jsx) usko wizard ki tarah import karta hai. Route na hone ka matlab murda hona nahi.
 </details>
 
-**3. 389 tests pass ho rahe hain. To test coverage achhi hai?**
+**3. "389 tests pass ho rahe hain" — kya isse coverage achhi sabit hoti hai?**
 
 <details><summary>Jawab</summary>
 
-**Zaroori nahi.** Ek poori file — [rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — syntax error ki wajah se **kabhi chalti hi nahi**, aur usi wajah se Act 5 wala 403 bug zinda hai. Chalte hue tests achhe hain; **na chalne wala test sabse khatarnaak hai** — woh suraksha ka jhootha ehsaas deta hai.
+**Nahi.** Us waqt ek poori file — [rbac-parity.test.js](../../tests/unit/rbac-parity.test.js) — syntax error ki wajah se **chalti hi nahi thi**, aur usi wajah se do 403-on-click bug ship ho gaye.
+
+**Number nahi, `Test Files` ki line dekho.** `16 passed (17)` ka matlab hai ek file chali hi nahi — aur woh 389 me kahin nahi dikhta.
+
+Chalte hue tests achhe hain; **na chalne wala test sabse khatarnaak hai** — woh suraksha ka jhootha ehsaas deta hai. (Ab `17 passed (17)`, `452 tests`.)
 </details>
 
 **4. README bharosemand hai?**

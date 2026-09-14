@@ -244,26 +244,95 @@ Aur `EntityFormModal` form khud bana deta hai — aapko sirf fields ki list deni
 
 ---
 
-## ⚠️ Do baatein jo is design me kachchi hain
+## ⚠️ Do baatein jo is design me kachchi thi
 
-### 1. `useApi` me `json.data || json`
+### 1. `useApi` me `json.data || json` — ✅ 🔧 FIX ho gaya
 
-[useApi.js:24](../../frontend-react/src/hooks/useApi.js):
+[useApi.js](../../frontend-react/src/hooks/useApi.js) me pehle yeh tha:
 ```js
-setData(json.data || json);
+setData(json.data || json);      // ← `||`
 ```
 
-Server hamesha `{ success, data, meta }` bhejta hai ([response.js](../../backend/shared/response.js)). To `|| json` kyun?
+Server **hamesha** `{ success, data, meta }` bhejta hai ([response.js](../../backend/shared/response.js)). To `|| json` kyun? Purane vanilla-JS zamane me kuch endpoints seedha array bhejte the — zarurat khatam, line reh gayi.
 
-Kyunki purane vanilla-JS zamane me kuch endpoints seedha array bhejte the. **Ab woh zarurat nahi**, par line rah gayi. Aur iska ek side-effect hai: `data` field khaali (`null`/`[]`) ho to `|| json` chal padta hai aur poora envelope object mil jaata hai — jo aksar UI me ajeeb tareeke se dikhta hai.
+**Problem `||` me hai:** woh `null`/`undefined` ke alawa **khaali aur zero** par bhi chal padta hai. Aur jab chalta hai, to state me **poora envelope** (`{success, data, meta}`) chala jaata hai — aur page usko record samajhkar render karne lagta hai.
 
-Aapko poore project me `f.title || f.name`, `a.due || a.due_date`, `o.riskLevel || o.risk_level` jaisi lines milengi — **yeh sab usi purane daur ki nishaniyan hain.** Ek naam par tay ho jayein to yeh sab hat sakti hain.
+```js
+setData(json?.data ?? json);     // ← ab `??`
+```
+
+`??` sirf tab chalta hai jab `data` sach me maujood na ho.
+
+> **💡 Dilchasp baat:** questionnaire feature ki API files ([submissionApi.js](../../frontend-react/src/features/questionnaire/services/submissionApi.js)) me **pehle se** `json?.data ?? json` likha tha. Naya code sahi tha, purane hooks nahi. Ab dono ek jaise hain.
+
+Wahi galti 4 aur jagah thi ([FindingDiscussion](../../frontend-react/src/components/FindingDiscussion.jsx), [AuditDetail](../../frontend-react/src/pages/AuditDetail.jsx), [AuditUniverse](../../frontend-react/src/pages/AuditUniverse.jsx)) — sab theek.
+
+> **📌 Jo abhi bhi baaki hai:** `f.title || f.name`, `a.due || a.due_date`, `o.riskLevel || o.risk_level` jaisi lines. Yeh bhi usi purane daur ki nishaniyan hain, par inhe hatane ke liye pehle tay karna padega ki har field ka **ek** naam kya hoga — woh alag kaam hai.
 
 ### 2. Har module me wahi 25 lines ka controller
 
 15+ modules me controller lagbhag ek jaisa hai. Ise ek "factory" me badla ja sakta hai.
 
 > **📌 Par mera salaah: abhi mat karo.** Yeh duplication **padhne me aasan** hai. Factory banane se code chhota hoga par samajhna mushkil. Aur aap abhi project samajh rahe ho. Yeh baad ki cheez hai.
+>
+> **Yeh jaan-boojh kar chhoda gaya hai** — baaki sab fix kar diya, yeh nahi. Duplication bug nahi hai; yeh ek **trade-off** hai jo abhi aapke haq me hai.
+
+---
+
+## 🐞 Aur is chapter par kaam karte hue do bug mile
+
+Yeh handbook me likhe hi nahi the — `|| json` theek karte waqt saamne aa gaye.
+
+### 1. Audit Universe menu me dikhta tha, par 403 deta tha
+
+[AuditUniverse.jsx](../../frontend-react/src/pages/AuditUniverse.jsx) `/api/organizations` maangta hai — par nav me woh `audits` module se juda tha.
+
+**Natija:**
+```
+Audit Manager   → menu me dikhta → /api/organizations → 403 BLOCKED
+Auditor         → menu me dikhta → 403 BLOCKED
+Reviewer        → menu me dikhta → 403 BLOCKED
+```
+
+**Yeh teesri baar hai** jab yeh pattern mila — pehle CA / Consultant → CAPA, phir [Act 5](06-act5-applicant.md) ka applicant, ab yeh.
+
+**Fix:** nav mapping ab us API ka naam leti hai jo page **sach me** call karta hai:
+```js
+'audit-universe': 'organizations',   // pehle 'audits' tha
+```
+
+> **💡 Niyam banta hai:** `NAV_ITEM_MODULE` me item ko **us module se jodo jise page fetch karta hai**, us section se nahi jisme woh dikhta hai.
+
+### 2. Audit Universe ka "Risk Score" banta hi nahi tha — **ginaya jaata tha**
+
+Yeh zyada serious hai. Code aisa tha:
+
+```js
+const base = ((org.auditHistory || idx) * 15 + ...) % 100;
+```
+
+`idx` = us row ka **screen par position**. Matlab jis organization ka score nahi tha, usko score **is hisaab se** mil jaata tha ki woh list me kaunse number par hai — aur `% 100` se woh number kisi bhi arth se khaali ho jaata tha.
+
+Aur:
+```js
+auditHistory: org.auditHistory || org.auditCount || Math.floor(Math.random() * 5) + 1
+```
+**Har page load par alag "audit history".**
+
+Aur `recommendedCadence` usi jhoothe score se banta tha — matlab page **jhoothe number ke aadhar par** sifarish karta tha ki kis vendor ka audit kab karna hai.
+
+Upar se page 8 **nakli companies** se shuru hota tha (`Amazon Web Services`, `PayPro Financial`), aur ek banner tha jo kehta tha *"nothing is shown rather than something inaccurate"* — jiski condition **kabhi true ho hi nahi sakti thi**.
+
+**Ab:**
+- Asli field (`org.risk`) use hoti hai — pehle code `org.riskScore` dhoondta tha, jo model me hai hi nahi, **isliye jhootha branch hamesha chalta tha**
+- Score na ho to **"Not scored"** likha aata hai, koi number nahi
+- `auditHistory` asli `activeAudits` se, warna `—`
+- Score nahi to cadence bhi nahi
+- Nakli companies aur mara hua banner dono hataye
+
+> **🎯 Ek audit product me yeh sabse bura kism ka bug hai** — crash se bhi bura. Crash dikh jaata hai; **banaya hua risk score bilkul asli jaisa dikhta hai**, aur usi ke aadhar par faisle hote hain.
+>
+> Yeh wahi baat hai jo [UI audit](11-what-next.md) me Dashboard ke hardcoded `+12%` trends par kahi thi.
 
 ---
 
